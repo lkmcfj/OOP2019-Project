@@ -10,6 +10,7 @@ namespace computational_graph
     class Graph;
     class Session;
 
+    //the member function "run" of Node and its derived class may throw exception std::range_error when calculating
     class Node
     {
     protected:
