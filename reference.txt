@@ -1,0 +1,150 @@
+类：Session,Graph,Node,Data,Message,Parser
+文件:graph,node,datatype,message,parser,computational_graph
+
+异常处理：
+(1)如果按要求需要输出报错信息，则调用Message::message，按要求报错
+(2)如果错误不致命，则调用Message::warning或Message::error。如果错误致命，则抛异常并将本来要输入Messge::error的信息放进异常中。由于作业要求（一次求值最多报一个错），我们认为满足(1)的都足够致命。除此以外，这两条是独立的，都要判断
+
+Data类，派生Float类
+
+typedef std::shared_ptr<const Data> const_pData
+Data:
+流输入输出操作符//如果对Data基类对象进行输入输出，则引发error。
+virtual std::string to_string()//返回一个用于输出的std::string对象。在Data基类对象上调用它将会引发error并返回空字符串。子类需重新实现
+virtual bool boolean()//返回对bool的类型转换。在Data基类对象上调用它将会引发error并返回false。子类需重新实现
+virtual std::unique_ptr<const Data> copy()//创建一个与自身相同的新对象，并返回指向它的智能指针。子类需重新实现
+Float:
+Float(double init_v)
+
+const_pData plus(const Data &left,const Data &right)
+const_pData minus(const Data &left,const Data &right)
+const_pData multi(const Data &left,const Data &right)
+const_pData div(const Data &left,const Data &right)
+
+const_pData less_float(const Data &left,const Data &right)
+const_pData greater_float(const Data &left,const Data &right)
+const_pData leq_float(const Data &left,const Data &right)
+const_pData geq_float(const Data &left,const Data &right)
+const_pData equal_float(const Data &left,const Data &right)
+//上述比较运算返回float
+
+const_pData sin(const Data &x)
+const_pData log(const Data &x)
+const_pData exp(const Data &x)
+const_pData tanh(const Data &x)
+const_pData sigmoid(const Data &x)
+
+//上述运算如果类型检查出现问题（如传入Data基类对象，传入nullptr），抛出std::runtime_error
+//如果超出运算定义域（如log自变量<=0，除以0），则调用Message::message输出要求的错误信息并抛出std::range_error
+
+Node类： 派生Variable,Placeholder,Constant,及各种Op
+Node及其派生类的构造函数将初始化对象中除id外的各项数据。它不会将对象加入Graph中，也不会分配id。id被初始化为-1
+
+Node:
+int id
+Graph *g
+vector<int> father
+
+Node(Graph *_g) //protected
+virtual const_pData run(Session *sess,std::vector<const_pData> father_value)
+//在sess中执行求值，前驱节点的求值结果按照father的顺序放在father_value中
+//如果father_value.size()与father.size()不相等，引发error并返回nullptr
+//在一个Node或Placeholder的对象上调用run会引发error并返回nullptr
+//在Variable对象上调用run会引发warning并返回该Variable节点默认值
+//派生类中都会重新实现，文档中不再重复
+const std::vector<int>& get_father()
+int get_id();
+void give_id(int newid)//只在刚创建出节点，id为-1时使用，之后id不为-1时再调用就warning,不修改
+Graph *get_graph()//给出对所属Graph的raw pointer
+void give_symbol(std::string symbol)//在所属Graph中将symbol绑定到自身。如果对象没有被通过Graph::join加入到Graph中，将会引发error
+virtual int get_type()//返回对象是哪种派生类。派生类中都会重新实现，文档中不再重复
+type=0 Node
+type=1 Variable
+type=2 Placeholder
+type=3 Constant
+type=4 Arith
+type=5 Single_op
+type=6 Print
+type=7 Cmp
+type=8 Cond
+
+typedef shared_ptr<const Node> const_pNode
+
+Node的派生类：
+
+Variable:
+Variable(Graph *_g,const_pData default_v) //不会直接接管default_v，而是利用Data::copy()复制一份
+const_pData get_default_value()
+
+Placeholder:
+Placeholder(Graph *_g)
+
+Constant:
+Constant(Graph *_g,const_pData v) //不会直接接管v，而是利用Data::copy()复制一份
+
+typedef std::function<const_pData(const Data&,const Data&)> binary_op
+Arith:
+static std::map<std::string,binary_op> str2op//存放std::string到binary_op的对应关系
+Arith(Graph *_g,int left_id,int right_id,std::string op_str)
+//左端运算节点id为left_id,右端运算节点id为right_id,运算符为op_str。若在str2op中找不到op_str对应的运算，则引发error并按加法处理
+
+typedef std::function<const_pData(const Data&)> single_op
+Single_op:
+static std::map<std::string,single_op> str2op//存放std::string到single_op的对应关系
+Single_op(Graph *_g,int x_id,std::string op_str)
+//输入节点id为x_id，运算符为op_str。若在str2op中找不到op_str对应的运算，则引发error并按sin处理
+
+Print:
+Print(Graph *_g,int x_id,std::string x_symbol)
+//输入节点id为x_id。输出结果中将输入节点的标识符显示为x_symbol
+
+typedef std::function<const_pData(const Data&,const Data&)> cmp_op
+Cmp:
+Cmp(Graph *_g,int left_id,int right_id,std::string op_str)
+//左端运算节点id为left_id,右端运算节点id为right_id,运算符为op_str。若在str2op中找不到op_str对应的运算，则引发error并按小于号处理
+
+Cond:
+Cond(Graph *_g,int cond_id,int true_id,int false_id)
+//条件节点id为cond_id。如果条件节点求值结果的boolean()为真，节点求值为true_id节点的值，否则求值为false_id节点的值
+
+const_pNode operator +(const Node &left,const Node &right);
+const_pNode operator -(const Node &left,const Node &right);
+const_pNode operator *(const Node &left,const Node &right);
+const_pNode operator /(const Node &left,const Node &right);
+const_pNode sin(const Node &x);
+const_pNode log(const Node &x);
+const_pNode exp(const Node &x);
+const_pNode tanh(const Node &x);
+const_pNode sigmoid(const Node &x);
+const_pNode operator <(const Node &left,const Node &right);
+const_pNode operator >(const Node &left,const Node &right);
+const_pNode operator <=(const Node &left,const Node &right);
+const_pNode operator >=(const Node &left,const Node &right);
+const_pNode operator ==(const Node &left,const Node &right);
+这些运算符和函数将创建出节点并加入相应的图中，返回该节点的const_pNode。如果双目运算的两个节点不在同一个图中，引发error并得到nullptr
+
+Message类:
+
+public:
+void Message::set_log_level(int level)
+//level=1..4(debug..error)
+//>4:no log
+//<=1:all log
+void Message::set_log_stream(std::ostream &s)
+void Message::set_message_stream(std::ostream &s)
+
+private:
+std::ostream *log_s,*message_s;
+int log_level;
+//default:
+//log_s point to std::cerr
+//message_s point to std::cout
+
+void Message::debug(std::string s)//output to *log_s if log_level <=1
+void Message::info(std::string s)//output to *log_s if log_level <=2
+void Message::warning(std::string s)//output to *log_s if log_level <=3
+void Message::error(std::string s)//output to *log_s if log_level <=4
+
+void Message::message(std::string s)//output to *message_s
+
+将Graph,Session,Node,Data作为友元
