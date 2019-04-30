@@ -45,8 +45,8 @@ namespace computational_graph
             auto it=temp_value.find(id);
             if(it==temp_value.end())
             {
-                Message::error("Missing Placeholder: node #"+std::to_string(id));
-                throw std::invalid_argument("ERROR: Placeholder missing");
+                Message::message("ERROR: Placeholder missing");
+                throw std::invalid_argument("Missing Placeholder: node #"+std::to_string(id));
             }
             return it->second;
         }
