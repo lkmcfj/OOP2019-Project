@@ -14,7 +14,7 @@ namespace computational_graph
     class Node
     {
     protected:
-        int id,type;
+        int id;
         //type=0 Node
         //type=1 Variable
         //type=2 Placeholder
@@ -33,7 +33,7 @@ namespace computational_graph
         void give_id(int newid);//warning when id is not 0
         Graph *get_graph();
         void give_symbol(std::string symbol);
-        int get_type();
+        virtual int get_type();
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value);//error
     };
     typedef std::shared_ptr<const Node> const_pNode;
@@ -45,6 +45,7 @@ namespace computational_graph
     public:
         Variable(Graph *_g,const_pData default_v);
         const_pData get_default_value();
+        virtual int get_type();
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value);//warning
     };
 
@@ -52,6 +53,7 @@ namespace computational_graph
     {
     public:
         Placeholder(Graph *_g);
+        virtual int get_type();
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value);//error
     };
 
@@ -61,6 +63,7 @@ namespace computational_graph
         const_pData value;
     public:
         Constant(Graph *_g,const_pData v);
+        virtual int get_type();
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value);
     };
         
@@ -72,6 +75,7 @@ namespace computational_graph
         binary_op op;
     public:
         Arith(Graph *_g,int left_id,int right_id,std::string op_str);
+        virtual int get_type();
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value);
     };
 
@@ -83,6 +87,7 @@ namespace computational_graph
         single_op op;
     public:
         Single_op(Graph *_g,int x_id,std::string op);
+        virtual int get_type();
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value);
     }
 
@@ -92,6 +97,7 @@ namespace computational_graph
         std::string father_symbol;
     public:
         Print(Graph *_g,int x_id,std::string x_symbol);
+        virtual int get_type();
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value);
     };
 
@@ -103,6 +109,7 @@ namespace computational_graph
         cmp_op op;
     public:
         Cmp(Graph *_g,int left_id,int right_id,std::string op_str);
+        virtual int get_type();
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value);
     }
 
@@ -110,6 +117,7 @@ namespace computational_graph
     {
     public:
         Cond(Graph *_g,int cond_id,int true_id,int false_id);
+        virtual int get_type();
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value);
     };
 

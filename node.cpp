@@ -34,9 +34,9 @@ namespace computational_graph
     }
     int Node::get_type()
     {
-        return type;
+        return 0;
     }
-    Node::Node(Graph *_g):g(_g),id(0),type(0){}
+    Node::Node(Graph *_g):g(_g),id(0){}
     const_pData Node::run(Session *sess,vector<const_pData> father_value)
     {
         Message::error("raw node #"+std::to_string(id)+" can't be evaluated. returning nullptr.");
@@ -44,9 +44,13 @@ namespace computational_graph
     }
 
     Variable::Variable(Graph *_g,const_pData default_v):
-        Node(_g),type(1)
+        Node(_g)
     {
         default_value=default_v->copy();
+    }
+    int Variable::get_type()
+    {
+        return 1;
     }
     const_pData Variable::get_default_value()
     {
@@ -58,7 +62,11 @@ namespace computational_graph
         return default_value;
     }
 
-    Placeholder::Placeholder(Graph *_g):Node(_g),type(2){}
+    Placeholder::Placeholder(Graph *_g):Node(_g){}
+    int Placeholder::get_type()
+    {
+        return 2;
+    }
     const_pData Placeholder::run(Session *sess,vector<const_pData> father_value)
     {
         Message::error("trying to evaluate placeholder #"+to_string(id)+" directly. returning nullptr");
@@ -66,8 +74,12 @@ namespace computational_graph
     }
 
     Constant::Constant(Graph *_g,const_pData v):
-        Node(_g),type(3),value(v.copy())
+        Node(_g),value(v.copy())
     {}
+    int Constant::get_type()
+    {
+        return 3;
+    }
     const_pData Constant::run(Session *sess,vector<const_pData> father_value)
     {
         return value;
@@ -75,7 +87,7 @@ namespace computational_graph
     
     map<string,binary_op> Arith::str2op{{"+",plus},{"-",minus},{"*",multi},{"/",div}};
     Arith::Arith(Graph *_g,int left_id,int right_id,string op_str):
-        Node(_g),father{left_id,right_id},type(4)
+        Node(_g),father{left_id,right_id}
     {
         auto it=str2op.find(op_str);
         if(it!=str2op.end()) op=it->second;
@@ -83,6 +95,10 @@ namespace computational_graph
             Message::error("binary operator is not +, -, *, /, set to + by default");
             op=str2op["+"];
         }
+    }
+    int Arith::get_type()
+    {
+        return 4;
     }
     const_pData Arith::run(Session *sess,vector<const_pData> father_value)
     {
@@ -96,7 +112,7 @@ namespace computational_graph
 
     map<string,single_op> Single_op::str2op{{"sin",sin},{"log",log},{"exp",exp},{"tanh",tanh},{"sigmoid",sigmoid}};
     Single_op::Single_op(Graph *_g,int x_id,string op_str):
-        Node(_g),father{x_id},type(5)
+        Node(_g),father{x_id}
     {
         auto it=str2op.find(op_str);
         if(it!=str2op.end()) op=it->second;
@@ -104,6 +120,10 @@ namespace computational_graph
             Message::error("single operator is not sin, log, exp, tanh, sigmoid, set to sin by default");
             op=str2op["sin"];
         }
+    }
+    int Single_op::get_type()
+    {
+        return 5;
     }
     const_pData Single_op::run(Session *sess,vector<const_pData> father_value)
     {
@@ -116,8 +136,12 @@ namespace computational_graph
     }
 
     Print::Print(Graph *_g,int x_id,string x_symbol):
-        Node(_g),type(6),father{x_id},father_symbol(x_symbol)
+        Node(_g),father{x_id},father_symbol(x_symbol)
     {}
+    int Print::get_type()
+    {
+        return 6;
+    }
     const_pData Print::run(Session *sess,vector<const_pData> father_value)
     {
         if(father_value.size()!=1)
@@ -131,7 +155,7 @@ namespace computational_graph
 
     map<string,cmp_op> Cmp::str2op{{"<",less_float},{">",greater_float},{"<=",leq_float},{">=",geq_float},{"==",equal_float}};
     Cmp::Cmp(Graph *_g,int left_id,int right_id,string op_str):
-        Node(_g),type(7),father{left_id,right_id}
+        Node(_g),father{left_id,right_id}
     {
         auto it=str2op.find(op_str);
         if(it!=str2op.end()) op=it->second;
@@ -139,6 +163,10 @@ namespace computational_graph
             Message::error("comparing operator is not <, >, <=, >=, ==, set to < by default");
             op=str2op["<"];
         }
+    }
+    int Cmp::get_type()
+    {
+        return 7;
     }
     const_pData Cmp::run(Session *sess,vector<const_pData> father_value)
     {
@@ -151,8 +179,12 @@ namespace computational_graph
     }
 
     Cond::Cond(Graph *_g,int cond_id,int true_id,int false_id):
-        Node(_g),type(8),father{cond_id,true_id,false_id}
+        Node(_g),father{cond_id,true_id,false_id}
     {}
+    int Cond::get_type()
+    {
+        return 8;
+    }
     const_pData Cond::run(Session *sess,vector<const_pData> father_value)
     {
         if(father_value.size()!=3)
