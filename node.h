@@ -86,7 +86,7 @@ namespace computational_graph
     protected:
         single_op op;
     public:
-        Single_op(Graph *_g,int x_id,std::string op);
+        Single_op(Graph *_g,int x_id,std::string op_str);
         virtual int get_type();
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value);
     }
