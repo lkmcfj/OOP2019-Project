@@ -12,10 +12,9 @@ namespace computational_graph
     using std::string;
     const_pNode Graph::join(std::unique_ptr<Node> curnode)
     {
+        curnode->give_id(nodes.size());
         nodes.push_back(std::move(curnode));
-        int cur=nodes.size()-1;
-        nodes[cur]->give_id(cur);
-        return nodes[cur];
+        return nodes[nodes.size()-1];
     }
     const_pNode Graph::getnode(int id)
     {
