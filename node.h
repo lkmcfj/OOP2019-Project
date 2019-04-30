@@ -30,7 +30,7 @@ namespace computational_graph
     public:
         const std::vector<int> &get_father();
         int get_id();
-        void give_id(int newid);//warning when id is not 0
+        void give_id(int newid);//warning when id is not -1
         Graph *get_graph();
         void give_symbol(std::string symbol);
         virtual int get_type();

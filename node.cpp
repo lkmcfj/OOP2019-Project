@@ -22,7 +22,7 @@ namespace computational_graph
     }
     void Node::give_id(int newid)
     {
-        if(id==0) id=newid;else Message::warning("trying to modify ID for node #"+to_string(id)+", failed.");
+        if(id==-1) id=newid;else Message::warning("trying to modify ID for node #"+to_string(id)+", failed.");
     }
     Graph* Node::get_graph()
     {
@@ -36,7 +36,7 @@ namespace computational_graph
     {
         return 0;
     }
-    Node::Node(Graph *_g):g(_g),id(0){}
+    Node::Node(Graph *_g):g(_g),id(-1){}
     const_pData Node::run(Session *sess,vector<const_pData> father_value)
     {
         Message::error("raw node #"+std::to_string(id)+" can't be evaluated. returning nullptr.");
