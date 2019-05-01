@@ -85,7 +85,7 @@ namespace computational_graph
         return value;
     }
     
-    map<string,binary_op> Arith::str2op{{"+",plus},{"-",minus},{"*",multi},{"/",div}};
+    map<string,arith_op> Arith::str2op{{"+",plus},{"-",minus},{"*",multi},{"/",div}};
     Arith::Arith(Graph *_g,int left_id,int right_id,string op_str):
         Node(_g),father{left_id,right_id}
     {
@@ -107,7 +107,7 @@ namespace computational_graph
             Message::error("evaluating node #"+to_string(id)+", expecting 2 input value,get "+to_string(father_value.size())+". returning nullptr.");
             return nullptr;
         }
-        return op(*father_value[0],*father_value[1]);
+        return op(father_value[0],father_value[1]);
     }
 
     map<string,single_op> Single_op::str2op{{"sin",sin},{"log",log},{"exp",exp},{"tanh",tanh},{"sigmoid",sigmoid}};
@@ -132,7 +132,7 @@ namespace computational_graph
             Message::error("evaluating node #"+to_string(id)+", expecting 1 input value,get "+to_string(father_value.size())+". returning nullptr.");
             return nullptr;
         }
-        return op(*father_value[0]);
+        return op(father_value[0]);
     }
 
     Print::Print(Graph *_g,int x_id,string x_symbol):
@@ -175,7 +175,7 @@ namespace computational_graph
             Message::error("evaluating node #"+to_string(id)+", expecting 2 input value,get "+to_string(father_value.size())+". returning nullptr.");
             return nullptr;
         }
-        return op(*father_value[0],*father_value[1]);
+        return op(father_value[0],father_value[1]);
     }
 
     Cond::Cond(Graph *_g,int cond_id,int true_id,int false_id):
