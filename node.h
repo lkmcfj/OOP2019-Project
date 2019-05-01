@@ -27,14 +27,15 @@ namespace computational_graph
         Graph *g;
         std::vector<int> father;
         Node(Graph *_g);
+        void give_id(int newid);//warning when id is not -1
     public:
         const std::vector<int> &get_father();
         int get_id();
-        void give_id(int newid);//warning when id is not -1
         Graph *get_graph();
         void give_symbol(std::string symbol);
         virtual int get_type();
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value);//error
+        friend class Graph;
     };
     typedef std::shared_ptr<const Node> const_pNode;
 
@@ -121,19 +122,19 @@ namespace computational_graph
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value);
     };
 
-    const_pNode operator +(const Node &left,const Node &right);
-    const_pNode operator -(const Node &left,const Node &right);
-    const_pNode operator *(const Node &left,const Node &right);
-    const_pNode operator /(const Node &left,const Node &right);
-    const_pNode sin(const Node &x);
-    const_pNode log(const Node &x);
-    const_pNode exp(const Node &x);
-    const_pNode tanh(const Node &x);
-    const_pNode sigmoid(const Node &x);
-    const_pNode operator <(const Node &left,const Node &right);
-    const_pNode operator >(const Node &left,const Node &right);
-    const_pNode operator <=(const Node &left,const Node &right);
-    const_pNode operator >=(const Node &left,const Node &right);
-    const_pNode operator ==(const Node &left,const Node &right);
+    const_pNode operator +(const_pNode left,const_pNode right);
+    const_pNode operator -(const_pNode left,const_pNode right);
+    const_pNode operator *(const_pNode left,const_pNode right);
+    const_pNode operator /(const_pNode left,const_pNode right);
+    const_pNode sin(const_pNode x);
+    const_pNode log(const_pNode x);
+    const_pNode exp(const_pNode x);
+    const_pNode tanh(const_pNode x);
+    const_pNode sigmoid(const_pNode x);
+    const_pNode operator <(const_pNode left,const_pNode right);
+    const_pNode operator >(const_pNode left,const_pNode right);
+    const_pNode operator <=(const_pNode left,const_pNode right);
+    const_pNode operator >=(const_pNode left,const_pNode right);
+    const_pNode operator ==(const_pNode left,const_pNode right);
 }
 #endif
