@@ -44,6 +44,43 @@ const_pData sigmoid(const_pData x)
 //上述运算如果类型检查出现问题（如传入Data基类对象，传入nullptr），抛出std::runtime_error
 //如果超出运算定义域（如log自变量<=0，除以0），则调用Message::message输出要求的错误信息并抛出std::range_error
 
+Graph类:
+private:
+std::vector<const_pNode> nodes//按id存放节点
+std::map<std::string,int> symbol_id//存放标识符对应的节点id
+public:
+const_pNode join(std::unique_ptr<Node> curnode)
+//将curnode指向的节点加入图中，通过调用givd_id分配id。所有权转为nodes管理，返回指向该节点的const_pNode
+const_pNode getnode(int id)
+//返回通过id找到的节点
+const_pNode getnode(std::string symbol)
+//返回通过标识符找到的节点
+int get_symbol_id(std::string symbol)
+//返回标识符对应的id
+void give_symbol(std::string symbol,int id)
+//将标识符symbol绑定到id上
+
+Session类:
+private:
+std::map<int,const_pData> variable_value
+//存放该会话中此时所有变量的取值
+std::map<int,const_pData> temp_value
+//求值时进行记忆化搜索，临时存放求值结果
+Graph &g
+//绑定在该Session对应的Graph对象上
+const_pData dfs_eval(int id)
+//求值时进行的记忆化搜索
+public:
+Session(Graph &_g)
+//将g绑定在_g上
+const_pData eval(int id,std::map<int,const_pData> placeholder_value)
+//传入placeholder的取值，对编号为id的节点求值。可能抛出std::invalid_argument,std::range_error或std::runtime_error
+void set_variable(int id,const_pData v)
+//将编号为id的variable取值改为v。会利用copy方法复制一份v所指的对象，在内部保存
+void set_variable(std::string symbol,const_pData v)
+//将标识符为symbol的variable取值改为v。会利用copy方法复制一份v所指的对象，在内部保存
+
+
 Node类： 派生Variable,Placeholder,Constant,及各种Op
 Node及其派生类的构造函数将初始化对象中除id外的各项数据。它不会将对象加入Graph中，也不会分配id。id被初始化为-1
 
