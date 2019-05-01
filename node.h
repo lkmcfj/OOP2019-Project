@@ -1,6 +1,6 @@
 #ifndef _NODE_H_
 #define _NODE_H_
-#include "datatype.h"
+#include "data.h"
 #include <memory>
 #include <vector>
 #include <functional>

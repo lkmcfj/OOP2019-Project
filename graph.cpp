@@ -1,7 +1,7 @@
 #include "graph.h"
 #include "node.h"
 #include "message.h"
-#include "datatype.h"
+#include "data.h"
 #include <string>
 #include <memory>
 #include <vector>
