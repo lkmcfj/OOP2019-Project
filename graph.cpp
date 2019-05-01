@@ -12,9 +12,10 @@ namespace computational_graph
     using std::string;
     const_pNode Graph::join(std::unique_ptr<Node> curnode)
     {
-        curnode->give_id(nodes.size());
         nodes.push_back(std::move(curnode));
-        return nodes[nodes.size()-1];
+        int cur=nodes.size()-1;
+        nodes[cur]->give_id(cur);
+        return nodes[cur];
     }
     const_pNode Graph::getnode(int id)
     {
@@ -45,8 +46,8 @@ namespace computational_graph
             auto it=temp_value.find(id);
             if(it==temp_value.end())
             {
-                Message::message("ERROR: Placeholder missing");
-                throw std::invalid_argument("Missing Placeholder: node #"+std::to_string(id));
+                Message::error("Missing Placeholder: node #"+std::to_string(id));
+                throw std::invalid_argument("ERROR: Placeholder missing");
             }
             return it->second;
         }
