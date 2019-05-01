@@ -32,6 +32,10 @@ namespace computational_graph
     const_pData operator-(const_pData left,const_pData right);
     const_pData operator*(const_pData left,const_pData right);
     const_pData operator/(const_pData left,const_pData right);
+    const_pData plus(const_pData left,const_pData right); //initialize std::function
+    const_pData minus(const_pData left,const_pData right);
+    const_pData multi(const_pData left,const_pData right);
+    const_pData div(const_pData left,const_pData right);
     const_pData less_float(const_pData left,const_pData right);
     const_pData greater_float(const_pData left,const_pData right);
     const_pData leq_float(const_pData left,const_pData right);

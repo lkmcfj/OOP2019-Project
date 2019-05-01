@@ -85,6 +85,10 @@ namespace computational_graph
         Message::message("Placeholder missing"); //vital error, need to print
         return nullptr;
     }
+    const_pData plus(const_pData left,const_pData right){return left + right};
+    const_pData minus(const_pData left,const_pData right){return left - right};
+    const_pData multi(const_pData left,const_pData right){return left * right};
+    const_pData div(const_pData left,const_pData right){return left / right};
     const_pData less_float(const_pData left,const_pData right)
     {
         if (left && right)
