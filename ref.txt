@@ -18,23 +18,28 @@ virtual std::unique_ptr<const Data> copy()//创建一个与自身相同的新对
 Float:
 Float(double init_v)
 
-const_pData plus(const Data &left,const Data &right)
-const_pData minus(const Data &left,const Data &right)
-const_pData multi(const Data &left,const Data &right)
-const_pData div(const Data &left,const Data &right)
+/* 
+    05.01：更新
+    为了避免字符串处理还要处理空指针, 
+    直接传入const_pNode / const_pData作为参数
+*/
+const_pData operator +(const_pData left,const_pData right)
+const_pData operator -(const_pData left,const_pData right)
+const_pData operator *(const_pData left,const_pData right)
+const_pData operator /(const_pData left,const_pData right)
 
-const_pData less_float(const Data &left,const Data &right)
-const_pData greater_float(const Data &left,const Data &right)
-const_pData leq_float(const Data &left,const Data &right)
-const_pData geq_float(const Data &left,const Data &right)
-const_pData equal_float(const Data &left,const Data &right)
+const_pData less_float(const_pData left,const_pData right)
+const_pData greater_float(const_pData left,const_pData right)
+const_pData leq_float(const_pData left,const_pData right)
+const_pData geq_float(const_pData left,const_pData right)
+const_pData equal_float(const_pData left,const_pData right)
 //上述比较运算返回float
 
-const_pData sin(const Data &x)
-const_pData log(const Data &x)
-const_pData exp(const Data &x)
-const_pData tanh(const Data &x)
-const_pData sigmoid(const Data &x)
+const_pData sin(const_pData x)
+const_pData log(const_pData x)
+const_pData exp(const_pData x)
+const_pData tanh(const_pData x)
+const_pData sigmoid(const_pData x)
 
 //上述运算如果类型检查出现问题（如传入Data基类对象，传入nullptr），抛出std::runtime_error
 //如果超出运算定义域（如log自变量<=0，除以0），则调用Message::message输出要求的错误信息并抛出std::range_error
@@ -109,20 +114,22 @@ Cond:
 Cond(Graph *_g,int cond_id,int true_id,int false_id)
 //条件节点id为cond_id。如果条件节点求值结果的boolean()为真，节点求值为true_id节点的值，否则求值为false_id节点的值
 
-const_pNode operator +(const Node &left,const Node &right);
-const_pNode operator -(const Node &left,const Node &right);
-const_pNode operator *(const Node &left,const Node &right);
-const_pNode operator /(const Node &left,const Node &right);
-const_pNode sin(const Node &x);
-const_pNode log(const Node &x);
-const_pNode exp(const Node &x);
-const_pNode tanh(const Node &x);
-const_pNode sigmoid(const Node &x);
-const_pNode operator <(const Node &left,const Node &right);
-const_pNode operator >(const Node &left,const Node &right);
-const_pNode operator <=(const Node &left,const Node &right);
-const_pNode operator >=(const Node &left,const Node &right);
-const_pNode operator ==(const Node &left,const Node &right);
+const_pNode operator +(const_pNode left,const_pNode right);
+const_pNode operator -(const_pNode left,const_pNode right);
+const_pNode operator *(const_pNode left,const_pNode right);
+const_pNode operator /(const_pNode left,const_pNode right);
+
+const_pNode sin(const_pNode x);
+const_pNode log(const_pNode x);
+const_pNode exp(const_pNode x);
+const_pNode tanh(const_pNode x);
+const_pNode sigmoid(const_pNode x);
+
+const_pNode operator <(const_pNode left,const_pNode right);
+const_pNode operator >(const_pNode left,const_pNode right);
+const_pNode operator <=(const_pNode left,const_pNode right);
+const_pNode operator >=(const_pNode left,const_pNode right);
+const_pNode operator ==(const_pNode left,const_pNode right);
 这些运算符和函数将创建出节点并加入相应的图中，返回该节点的const_pNode。如果双目运算的两个节点不在同一个图中，引发error并得到nullptr
 
 Message类:
