@@ -31,7 +31,6 @@ namespace computational_graph
     public:
         Session(Graph &_g);
         const_pData eval(int id,std::map<int,const_pData> placeholder_value);
-	//may throw std::invalid_argument or std::range_error when calculating
         void set_variable(int id,const_pData v);
         void set_variable(std::string symbol,const_pData v);
     };
