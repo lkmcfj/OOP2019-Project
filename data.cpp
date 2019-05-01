@@ -6,7 +6,7 @@ namespace computational_graph
 {
     ostream& operator<<(ostream &out, const Data &x)
     {
-        //type check?
+        //type check
         out << x->val << endl;
         return out;
     }
@@ -36,139 +36,127 @@ namespace computational_graph
     {
         return std::make_unique<Float>(*this);
     }  
-    const_pData operator+(const Data &left,const Data &right);
+    const_pData operator+(const_pData left,const_pData right);
     {
-        auto p1 = left.copy();
-        auto p2 = right.copy();
-        if (p1 && p2)
+        if (left && right)
         {
-            //type check?
-            auto val = p1->val + p2->val;
+            //type check
+            auto val = left->val + right->val;
             return(Float(val).copy());
         }
         Message::message("Placeholder missing"); //vital error, need to print
         return nullptr;
     }
-    const_pData operator-(const Data &left,const Data &right)
+    const_pData operator-(const_pData left,const_pData right);
     {
-        auto p1 = left.copy();
-        auto p2 = right.copy();
-        if (p1 && p2)
+        if (left && right)
         {
-            auto val = p1->val - p2->val;
-            return(Float(val).copy());           
+            //type check
+            auto val = left->val - right->val;
+            return(Float(val).copy());
         }
         Message::message("Placeholder missing"); //vital error, need to print
         return nullptr;
     }
-    const_pData operator*(const Data &left,const Data &right)
+    const_pData operator*(const_pData left,const_pData right);
     {
-        auto p1 = left.copy();
-        auto p2 = right.copy();
-        if (p1 && p2)
+        if (left && right)
         {
-            auto val = p1->val * p2->val;
-            return(Float(val).copy());            
+            //type check
+            auto val = left->val * right->val;
+            return(Float(val).copy());
         }
         Message::message("Placeholder missing"); //vital error, need to print
         return nullptr;
     }
-    const_pData operator/(const Data &left,const Data &right)
+    const_pData operator/(const_pData left,const_pData right);
     {
-        auto p1 = left.copy();
-        auto p2 = right.copy();
-        if (p1 && p2)
+        if (left && right)
         {
-            if (p2->val != 0)
+            //type check
+            if(right->val != 0)
             {
-                auto val = p1->val / p2->val;
+                auto val = left->val / right->val;
                 return(Float(val).copy());
             }
-            Message::message("Division by zero");
+            Message::message("Division by zero"); //vital error, need to print
             return nullptr;
         }
         Message::message("Placeholder missing"); //vital error, need to print
         return nullptr;
     }
-    const_pData less_float(const Data &left,const Data &right)
+    const_pData less_float(const_pData left,const_pData right)
     {
-        auto p1 = left.copy();
-        auto p2 = right.copy();
-        if (p1 && p2)
+        if (left && right)
         {
-            double val = p1->val < p2->val;
-            return(Float(val).copy());             
+            //type check
+            auto val = left->val < right->val;
+            return(Float(val).copy());
         }
         Message::message("Placeholder missing"); //vital error, need to print
         return nullptr;
     }
-    const_pData greater_float(const Data &left,const Data &right)
+    const_pData greater_float(const_pData left,const_pData right)
     {
-        auto p1 = left.copy();
-        auto p2 = right.copy();
-        if (p1 && p2)
+        if (left && right)
         {
-            double val = p1->val > p2->val;
-            return(Float(val).copy());            
+            //type check
+            auto val = left->val > right->val;
+            return(Float(val).copy());
         }
         Message::message("Placeholder missing"); //vital error, need to print
         return nullptr;
     }
-    const_pData leq_float(const Data &left,const Data &right)
+    const_pData leq_float(const_pData left,const_pData right)
     {
-        auto p1 = left.copy();
-        auto p2 = right.copy();
-        if (p1 && p2)
+        if (left && right)
         {
-            double val = p1->val <= p2->val;
-            return(Float(val).copy());          
+            //type check
+            auto val = left->val <= right->val;
+            return(Float(val).copy());
         }
         Message::message("Placeholder missing"); //vital error, need to print
         return nullptr;
     }
-    const_pData geq_float(const Data &left,const Data &right)
+    const_pData geq_float(const_pData left,const_pData right)
     {
-        auto p1 = left.copy();
-        auto p2 = right.copy();
-        if (p1 && p2)
+        if (left && right)
         {
-            double val = p1->val >= p2->val;
-            return(Float(val).copy());            
+            //type check
+            auto val = left->val >= right->val;
+            return(Float(val).copy());
         }
         Message::message("Placeholder missing"); //vital error, need to print
         return nullptr;
     }
-    const_pData equal_float(const Data &left,const Data &right)
+    const_pData equal_float(const_pData left,const_pData right)
     {
-        auto p1 = left.copy();
-        auto p2 = right.copy();
-        if (p1 && p2)
+        if (left && right)
         {
-            double val = p1->val == p2->val;
-            return(Float(val).copy());           
+            //type check
+            auto val = left->val == right->val;
+            return(Float(val).copy());
         }
         Message::message("Placeholder missing"); //vital error, need to print
         return nullptr;
     } //上述比较运算返回float
-    const_pData sin(const Data &x)
+    const_pData sin(const_pData x)
     {
-        auto p = x.copy();
-        if (p)
+        if (x)
         {
-            double val = sin(p->val);
+            double val = sin(x->val);
             return(Float(val).copy());
         }
         Message::message("Placeholder missing"); //vital error, need to print
         return nullptr;
     }  
-    const_pData log(const Data &x)
+    const_pData log(const_pData x)
     {
-        auto p = x.copy();
-        if (p)
+        if (x)
         {
-            if(p->val >0)
+            if(x->val > 0)
             {
-                double val = log(p->val);
+                double val = log(x->val);
                 return(Float(val).copy());
             }
             Message::message("LOG operator's input must be positive")
@@ -177,34 +165,31 @@ namespace computational_graph
         Message::message("Placeholder missing"); //vital error, need to print
         return nullptr;
     }
-    const_pData exp(const Data &x)
+    const_pData exp(const_pData x)
     {
-        auto p = x.copy();
-        if (p)
+        if (x)
         {
-                double val = exp(p->val);
+                double val = exp(x->val);
                 return(Float(val).copy());            
         }
         Message::message("Placeholder missing"); //vital error, need to print
         return nullptr;
     }
-    const_pData tanh(const Data &x)
+    const_pData tanh(const_pData x)
     {
-        auto p = x.copy();
-        if (p)
+        if (x)
         {
-            double val = tanh(p->val);
+            double val = tanh(x->val);
             return(Float(val).copy());            
         }
         Message::message("Placeholder missing"); //vital error, need to print
         return nullptr;
     }
-    const_pData sigmoid(const Data &x)
+    const_pData sigmoid(const_pData x)
     {
-        auto p = x.copy();
-        if (p)
+        if (x)
         {
-            double val = 1.0 / (1 + exp(p->val));
+            double val = 1.0 / (1 + exp(x->val));
             return(Float(val).copy());            
         }
         Message::message("Placeholder missing"); //vital error, need to print
