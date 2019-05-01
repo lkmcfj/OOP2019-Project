@@ -195,92 +195,114 @@ namespace computational_graph
         return (father_value[0]->boolean())?father_value[1]:father_value[2];
     }
 
-    bool check_same_graph(const Node &n1,const Node &n2)
+    bool check_binary(const_pNode n1,const_pNode n2)
     {
-        if(n1.get_graph()==n2.get_graph()) return true; else
+	    if((!n1)||(!n2))
         {
-            Message::error("trying to connect nodes in different graph,returning nullptr");
+            Message::error("previous node is null when creating node, returning null node.");
             return false;
         }
+        if(n1->get_id()<0||n2->get_id()<0)
+        {
+            Message::error("previous node has not been assigned with a valid ID when creating new node, returning null node.");
+            return false;
+        }
+        if(n1->get_graph()!=n2->get_graph())
+        {
+            Message::error("trying to connect nodes in different graph, returning null node.");
+            return false;
+        }
+        return true;
     }
-    const_pNode operator +(const Node &left,const Node &right)
+    bool check_single(const_pNode n)
     {
-        if(!check_same_graph(left,right)) return nullptr;
-        Graph *g=left.get_graph();
-        return g->join(std::make_unique<Arith>(g,left.get_id(),right.get_id(),"+"));
+        if(!n)
+        {
+            Message::error("previous node is null when creating node, returning null node.");
+            return false;
+        }
+        if(n->get_id()<0)
+        {
+            Message::error("previous node has not been assigned with a valid ID when creating new node, returning null node.");
+            return false;
+        }
+        return true;
     }
-    const_pNode operator -(const Node &left,const Node &right)
+
+    const_pNode create_arith_node(const_pNode left,const_pNode right,string op_str)
     {
-        if(!check_same_graph(left,right)) return nullptr;
-        Graph *g=left.get_graph();
-        return g->join(std::make_unique<Arith>(g,left.get_id(),right.get_id(),"-"));
+        if(!check_binary(left,right)) return nullptr;
+        Graph *g=left->get_graph();
+        return g->join(std::make_unique<Arith>(g,left->get_id(),right->get_id(),op_str));
     }
-    const_pNode operator *(const Node &left,const Node &right)
+    const_pNode create_single_op_node(const_pNode x,string op_str)
     {
-        if(!check_same_graph(left,right)) return nullptr;
-        Graph *g=left.get_graph();
-        return g->join(std::make_unique<Arith>(g,left.get_id(),right.get_id(),"*"));
+        if(!check_single(x)) return nullptr;
+        Graph *g=x->get_graph();
+        return g->join(std::make_unique<Single_op>(g,x->get_id(),op_str));
     }
-    const_pNode operator /(const Node &left,const Node &right)
+    const_pNode create_cmp_node(const_pNode left,const_pNode right,string op_str)
     {
-        if(!check_same_graph(left,right)) return nullptr;
-        Graph *g=left.get_graph();
-        return g->join(make_unique<Arith>(g,left.get_id(),right.get_id(),"/"));
+        if(!check_binary(left,right)) return nullptr;
+        Graph *g=left->get_graph();
+        return g->join(std::make_unique<Cmp>(g,left->get_id(),right->get_id(),op_str));
     }
-    const_pNode sin(const Node &x)
+
+    const_pNode operator +(const_pNode left,const_pNode right)
     {
-        Graph *g=x.get_graph();
-        return g->join(make_unique<Single_op>(g,x.get_id(),"sin"));
+        return create_arith_node(left,right,"+");
     }
-    const_pNode log(const Node &x)
+    const_pNode operator -(const_pNode left,const_pNode right)
     {
-        Graph *g=x.get_graph();
-        return g->join(make_unique<Single_op>(g,x.get_id(),"log"));
+        return create_arith_node(left,right,"-");
     }
-    const_pNode tanh(const Node &x)
+    const_pNode operator *(const_pNode left,const_pNode right)
     {
-        Graph *g=x.get_graph();
-        return g->join(make_unique<Single_op>(g,x.get_id(),"tanh"));
+        return create_arith_node(left,right,"*");
     }
-    const_pNode exp(const Node &x)
+    const_pNode operator /(const_pNode left,const_pNode right)
     {
-        Graph *g=x.get_graph();
-        return g->join(make_unique<Single_op>(g,x.get_id(),"exp"));
+        return create_arith_node(left,right,"/");
     }
-    const_pNode sigmoid(const Node &x)
+    const_pNode sin(const_pNode x)
     {
-        Graph *g=x.get_graph();
-        return g->join(make_unique<Single_op>(g,x.get_id(),"sigmoid"));
+        return create_single_op_node(x,"sin");
     }
-    const_pNode operator <(const Node &left,const Node &right)
+    const_pNode log(const_pNode x)
     {
-        if(!check_same_graph(left,right)) return nullptr;
-        Graph *g=left.get_graph();
-        return g->join(make_unique<Cmp>(g,left.get_id(),right.get_id(),"<"));
+        return create_single_op_node(x,"log");
     }
-    const_pNode operator >(const Node &left,const Node &right)
+    const_pNode tanh(const_pNode x)
     {
-        if(!check_same_graph(left,right)) return nullptr;
-        Graph *g=left.get_graph();
-        return g->join(make_unique<Cmp>(g,left.get_id(),right.get_id(),">"));
+        return create_single_op_node(x,"tanh");
     }
-    const_pNode operator <=(const Node &left,const Node &right)
+    const_pNode exp(const_pNode x)
     {
-        if(!check_same_graph(left,right)) return nullptr;
-        Graph *g=left.get_graph();
-        return g->join(make_unique<Cmp>(g,left.get_id(),right.get_id(),"<="));
+        return create_single_op_node(x,"exp");
     }
-    const_pNode operator >=(const Node &left,const Node &right)
+    const_pNode sigmoid(const_pNode x)
     {
-        if(!check_same_graph(left,right)) return nullptr;
-        Graph *g=left.get_graph();
-        return g->join(make_unique<Cmp>(g,left.get_id(),right.get_id(),">="));
+        return create_single_op_node(x,"sigmoid");
     }
-    const_pNode operator ==(const Node &left,const Node &right)
+    const_pNode operator <(const_pNode left,const_pNode right)
     {
-        if(!check_same_graph(left,right)) return nullptr;
-        Graph *g=left.get_graph();
-        return g->join(make_unique<Cmp>(g,left.get_id(),right.get_id(),"=="));
+        return create_cmp_node(left,right,"<");
+    }
+    const_pNode operator >(const_pNode left,const_pNode right)
+    {
+        return create_cmp_node(left,right,">");
+    }
+    const_pNode operator <=(const_pNode left,const_pNode right)
+    {
+        return create_cmp_node(left,right,"<=");
+    }
+    const_pNode operator >=(const_pNode left,const_pNode right)
+    {
+        return create_cmp_node(left,right,">=");
+    }
+    const_pNode operator ==(const_pNode left,const_pNode right)
+    {
+        return create_cmp_node(left,right,"==");
     }
 
 }
