@@ -27,7 +27,7 @@ namespace computational_graph
     }
     const_pData operate(const_pData left, const_pData right, std::string op);
     const_pData operate(const_pData x, std::string op);
-    ostream& operator<<(ostream &in, const Data &x);
+    ostream& operator<<(ostream &out, const Data &x);
     const_pData operator+(const_pData left,const_pData right); //need to do variable type check
     const_pData operator-(const_pData left,const_pData right);
     const_pData operator*(const_pData left,const_pData right);

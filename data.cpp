@@ -13,7 +13,7 @@ namespace computational_graph
     std::string Data::to_string()
     {
         Message::error("The Base Class Data can't be transformed into string. 'Data::to_string()' should never be called. Returning default empty string");
-        return "";       
+        return "";
     } //返回一个用于输出的std::string对象。在Data基类对象上调用它将会引发error并返回空字符串。子类需重新实现
     bool Data::boolean()
     {
@@ -28,7 +28,7 @@ namespace computational_graph
     {
         char buffer[50];
         std::sprintf(buffer, "%.4lf", this->val);
-        return std::c_str(buffer);
+        return std::string(buffer);
     }
     bool Float::boolean()
     {
@@ -47,12 +47,12 @@ namespace computational_graph
         if (left && right)
         {
             //type check
-            left_f = dynamic_cast<const_pFloat>(left);
-            right_f = dynamic_cast<const_pFloat>(right);
+            const_pFloat left_f = dynamic_pointer_cast<const Float>(left),
+            right_f = dynamic_pointer_cast<const Float>(right);
             if (left_f && right_f)
                 {
                     if(op2int.count(op))
-                    { 
+                    {
                         double val;
                         switch(op2int[op])
                         {
@@ -71,8 +71,8 @@ namespace computational_graph
                                     val = left_f -> val / right_f -> val;
                                     break;
                                 }
-                                Message::message("Division by Zero");
-                                return nullptr;
+                                Message::message("ERROR: Division by Zero");
+                                throw std::range_error("Division by Zero");
                             case 5:
                                 val = left_f -> val < right_f -> val;
                                 break;
@@ -89,19 +89,19 @@ namespace computational_graph
                                 val = left_f -> val == right_f -> val;
                                 break;
                             default:
-                                Message::error("Double Operator doesn't exist");
+                                Message::error("Binary Operator doesn't exist");
                                 return nullptr;
                         }
-                        return(Float(val).copy());
+                        return std::make_shared<const Float>(val);
                     }
                     Message::error("Operator doesn't exist");
                     return nullptr;
                 }
-            Message::error("Data val is not type of 'Float'");
+            Message::error("Can't compute on base class 'Data'");
             return nullptr;
         }
         //nullptr --> previous operations might be wrong
-        Message::error("nullptr can't do operations");
+        Message::error("Can't compute on null data");
         return nullptr;
     }
     
@@ -110,11 +110,11 @@ namespace computational_graph
         if (x)
         {
             //type check
-            x_f = dynamic_cast<const_pFloat>(x);
+            const_pFloat x_f = dynamic_pointer_cast<const Float>(x);
             if (x_f)
                 {
                     if(op2int.count(op))
-                    { 
+                    {
                         double val;
                         switch(op2int[op])
                         {
@@ -127,8 +127,8 @@ namespace computational_graph
                                     val = std::log(x_f -> value);
                                     break;
                                 }
-                                Message::message("LOG operator's input must be positive");
-                                return nullptr;
+                                Message::message("ERROR: LOG operator's input must be positive");
+                                thrwo std::range_error("LOG operator's input must be positive");
                             case 12:
                                 val = std::exp(x_f -> val);
                                 break;
@@ -148,11 +148,11 @@ namespace computational_graph
                     Message::error("Operator doesn't exist");
                     return nullptr;
                 }
-            Message::error("Data val is not type of 'Float'");
+            Message::error("Can't compute on base class 'Data'");
             return nullptr;
         }
         //nullptr --> previous operations might be wrong
-        Message::error("nullptr can't do operations");
+        Message::error("Can't compute on null data");
         return nullptr;
     }
     const_pData operator+(const_pData left,const_pData right);
