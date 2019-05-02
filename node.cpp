@@ -44,9 +44,11 @@ namespace computational_graph
     }
 
     Variable::Variable(Graph *_g,const_pData default_v):
-        Node(_g)
+        Node(_g), default_value(default_v->copy())
+    {}
+    const_pNode Variable::create(Graph *g,const_pData default_v)
     {
-        default_value=default_v->copy();
+        return g->join(make_unique<Variable>(g,default_v));
     }
     int Variable::get_type()
     {
@@ -63,6 +65,10 @@ namespace computational_graph
     }
 
     Placeholder::Placeholder(Graph *_g):Node(_g){}
+    const_pNode Placeholder::create(Graph *g)
+    {
+        return g->join(make_unique<Placeholder>(g));
+    }
     int Placeholder::get_type()
     {
         return 2;
@@ -76,6 +82,10 @@ namespace computational_graph
     Constant::Constant(Graph *_g,const_pData v):
         Node(_g),value(v.copy())
     {}
+    const_pNode Constant::create(Graph *g,const_pData v)
+    {
+        return g->join(make_unique<Constant>(g,v));
+    }
     int Constant::get_type()
     {
         return 3;
@@ -138,6 +148,10 @@ namespace computational_graph
     Print::Print(Graph *_g,int x_id,string x_symbol):
         Node(_g),father{x_id},father_symbol(x_symbol)
     {}
+    const_pNode Print::create(Graph *g,int x_id,string x_symbol)
+    {
+        return g->join(make_unique<Print>(g,x_id,x_symbol));
+    }
     int Print::get_type()
     {
         return 6;
@@ -181,6 +195,10 @@ namespace computational_graph
     Cond::Cond(Graph *_g,int cond_id,int true_id,int false_id):
         Node(_g),father{cond_id,true_id,false_id}
     {}
+    const_pNode Cond::create(Graph *g,int cond_id,int true_id,int false_id)
+    {
+        return g->join(make_unique<Cond>(g,cond_id,true_id,false_id));
+    }
     int Cond::get_type()
     {
         return 8;
@@ -233,19 +251,19 @@ namespace computational_graph
     {
         if(!check_binary(left,right)) return nullptr;
         Graph *g=left->get_graph();
-        return g->join(std::make_unique<Arith>(g,left->get_id(),right->get_id(),op_str));
+        return g->join(make_unique<Arith>(g,left->get_id(),right->get_id(),op_str));
     }
     const_pNode create_single_op_node(const_pNode x,string op_str)
     {
         if(!check_single(x)) return nullptr;
         Graph *g=x->get_graph();
-        return g->join(std::make_unique<Single_op>(g,x->get_id(),op_str));
+        return g->join(make_unique<Single_op>(g,x->get_id(),op_str));
     }
     const_pNode create_cmp_node(const_pNode left,const_pNode right,string op_str)
     {
         if(!check_binary(left,right)) return nullptr;
         Graph *g=left->get_graph();
-        return g->join(std::make_unique<Cmp>(g,left->get_id(),right->get_id(),op_str));
+        return g->join(make_unique<Cmp>(g,left->get_id(),right->get_id(),op_str));
     }
 
     const_pNode operator +(const_pNode left,const_pNode right)
