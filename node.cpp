@@ -247,19 +247,19 @@ namespace computational_graph
         return true;
     }
 
-    const_pNode create_arith_node(const_pNode left,const_pNode right,string op_str)
+    const_pNode Arith::create(const_pNode left,const_pNode right,string op_str)
     {
         if(!check_binary(left,right)) return nullptr;
         Graph *g=left->get_graph();
         return g->join(make_unique<Arith>(g,left->get_id(),right->get_id(),op_str));
     }
-    const_pNode create_single_op_node(const_pNode x,string op_str)
+    const_pNode Single_op::create(const_pNode x,string op_str)
     {
         if(!check_single(x)) return nullptr;
         Graph *g=x->get_graph();
         return g->join(make_unique<Single_op>(g,x->get_id(),op_str));
     }
-    const_pNode create_cmp_node(const_pNode left,const_pNode right,string op_str)
+    const_pNode Cmp::create(const_pNode left,const_pNode right,string op_str)
     {
         if(!check_binary(left,right)) return nullptr;
         Graph *g=left->get_graph();
@@ -268,59 +268,59 @@ namespace computational_graph
 
     const_pNode operator +(const_pNode left,const_pNode right)
     {
-        return create_arith_node(left,right,"+");
+        return Arith::create(left,right,"+");
     }
     const_pNode operator -(const_pNode left,const_pNode right)
     {
-        return create_arith_node(left,right,"-");
+        return Arith::create(left,right,"-");
     }
     const_pNode operator *(const_pNode left,const_pNode right)
     {
-        return create_arith_node(left,right,"*");
+        return Arith::create(left,right,"*");
     }
     const_pNode operator /(const_pNode left,const_pNode right)
     {
-        return create_arith_node(left,right,"/");
+        return Arith::create(left,right,"/");
     }
     const_pNode sin(const_pNode x)
     {
-        return create_single_op_node(x,"sin");
+        return Single_op::create(x,"sin");
     }
     const_pNode log(const_pNode x)
     {
-        return create_single_op_node(x,"log");
+        return Single_op::create(x,"log");
     }
     const_pNode tanh(const_pNode x)
     {
-        return create_single_op_node(x,"tanh");
+        return Single_op::create(x,"tanh");
     }
     const_pNode exp(const_pNode x)
     {
-        return create_single_op_node(x,"exp");
+        return Single_op::create(x,"exp");
     }
     const_pNode sigmoid(const_pNode x)
     {
-        return create_single_op_node(x,"sigmoid");
+        return Single_op::create(x,"sigmoid");
     }
     const_pNode operator <(const_pNode left,const_pNode right)
     {
-        return create_cmp_node(left,right,"<");
+        return Cmp::create(left,right,"<");
     }
     const_pNode operator >(const_pNode left,const_pNode right)
     {
-        return create_cmp_node(left,right,">");
+        return Cmp::create(left,right,">");
     }
     const_pNode operator <=(const_pNode left,const_pNode right)
     {
-        return create_cmp_node(left,right,"<=");
+        return Cmp::create(left,right,"<=");
     }
     const_pNode operator >=(const_pNode left,const_pNode right)
     {
-        return create_cmp_node(left,right,">=");
+        return Cmp::create(left,right,">=");
     }
     const_pNode operator ==(const_pNode left,const_pNode right)
     {
-        return create_cmp_node(left,right,"==");
+        return Cmp::create(left,right,"==");
     }
 
 }
