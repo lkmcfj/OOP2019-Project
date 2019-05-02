@@ -83,10 +83,7 @@ namespace computational_graph
     public:
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
-        friend const_pNode operator +(const_pNode left,const_pNode right);
-        friend const_pNode operator -(const_pNode left,const_pNode right);
-        friend const_pNode operator *(const_pNode left,const_pNode right);
-        friend const_pNode operator /(const_pNode left,const_pNode right);
+        static const_pNode create(const_pNode left,const_pNode right,string op_str);
     };
 
     typedef std::function<const_pData(const_pData)> single_op;
@@ -99,12 +96,8 @@ namespace computational_graph
     public:
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
-        friend const_pNode sin(const_pNode x);
-        friend const_pNode log(const_pNode x);
-        friend const_pNode exp(const_pNode x);
-        friend const_pNode tanh(const_pNode x);
-        friend const_pNode sigmoid(const_pNode x);
-    }
+        static const_pNode create(const_pNode x,string op_str);
+    };
 
     class Print : public Node
     {
@@ -127,11 +120,7 @@ namespace computational_graph
     public:
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
-        friend const_pNode operator <(const_pNode left,const_pNode right);
-        friend const_pNode operator >(const_pNode left,const_pNode right);
-        friend const_pNode operator <=(const_pNode left,const_pNode right);
-        friend const_pNode operator >=(const_pNode left,const_pNode right);
-        friend const_pNode operator ==(const_pNode left,const_pNode right);
+        static const_pNode create(const_pNode left,const_pNode right,string op_str);
     }
 
     class Cond : public Node
