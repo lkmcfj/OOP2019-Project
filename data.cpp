@@ -34,10 +34,14 @@ namespace computational_graph
     {
         return (this->val);
     }
-    std::unique_ptr<const Float> Float::copy()
+    std::unique_ptr<const Data> Float::copy()
     {
         return std::make_unique<Float>(*this);
     }  
+    double Float::get_val()
+    {
+        return this->val;
+    }
     const_pFloat to_Float(const_pData x) //type check, change const_pData into const_pFloat
     {
         if(x)
@@ -51,27 +55,27 @@ namespace computational_graph
     const_pData operator+(const_pData left,const_pData right);
     {
         if (auto left_f = to_Float(left) && auto right_f = to_Float(right))
-            return std::make_shared<const Float>(left_f -> val + right_f -> val); 
+            return std::make_shared<const Float>(left_f -> get_val() + right_f -> get_val()); 
         return nullptr;
     }
     const_pData operator-(const_pData left,const_pData right);
     {
         if (auto left_f = to_Float(left) && auto right_f = to_Float(right))
-            return std::make_shared<const Float>(left_f -> val - right_f -> val); 
+            return std::make_shared<const Float>(left_f -> get_val() - right_f -> get_val()); 
         return nullptr;
     }
     const_pData operator*(const_pData left,const_pData right);
     {
         if (auto left_f = to_Float(left) && auto right_f = to_Float(right))
-            return std::make_shared<const Float>(left_f -> val * right_f -> val); 
+            return std::make_shared<const Float>(left_f -> get_val() * right_f -> get_val()); 
         return nullptr;
     }
     const_pData operator/(const_pData left,const_pData right);
     {
         if (auto left_f = to_Float(left) && auto right_f = to_Float(right))
         {
-            if (right_f -> val != 0)
-                return std::make_shared<const Float>(left_f -> val / right_f -> val); 
+            if (right_f -> get_val() != 0)
+                return std::make_shared<const Float>(left_f -> get_val() / right_f -> get_val()); 
             Message::message("ERROR: Division by Zero");
             throw std::range_error("Division by Zero");
         }
@@ -84,45 +88,45 @@ namespace computational_graph
     const_pData less_float(const_pData left,const_pData right)
     {
         if (auto left_f = to_Float(left) && auto right_f = to_Float(right))
-            return std::make_shared<const Float>(left_f -> val < right_f -> val); 
+            return std::make_shared<const Float>(left_f -> get_val() < right_f -> get_val()); 
         return nullptr;
     }
     const_pData greater_float(const_pData left,const_pData right)
     {
         if (auto left_f = to_Float(left) && auto right_f = to_Float(right))
-            return std::make_shared<const Float>(left_f -> val > right_f -> val); 
+            return std::make_shared<const Float>(left_f -> get_val() > right_f -> get_val()); 
         return nullptr;
     }
     const_pData leq_float(const_pData left,const_pData right)
     {
         if (auto left_f = to_Float(left) && auto right_f = to_Float(right))
-            return std::make_shared<const Float>(left_f -> val <= right_f -> val); 
+            return std::make_shared<const Float>(left_f -> get_val() <= right_f -> get_val()); 
         return nullptr;
     }
     const_pData geq_float(const_pData left,const_pData right)
     {
         if (auto left_f = to_Float(left) && auto right_f = to_Float(right))
-            return std::make_shared<const Float>(left_f -> val >= right_f -> val); 
+            return std::make_shared<const Float>(left_f -> get_val() >= right_f -> get_val()); 
         return nullptr;
     }
     const_pData equal_float(const_pData left,const_pData right)
     {
         if (auto left_f = to_Float(left) && auto right_f = to_Float(right))
-            return std::make_shared<const Float>(left_f -> val == right_f -> val); 
+            return std::make_shared<const Float>(left_f -> get_val() == right_f -> get_val()); 
         return nullptr;
     } //上述比较运算返回float
     const_pData sin(const_pData x)
     {
         if (auto x_f = to_Float(x))
-            return std::make_shared<const Float>(std::sin(x_f -> val)); 
+            return std::make_shared<const Float>(std::sin(x_f -> get_val())); 
         return nullptr;        
     }  
     const_pData log(const_pData x)
     {
         if (auto x_f = to_Float(x))
         {
-            if (x_f -> val > 0)
-                return std::make_shared<const Float>(std::log(x_f -> val));                
+            if (x_f -> get_val() > 0)
+                return std::make_shared<const Float>(std::log(x_f -> get_val()));                
             Message::message("ERROR: LOG operator's input must be positive");
             throw std::range_error("LOG operator's input must be positive");
         }
@@ -131,19 +135,19 @@ namespace computational_graph
     const_pData exp(const_pData x)
     {
         if (auto x_f = to_Float(x))
-            return std::make_shared<const Float>(std::exp(x_f -> val)); 
+            return std::make_shared<const Float>(std::exp(x_f -> get_val())); 
         return nullptr;       
     }
     const_pData tanh(const_pData x)
     {
         if (auto x_f = to_Float(x))
-            return std::make_shared<const Float>(std::tanh(x_f -> val)); 
+            return std::make_shared<const Float>(std::tanh(x_f -> get_val())); 
         return nullptr;       
     }
     const_pData sigmoid(const_pData x)
     {
         if (auto x_f = to_Float(x))
-            return std::make_shared<const Float>(1.0 / (1.0 + std::exp(-1 * x_f -> val))); 
+            return std::make_shared<const Float>(1.0 / (1.0 + std::exp(-1 * x_f -> get_val()))); 
         return nullptr;       
     }
     //上述运算如果类型检查出现问题（如传入Data基类对象，传入nullptr），抛出std::runtime_error
