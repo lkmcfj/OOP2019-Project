@@ -28,7 +28,7 @@ namespace computational_graph
     {
         char buffer[50];
         std::sprintf(buffer, "%.4lf", this->val);
-        return std::c_str(buffer);
+        return std::string(buffer);
     }
     bool Float::boolean()
     {
@@ -46,9 +46,9 @@ namespace computational_graph
     {
         if (left && right)
         {
-            //type check
-            left_f = dynamic_cast<const_pFloat>(left);
-            right_f = dynamic_cast<const_pFloat>(right);
+            //type check, notice that when using smart-pointer, use "dynamic_pointer_cast"
+            left_f = std::dynamic_pointer_cast<const Float>(left);
+            right_f = std::dynamic_pointer_cast<const Float>(right);
             if (left_f && right_f)
                 {
                     if(op2int.count(op))
@@ -110,7 +110,7 @@ namespace computational_graph
         if (x)
         {
             //type check
-            x_f = dynamic_cast<const_pFloat>(x);
+            x_f = std::dynamic_pointer_cast<const Float>(x);
             if (x_f)
                 {
                     if(op2int.count(op))
