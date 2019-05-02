@@ -20,14 +20,13 @@ namespace computational_graph
         double val;
     protected:
     public:
-        Float(double init_v) : value(init_v) {}
+        Float(double init_v) : val(init_v) {}
         virtual std::string to_string();
         virtual bool boolean();
         virtual std::unique_ptr<const Data> copy();  
     }
-    const_pData operate(const_pData left, const_pData right, std::string op);
-    const_pData operate(const_pData x, std::string op);
     ostream& operator<<(ostream &out, const Data &x);
+    const_pFloat to_Float(const_pData x);
     const_pData operator+(const_pData left,const_pData right); //need to do variable type check
     const_pData operator-(const_pData left,const_pData right);
     const_pData operator*(const_pData left,const_pData right);

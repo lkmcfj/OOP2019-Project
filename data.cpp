@@ -2,7 +2,7 @@
 #include <memory>
 #include <string>
 #include <stdio.h>
-#include "node.h"
+#include "data.h"
 namespace computational_graph
 {
     ostream& operator<<(ostream &out, const Data &x)
@@ -27,7 +27,7 @@ namespace computational_graph
     std::string Float::to_string()
     {
         char buffer[50];
-        std::sprintf(buffer, "%.4lf", this->val);
+        std::sprintf(buffer, "%.4lf", this->val); //4-digits output
         return std::string(buffer);
     }
     bool Float::boolean()
@@ -38,138 +38,44 @@ namespace computational_graph
     {
         return std::make_unique<Float>(*this);
     }  
-    std::map<string, int> op2int{ {"+",1}, {"-",2}, {"*",3}, {"/",4},
-                                  {"<",5}, {">",6}, {"<=",7}, {">=",8}, {"==",9};
-                                  {"sin",10}, {"log",11}, {"exp",12}, {"tanh", 13}, {"sigmoid",14}
-                                };
-    const_pData operate(const_pData left, const_pData right, std::string op)
+    const_pFloat to_Float(const_pData x) //type check, change const_pData into const_pFloat
     {
-        if (left && right)
+        if(x)
         {
-            //type check
-            const_pFloat left_f = dynamic_pointer_cast<const Float>(left),
-            right_f = dynamic_pointer_cast<const Float>(right);
-            if (left_f && right_f)
-                {
-                    if(op2int.count(op))
-                    {
-                        double val;
-                        switch(op2int[op])
-                        {
-                            case 1:
-                                val = left_f -> val + right_f -> val;
-                                break;
-                            case 2:
-                                val = left_f -> val - right_f -> val;
-                                break;
-                            case 3:
-                                val = left_f -> val * right_f -> val;
-                                break;
-                            case 4:
-                                if(right_f -> val != 0)
-                                {
-                                    val = left_f -> val / right_f -> val;
-                                    break;
-                                }
-                                Message::message("ERROR: Division by Zero");
-                                throw std::range_error("Division by Zero");
-                            case 5:
-                                val = left_f -> val < right_f -> val;
-                                break;
-                            case 6:
-                                val = left_f -> val > right_f -> val;
-                                break;
-                            case 7:
-                                val = left_f -> val <= right_f -> val;
-                                break;
-                            case 8:
-                                val = left_f -> val >= right_f -> val;
-                                break;
-                            case 9:
-                                val = left_f -> val == right_f -> val;
-                                break;
-                            default:
-                                Message::error("Binary Operator doesn't exist");
-                                return nullptr;
-                        }
-                        return std::make_shared<const Float>(val);
-                    }
-                    Message::error("Operator doesn't exist");
-                    return nullptr;
-                }
-            Message::error("Can't compute on base class 'Data'");
-            return nullptr;
+            if (auto x_f = std::dynamic_pointer_cast<const Float>(x))
+                return x_f;
+            throw std::runtime_error("Can't compute on base class 'Data'");
         }
-        //nullptr --> previous operations might be wrong
-        Message::error("Can't compute on null data");
-        return nullptr;
-    }
-    
-    const_pData operate(const_pData x, std::string op)
-    {
-        if (x)
-        {
-            //type check
-            const_pFloat x_f = dynamic_pointer_cast<const Float>(x);
-            if (x_f)
-                {
-                    if(op2int.count(op))
-                    {
-                        double val;
-                        switch(op2int[op])
-                        {
-                            case 10:
-                                val = std::sin(x_f -> value);
-                                break;
-                            case 11:
-                                if (x_f -> val > 0)
-                                {
-                                    val = std::log(x_f -> value);
-                                    break;
-                                }
-                                Message::message("ERROR: LOG operator's input must be positive");
-                                thrwo std::range_error("LOG operator's input must be positive");
-                            case 12:
-                                val = std::exp(x_f -> val);
-                                break;
-                            case 13:
-                                val = std::tanh(x_f -> val);
-                                break;
-                            case 14:
-                                val = 1.0 / 1 + std::exp(-1 * x_f -> val);
-                                break;
-                            default:
-                                Message::error("Single Operator doesn't exist");
-                                return nullptr;
-                                
-                        }
-                        return(Float(val).copy());
-                    }
-                    Message::error("Operator doesn't exist");
-                    return nullptr;
-                }
-            Message::error("Can't compute on base class 'Data'");
-            return nullptr;
-        }
-        //nullptr --> previous operations might be wrong
-        Message::error("Can't compute on null data");
-        return nullptr;
+        throw std::runtime_error("Can't compute on null data");
     }
     const_pData operator+(const_pData left,const_pData right);
     {
-        return operate(left, right, "+");
+        if (auto left_f = to_Float(left) && auto right_f = to_Float(right))
+            return std::make_shared<const Float>(left_f -> val + right_f -> val); 
+        return nullptr;
     }
     const_pData operator-(const_pData left,const_pData right);
     {
-        return operate(left, right, "-");
+        if (auto left_f = to_Float(left) && auto right_f = to_Float(right))
+            return std::make_shared<const Float>(left_f -> val - right_f -> val); 
+        return nullptr;
     }
     const_pData operator*(const_pData left,const_pData right);
     {
-        return operate(left, right, "*");
+        if (auto left_f = to_Float(left) && auto right_f = to_Float(right))
+            return std::make_shared<const Float>(left_f -> val * right_f -> val); 
+        return nullptr;
     }
     const_pData operator/(const_pData left,const_pData right);
     {
-        return operate(left, right, "/");
+        if (auto left_f = to_Float(left) && auto right_f = to_Float(right))
+        {
+            if (right_f -> val != 0)
+                return std::make_shared<const Float>(left_f -> val / right_f -> val); 
+            Message::message("ERROR: Division by Zero");
+            throw std::range_error("Division by Zero");
+        }
+        return nullptr;
     }
     const_pData plus(const_pData left,const_pData right){return left + right};
     const_pData minus(const_pData left,const_pData right){return left - right};
@@ -177,44 +83,69 @@ namespace computational_graph
     const_pData div(const_pData left,const_pData right){return left / right};
     const_pData less_float(const_pData left,const_pData right)
     {
-        return operate(left, right, "<");
+        if (auto left_f = to_Float(left) && auto right_f = to_Float(right))
+            return std::make_shared<const Float>(left_f -> val < right_f -> val); 
+        return nullptr;
     }
     const_pData greater_float(const_pData left,const_pData right)
     {
-        return operate(left, right, ">");
+        if (auto left_f = to_Float(left) && auto right_f = to_Float(right))
+            return std::make_shared<const Float>(left_f -> val > right_f -> val); 
+        return nullptr;
     }
     const_pData leq_float(const_pData left,const_pData right)
     {
-        return operate(left, right, "<=");
+        if (auto left_f = to_Float(left) && auto right_f = to_Float(right))
+            return std::make_shared<const Float>(left_f -> val <= right_f -> val); 
+        return nullptr;
     }
     const_pData geq_float(const_pData left,const_pData right)
     {
-        return operate(left, right, ">=");
+        if (auto left_f = to_Float(left) && auto right_f = to_Float(right))
+            return std::make_shared<const Float>(left_f -> val >= right_f -> val); 
+        return nullptr;
     }
     const_pData equal_float(const_pData left,const_pData right)
     {
-        return operate(left, right, "==");
+        if (auto left_f = to_Float(left) && auto right_f = to_Float(right))
+            return std::make_shared<const Float>(left_f -> val == right_f -> val); 
+        return nullptr;
     } //上述比较运算返回float
     const_pData sin(const_pData x)
     {
-        return operate(x, "sin");
+        if (auto x_f = to_Float(x))
+            return std::make_shared<const Float>(std::sin(x_f -> val)); 
+        return nullptr;        
     }  
     const_pData log(const_pData x)
     {
-        return operate(x, "log");
+        if (auto x_f = to_Float(x))
+        {
+            if (x_f -> val > 0)
+                return std::make_shared<const Float>(std::log(x_f -> val));                
+            Message::message("ERROR: LOG operator's input must be positive");
+            throw std::range_error("LOG operator's input must be positive");
+        }
+        return nullptr;
     }
     const_pData exp(const_pData x)
     {
-        return operate(x, "exp");
+        if (auto x_f = to_Float(x))
+            return std::make_shared<const Float>(std::exp(x_f -> val)); 
+        return nullptr;       
     }
     const_pData tanh(const_pData x)
     {
-        return operate(x, "tanh");
+        if (auto x_f = to_Float(x))
+            return std::make_shared<const Float>(std::tanh(x_f -> val)); 
+        return nullptr;       
     }
     const_pData sigmoid(const_pData x)
     {
-        return operate(x, "sigmoid");
+        if (auto x_f = to_Float(x))
+            return std::make_shared<const Float>(1.0 / (1.0 + std::exp(-1 * x_f -> val))); 
+        return nullptr;       
     }
-        //上述运算如果类型检查出现问题（如传入Data基类对象，传入nullptr），抛出std::runtime_error
-        //如果超出运算定义域（如log自变量<=0，除以0），则调用Message::message输出要求的错误信息并抛出std::range_error  
+    //上述运算如果类型检查出现问题（如传入Data基类对象，传入nullptr），抛出std::runtime_error
+    //如果超出运算定义域（如log自变量<=0，除以0），则调用Message::message输出要求的错误信息并抛出std::range_error  
 }
