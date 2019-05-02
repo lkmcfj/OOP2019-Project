@@ -92,7 +92,7 @@ namespace computational_graph
                                 Message::error("Double Operator doesn't exist");
                                 return nullptr;
                         }
-                        return(Float(val).copy());
+                        return std::make_shared<const Float>(val);
                     }
                     Message::error("Operator doesn't exist");
                     return nullptr;
@@ -143,7 +143,7 @@ namespace computational_graph
                                 return nullptr;
                                 
                         }
-                        return(Float(val).copy());
+                        return std::make_shared<const Float>(val);
                     }
                     Message::error("Operator doesn't exist");
                     return nullptr;
