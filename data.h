@@ -8,18 +8,16 @@ namespace computational_graph
     private:
     protected:
     public:
-
         virtual std::string to_string(); //返回一个用于输出的std::string对象。在Data基类对象上调用它将会引发error并返回空字符串。子类需重新实现
         virtual bool boolean(); //返回对bool的类型转换。在Data基类对象上调用它将会引发error并返回false。子类需重新实现
         virtual std::unique_ptr<const Data> copy(); //创建一个与自身相同的新对象，并返回指向它的智能指针。子类需重新实现
     }
-
     typedef std::shared_ptr<const Data> const_pData //a smart-pointer pointing to type data.
-
+    typedef std::shared_ptr<const Float> const_pFloat //a smart-pointer pointing to type float  
     class Float : public Data
     {
     private:
-        double value;
+        double val;
     protected:
     public:
         Float(double init_v) : value(init_v) {}
@@ -27,6 +25,8 @@ namespace computational_graph
         virtual bool boolean();
         virtual std::unique_ptr<const Data> copy();  
     }
+    const_pData operate(const_pData left, const_pData right, std::string op);
+    const_pData operate(const_pData x, std::string op);
     ostream& operator<<(ostream &in, const Data &x);
     const_pData operator+(const_pData left,const_pData right); //need to do variable type check
     const_pData operator-(const_pData left,const_pData right);
