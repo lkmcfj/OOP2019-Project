@@ -152,6 +152,10 @@ namespace computational_graph
     {
         return g->join(make_unique<Print>(g,x_id,x_symbol));
     }
+    const_pNode Print::create(Graph *g,const_pNode x,string x_symbol)
+    {
+        return create(g,x->get_id(),x_symbol);
+    }
     int Print::get_type()
     {
         return 6;
@@ -198,6 +202,10 @@ namespace computational_graph
     const_pNode Cond::create(Graph *g,int cond_id,int true_id,int false_id)
     {
         return g->join(make_unique<Cond>(g,cond_id,true_id,false_id));
+    }
+    const_pNode Cond::create(Graph *g,const_pNode cond_node,const_pNode true_node,const_pNode false_node)
+    {
+        return create(g,cond_node->get_id(),true_node->get_id(),false_node->get_id());
     }
     int Cond::get_type()
     {
