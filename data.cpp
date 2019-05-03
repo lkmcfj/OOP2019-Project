@@ -83,8 +83,8 @@ namespace computational_graph
         auto right_f = to_Float(right);
         if (right_f -> get_val() != 0)
             return std::make_shared<const Float>(left_f -> get_val() / right_f -> get_val()); 
-        Message::message("ERROR: Division by Zero");
-        throw std::range_error("Division by Zero");
+        Message::message("ERROR: Division by zero");
+        throw std::range_error("Division by zero");
     }
     const_pData plus(const_pData left,const_pData right){return left + right;}
     const_pData minus(const_pData left,const_pData right){return left - right;}
