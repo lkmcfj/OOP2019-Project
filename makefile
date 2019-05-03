@@ -1,4 +1,4 @@
-main : data.o graph.o message.o node.o parser.o oj_main.cpp
+main : data.o graph.o message.o node.o parser.o oj_main.cpp computational_graph.h
 	g++ oj_main.cpp data.o graph.o message.o node.o parser.o -o main -std=c++14
     
 data.o : data.cpp data.h
