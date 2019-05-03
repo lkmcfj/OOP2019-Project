@@ -187,7 +187,7 @@ namespace computational_graph
         return op(father_value[0],father_value[1]);
     }
 
-    map<string,single_op> Single_op::str2op{{"sin",sin},{"log",log},{"exp",exp},{"tanh",tanh},{"sigmoid",sigmoid}};
+    map<string,single_op> Single_op::str2op{{"sin",sin},{"log",log},{"exp",exp},{"tanh",tanh},{"sigmoid",sigmoid},{"SIN",sin},{"LOG",log},{"EXP",exp},{"TANH",tanh},{"SIGMOID",sigmoid}};
     Single_op::Single_op(Graph *_g,int x_id,string op_str):
         Node(_g,vector<int>{x_id})
     {
@@ -244,7 +244,7 @@ namespace computational_graph
             Message::error("evaluating node #"+to_string(get_id())+", expecting 1 input value,get "+to_string(father_value.size())+". returning nullptr.");
             return nullptr;
         }
-        Message::message("Print Operator: "+father_symbol+"="+father_value[0]->to_string());
+        Message::message("Print Operator: "+father_symbol+" = "+father_value[0]->to_string());
         return father_value[0];
     }
 
