@@ -25,6 +25,7 @@ namespace computational_graph
 	}
 	const_pNode Parser::start(string s, Graph *g)
 	{
+        Message::debug("Parser::start() called, input string is "+s);
 		vector<string> nodes;
 		split(s, nodes, ' ');
 		const_pNode ret;
@@ -50,6 +51,7 @@ namespace computational_graph
 	}
 	const_pNode Parser::node(string s, Graph *g)
 	{
+        Message::debug("Parser::node() called, input string is "+s);
 		vector<string> new_node;
 		split(s, new_node, ' ');
 		const_pNode ret;
@@ -78,6 +80,7 @@ namespace computational_graph
 	}
 	const_pData Parser::run(string s, Session *sess)
 	{
+        Message::debug("Parser::run() called, input string is "+s);
 		vector <string> eval;
 		map <int, const_pData> placeholder_value;
 		split(s,eval,' ');
