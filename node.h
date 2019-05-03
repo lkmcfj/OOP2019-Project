@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 #include <functional>
+#include <map>
 namespace computational_graph
 {
 
@@ -19,6 +20,7 @@ namespace computational_graph
     protected:
         std::vector<int> father;
         Node(Graph *_g);
+        Node(Graph *_g,std::vector<int> _father);
         void give_id(int newid);//warning when id is not -1
     public:
         const std::vector<int> &get_father() const;
@@ -83,7 +85,7 @@ namespace computational_graph
     public:
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
-        static const_pNode create(const_pNode left,const_pNode right,string op_str);
+        static const_pNode create(const_pNode left,const_pNode right,std::string op_str);
     };
 
     typedef std::function<const_pData(const_pData)> single_op;
@@ -96,7 +98,7 @@ namespace computational_graph
     public:
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
-        static const_pNode create(const_pNode x,string op_str);
+        static const_pNode create(const_pNode x,std::string op_str);
     };
 
     class Print : public Node
@@ -106,7 +108,7 @@ namespace computational_graph
         Print(Graph *_g,int x_id,std::string x_symbol);
     public:
         static const_pNode create(Graph *g,int x_id,std::string x_symbol);
-        static const_pNode create(Graph *g,const_pNode x,std::string x_symbol);
+        static const_pNode create(const_pNode x,std::string x_symbol);
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
     };
@@ -121,7 +123,7 @@ namespace computational_graph
     public:
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
-        static const_pNode create(const_pNode left,const_pNode right,string op_str);
+        static const_pNode create(const_pNode left,const_pNode right,std::string op_str);
     };
 
     class Cond : public Node
@@ -130,7 +132,7 @@ namespace computational_graph
         Cond(Graph *_g,int cond_id,int true_id,int false_id);
     public:
         static const_pNode create(Graph *g,int cond_id,int true_id,int false_id);
-        static const_pNode create(Graph *g,const_pNode cond_node,const_pNode true_node,const_pNode false_node);
+        static const_pNode create(const_pNode cond_node,const_pNode true_node,const_pNode false_node);
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
     };
@@ -139,11 +141,11 @@ namespace computational_graph
     const_pNode operator -(const_pNode left,const_pNode right);
     const_pNode operator *(const_pNode left,const_pNode right);
     const_pNode operator /(const_pNode left,const_pNode right);
-    const_pNode sin(const_pNode x);
-    const_pNode log(const_pNode x);
-    const_pNode exp(const_pNode x);
-    const_pNode tanh(const_pNode x);
-    const_pNode sigmoid(const_pNode x);
+    const_pNode sin_node(const_pNode x);
+    const_pNode log_node(const_pNode x);
+    const_pNode exp_node(const_pNode x);
+    const_pNode tanh_node(const_pNode x);
+    const_pNode sigmoid_node(const_pNode x);
     const_pNode operator <(const_pNode left,const_pNode right);
     const_pNode operator >(const_pNode left,const_pNode right);
     const_pNode operator <=(const_pNode left,const_pNode right);
