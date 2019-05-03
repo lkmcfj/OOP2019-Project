@@ -11,6 +11,7 @@
 namespace computational_graph
 {
     using std::string;
+    using std::to_string;
     const_pNode Graph::join(std::unique_ptr<Node> curnode)
     {
         int cur=nodes.size();
@@ -50,6 +51,7 @@ namespace computational_graph
     }
     const_pData Session::dfs_eval(int id)
     {
+        Message::debug("Session::dfs_eval("+to_string(id)+")");
         if(g.nodes[id]->get_type()==1) return variable_value[id];
         if(g.nodes[id]->get_type()==2)
         {
@@ -66,7 +68,7 @@ namespace computational_graph
         std::vector<const_pData> prev;
         for(int i: g.nodes[id]->get_father())
         {
-            prev.push_back(dfs_eval(id));
+            prev.push_back(dfs_eval(i));
         }
         return temp_value[id]=g.nodes[id]->run(this,prev);
     }
@@ -94,7 +96,10 @@ namespace computational_graph
         {
             if((i.first->get_graph()!=&g)||(i.first->get_id()<0))
             {
-                Message::warning("In Session::eval(), get a placeholder node which is not in this session");
+                Message::warning("In Session::eval(), get a placeholder value pair which is not in this session");
+            } else if(i.first->get_type()!=2)
+            {
+                Message::warning("In Session::eval(), get a placeholder value pair which is not placeholder");
             } else pvalue[i.first->get_id()]=i.second;
         }
         return eval(p->get_id(),std::move(pvalue));
