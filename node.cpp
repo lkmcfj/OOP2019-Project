@@ -105,6 +105,7 @@ namespace computational_graph
     {}
     const_pNode Variable::create(Graph *g,const_pData default_v)
     {
+        Message::debug("Variable::create() called");
         return g->join(unique_ptr<Variable>(new Variable(g,default_v)));
     }
     int Variable::get_type() const
@@ -124,6 +125,7 @@ namespace computational_graph
     Placeholder::Placeholder(Graph *_g):Node(_g){}
     const_pNode Placeholder::create(Graph *g)
     {
+        Message::debug("Placeholder::create() called");
         return g->join(unique_ptr<Placeholder>(new Placeholder(g)));
     }
     int Placeholder::get_type() const
@@ -141,6 +143,7 @@ namespace computational_graph
     {}
     const_pNode Constant::create(Graph *g,const_pData v)
     {
+        Message::debug("Constant::create() called");
         return g->join(unique_ptr<Constant>(new Constant(g,v)));
     }
     int Constant::get_type() const
@@ -165,6 +168,7 @@ namespace computational_graph
     }
     const_pNode Arith::create(const_pNode left,const_pNode right,string op_str)
     {
+        Message::debug("Arith::create() called");
         if(!check_binary(left,right)) return nullptr;
         Graph *g=left->get_graph();
         return g->join(unique_ptr<Arith>(new Arith(g,left->get_id(),right->get_id(),op_str)));
@@ -196,6 +200,7 @@ namespace computational_graph
     }
     const_pNode Single_op::create(const_pNode x,string op_str)
     {
+        Message::debug("Single_op::create() called");
         if(!check_single(x)) return nullptr;
         Graph *g=x->get_graph();
         return g->join(unique_ptr<Single_op>(new Single_op(g,x->get_id(),op_str)));
@@ -219,10 +224,12 @@ namespace computational_graph
     {}
     const_pNode Print::create(Graph *g,int x_id,string x_symbol)
     {
+        Message::debug("Print::create() (ID ver) called");
         return g->join(unique_ptr<Print>(new Print(g,x_id,x_symbol)));
     }
     const_pNode Print::create(const_pNode x,string x_symbol)
     {
+        Message::debug("Print::create() (const_pNode ver) called");
         if(!check_single(x)) return nullptr;
         return create(x->get_graph(),x->get_id(),x_symbol);
     }
@@ -254,6 +261,7 @@ namespace computational_graph
     }
     const_pNode Cmp::create(const_pNode left,const_pNode right,string op_str)
     {
+        Message::debug("Cmp::create() called");
         if(!check_binary(left,right)) return nullptr;
         Graph *g=left->get_graph();
         return g->join(unique_ptr<Cmp>(new Cmp(g,left->get_id(),right->get_id(),op_str)));
@@ -277,10 +285,12 @@ namespace computational_graph
     {}
     const_pNode Cond::create(Graph *g,int cond_id,int true_id,int false_id)
     {
+        Message::debug("Cond::create() (ID ver) called");
         return g->join(unique_ptr<Cond>(new Cond(g,cond_id,true_id,false_id)));
     }
     const_pNode Cond::create(const_pNode cond_node,const_pNode true_node,const_pNode false_node)
     {
+        Message::debug("Cond::create() (const_pNode ver) called");
         if(!check_triple(cond_node,true_node,false_node)) return nullptr;
         return create(cond_node->get_graph(),cond_node->get_id(),true_node->get_id(),false_node->get_id());
     }
@@ -297,10 +307,6 @@ namespace computational_graph
         }
         return (father_value[0]->boolean())?father_value[1]:father_value[2];
     }
-
-    
-    
-    
 
     const_pNode operator +(const_pNode left,const_pNode right)
     {
