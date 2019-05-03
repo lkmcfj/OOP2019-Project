@@ -4,4 +4,5 @@
 #include "node.h"
 #include "data.h"
 #include "message.h"
+#include "parser.h"
 #endif
