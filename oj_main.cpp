@@ -12,6 +12,7 @@ int main()
     {
         std::string input_s;
         std::getline(std::cin,input_s);
+        while(input_s.length()==0) std::getline(std::cin,input_s);
         default_parser.start(input_s,&default_graph);
     }
     int m;
@@ -20,6 +21,7 @@ int main()
     {
         std::string input_s;
         std::getline(std::cin,input_s);
+        while(input_s.length()==0) std::getline(std::cin,input_s);
         default_parser.node(input_s,&default_graph);
     }
     Session default_sess(default_graph);
@@ -29,6 +31,7 @@ int main()
     {
         std::string input_s;
         std::getline(std::cin,input_s);
+        while(input_s.length()==0) std::getline(std::cin,input_s);
         default_parser.run(input_s,&default_sess);
     }
 }
