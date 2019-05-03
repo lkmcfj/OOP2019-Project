@@ -12,6 +12,7 @@ namespace computational_graph
     {
     private:
         std::vector<const_pNode> nodes;
+        std::vector<int> variable_id;
         std::map<std::string,int> symbol_id;
     public:
         const_pNode join(std::unique_ptr<Node> curnode);

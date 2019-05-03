@@ -12,9 +12,11 @@ namespace computational_graph
     using std::string;
     const_pNode Graph::join(std::unique_ptr<Node> curnode)
     {
-        curnode->give_id(nodes.size());
+        int cur=nodes.size();
+        curnode->give_id(cur);
         nodes.push_back(std::move(curnode));
-        return nodes[nodes.size()-1];
+        if(std::dynamic_pointer_cast<const Variable>(nodes[cur])) variable_id.push_back(cur);
+        return nodes[cur];
     }
     const_pNode Graph::getnode(int id)
     {
@@ -61,6 +63,12 @@ namespace computational_graph
     }
     const_pData Session::eval(int id,std::map<int,const_pData> placeholder_value)
     {
+        for(int i=g.variable_id.size()-1;i>=0;--i)
+        {
+            if(variable_value.find(g.variable_id[i])==variable_value.end())
+                variable_value[g.variable_id[i]]=std::dynamic_pointer_cast<const Variable>(g.nodes[g.variable_id[i]])->get_default_value();
+            else break;
+        }
         temp_value=std::move(placeholder_value);
         return dfs_eval(id);
     }
