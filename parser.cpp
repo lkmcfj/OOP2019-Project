@@ -99,8 +99,9 @@ namespace computational_graph
 		}//Variable-setanswer	
 		if(eval[0]=="EVAL")
 		{
-			int k=stoi(eval[2]);
+			int k;
 			Graph *curg=sess->get_graph();
+			if(eval.size()>2) k=stoi(eval[2]);else k=0;
 			for(int i=1;i<=k;i++)
 			{
 				int id=curg->get_symbol_id(eval[2*i+1]);
