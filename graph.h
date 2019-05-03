@@ -1,5 +1,5 @@
 #ifndef _GRAPH_H_
-#define _GRAPH_H
+#define _GRAPH_H_
 #include "node.h"
 #include <vector>
 #include <memory>
