@@ -56,77 +56,71 @@ namespace computational_graph
 		if(new_node[3]=="+"||new_node[3]=="-"||new_node[3]=="*"||new_node[3]=="/")
 		{
 			ret=Arith::create(g->getnode(new_node[2]),g->getnode(new_node[4]),new_node[3]);
-			ret->give_symbol(new_node[0]);
-			return ret;
 		}//Arith
 		if(new_node[2]=="SIN"||new_node[2]=="LOG"||new_node[2]=="EXP"||new_node[2]=="SIGMOID"||new_node[2]=="TANH")
 		{
 			ret=Single_op::create(g->getnode(new_node[3]),new_node[2]);
-			ret->give_symbol(new_node[0]);
-			return ret;
 		}//Single_op
 		if(new_node[2]=="PRINT")
 		{
 			ret=Print::create(g->getnode(new_node[3]),new_node[3]);
-			ret->give_symbol(new_node[0]);
-			return ret;
 		}//Print
 		if(new_node[3]=="<="||new_node[3]=="<"||new_node[3]==">="||new_node[3]==">"||new_node[3]=="==")
 		{
 			ret=Cmp::create(g->getnode(new_node[2]),g->getnode(new_node[4]),new_node[3]);
-			ret->give_symbol(new_node[0]);
-			return ret;
 		}//Cmp
 		if(new_node[2]=="COND")
 		{
 			ret=Cond::create(g->getnode(new_node[3]),g->getnode(new_node[4]),g->getnode(new_node[5]));
-			ret->give_symbol(new_node[0]);
-			return ret;
 		}//Cond
+		ret->give_symbol(new_node[0]);
+        return ret;
 	}
 	const_pData Parser::run(string s, Session *sess)
 	{
 		vector <string> eval;
-		vector <const_pData> res;
-		int num=0;
-		num++;
 		map <int, const_pData> placeholder_value;
 		split(s,eval,' ');
+		const_pData ret;
 		if(eval[0]=="SETCONSTANT")
 		{
 			const_pData v=Float::create(stod(eval[2]));
 			sess->set_variable(eval[1],v);
-			return nullptr;
+			ret=nullptr;
 		}//Variable-setconstant
 		if(eval[0]=="SETANSWER")
 		{
-			const_pData v=res[stoi(eval[2])];
+			const_pData v=res[stoi(eval[2])-1];
 			sess->set_variable(eval[1],v);
-			return nullptr;
+			ret=nullptr;
 		}//Variable-setanswer	
 		if(eval[0]=="EVAL")
 		{
 			int k=stoi(eval[2]);
+			Graph *curg=sess->get_graph();
 			for(int i=1;i<=k;i++)
 			{
-				int id=sess->get_graph()->get_symbol_id(eval[2*i+1]);
+				int id=curg->get_symbol_id(eval[2*i+1]);
 				placeholder_value[id]=Float::create(stod(eval[2*i+2]));
 			}
-			res[num]=sess->eval(sess->get_graph()->get_symbol_id(eval[1]),placeholder_value);
-			return res[num];
+			try
+            {
+                ret=sess->eval(sess->get_graph()->get_symbol_id(eval[1]),placeholder_value);
+            }catch(std::invalid_argument err)
+            {
+                Message::error(err.what());
+                ret=nullptr;
+            }catch(std::range_error err)
+            {
+                Message::error(err.what());
+                ret=nullptr;
+            }catch(std::runtime_error err)
+            {
+                Message::error(err.what());
+                ret=nullptr;
+            }
 		}//Eval
-		try
-		{
-			sess->eval(sess->get_graph()->get_symbol_id(eval[1]),placeholder_value);
-		}catch(std::invalid_argument err)
-		{
-			Message::error(err.what());
-		}catch(std::range_error err)
-		{
-			Message::error(err.what());
-		}catch(std::runtime_error err)
-		{
-			Message::error(err.what());
-		}
+		res.push_back(ret);
+		return ret;
 	}
 } 
