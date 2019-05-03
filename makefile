@@ -18,3 +18,6 @@ parser.o : parser.cpp parser.h graph.h node.h data.h message.h
     
 debug : data.cpp data.h graph.cpp graph.h message.cpp message.h node.cpp node.h test_main.cpp
 	g++ test_main.cpp data.cpp graph.cpp message.cpp node.cpp -o main -g -std=c++14
+
+test : data.o graph.o message.o node.o test.cpp
+	g++ test.cpp data.o graph.o message.o node.o -o test -std=c++14
