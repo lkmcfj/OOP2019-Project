@@ -4,10 +4,6 @@
 #include <iostream>
 namespace computational_graph
 {
-    class Node;
-    class Graph;
-    class Session;
-    class Data;
 	class Message
 	{
 	private:
@@ -22,10 +18,6 @@ namespace computational_graph
 		static void set_log_level(int level);
 		static void set_log_stream(std::ostream &s);
 		static void set_message_stream(std::ostream &s);
-		friend class Node;
-		friend class Graph;
-		friend class Data;
-		friend class Session;
 	};
 }
 #endif
