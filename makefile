@@ -1,5 +1,5 @@
-main : data.o graph.o message.o node.o parser.o test_main.cpp
-	g++ test_main.cpp data.o graph.o message.o node.o -o main -std=c++14
+main : data.o graph.o message.o node.o parser.o oj_main.cpp
+	g++ oj_main.cpp data.o graph.o message.o node.o parser.o -o main -std=c++14
     
 data.o : data.cpp data.h
 	g++ -c data.cpp -o data.o -std=c++14
