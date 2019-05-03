@@ -123,6 +123,7 @@ namespace computational_graph
                 Message::error(err.what());
                 ret=nullptr;
             }
+            if(ret) Message::message(ret->to_string());
 		}//Eval
 		res.push_back(ret);
 		return ret;
