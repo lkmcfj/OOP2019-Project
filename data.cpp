@@ -12,12 +12,12 @@ namespace computational_graph
     }
     std::string Data::to_string()
     {
-        Message::error("The Base Class Data can't be transformed into string. 'Data::to_string()' should never be called. Returning default empty string");
+        Message::error("Base Class 'Data' can't be transformed into string. 'Data::to_string()' should never be called. Returning default empty string");
         return "";
     } //返回一个用于输出的std::string对象。在Data基类对象上调用它将会引发error并返回空字符串。子类需重新实现
     bool Data::boolean()
     {
-        Message::error("The Base Class Data can't be transformed into bool. 'Data::boolean()' should never be called. Returning default false");
+        Message::error("Base Class 'Data' can't be transformed into bool. 'Data::boolean()' should never be called. Returning default false");
         return false;              
     } //返回对bool的类型转换。在Data基类对象上调用它将会引发error并返回false。子类需重新实现
     std::unique_ptr<const Data> Data::copy()
@@ -30,9 +30,9 @@ namespace computational_graph
         std::sprintf(buffer, "%.4lf", this->val); //4-digits output
         return std::string(buffer);
     }
-    bool Float::boolean()
+    bool Float::boolean() //COND : when >0 return the second parameter
     {
-        return (this->val);
+        return (this->val > 0);  
     }
     std::unique_ptr<const Data> Float::copy()
     {
