@@ -9,7 +9,7 @@ namespace computational_graph
 {
     std::ostream& operator<<(std::ostream &out, const Data &x)
     {
-        out << x.to_string() << '\n';
+        out << x.to_string();
         return out;
     }
     std::string Data::to_string() const
