@@ -20,6 +20,7 @@ namespace computational_graph
         double val;
     public:
         Float(double init_v) : val(init_v) {}
+        static std::shared_ptr<const Float> create(double init_v);
         double get_val() const;
         virtual std::string to_string() const;
         virtual bool boolean() const;

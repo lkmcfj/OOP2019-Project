@@ -32,6 +32,10 @@ namespace computational_graph
         std::sprintf(buffer, "%.4lf", this->val); //4-digits output
         return std::string(buffer);
     }
+    std::shared_ptr<const Float> Float::create(double init_v)
+    {
+        return std::make_shared<const Float>(init_v);
+    }
     const double eps=1e-7;
     bool Float::boolean() const //COND : when >0 return the second parameter
     {
