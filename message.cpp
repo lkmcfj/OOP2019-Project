@@ -9,22 +9,22 @@ namespace computational_graph
 	void Message::debug(std::string s)
 	{
 		if(log_level<=1)
-		*log_s << s << std::endl;
+		*log_s << "[debug] " << s << std::endl;
 	}
 	void Message::info(std::string s)
 	{
 		if(log_level<=2)
-		*log_s << s << std::endl;
+		*log_s << "[info] " << s << std::endl;
 	}
 	void Message::warning(std::string s)
 	{
 		if(log_level<=3)
-		*log_s << s << std::endl;
+		*log_s << "[warning] " << s << std::endl;
 	}
 	void Message::error(std::string s)
 	{
 		if(log_level<=4)
-		*log_s << s << std::endl;
+		*log_s << "[error] " << s << std::endl;
 	}
 	void Message::message(std::string s)
 	{
