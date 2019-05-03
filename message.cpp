@@ -1,10 +1,11 @@
 #include "message.h"
+#include <iostream>
 
 namespace computational_graph
 {
 	int Message::log_level=3; //modify from 1 to 5
-	std::ostream Message::log_s = &std::cerr;
-	std::ostream Message::message_s = &std::cout;
+	std::ostream *Message::log_s = &std::cerr;
+	std::ostream *Message::message_s = &std::cout;
 	void Message::debug(std::string s)
 	{
 		if(log_level<=1)

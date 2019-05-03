@@ -35,12 +35,12 @@ namespace computational_graph
     Session::Session(Graph &_g):g(_g)
     {
         for(const_pNode i:g.nodes) if(i->get_type()==1)
-            variable_value[i->get_id()]=dynamic_pointer_cast<Variable>(i)->get_default_value();
+            variable_value[i->get_id()]=std::dynamic_pointer_cast<const Variable>(i)->get_default_value();
     }
     const_pData Session::dfs_eval(int id)
     {
-        if(g.nodes[id]->gettype()==1) return variable_value[id];
-        if(g.nodes[id]->gettype()==2)
+        if(g.nodes[id]->get_type()==1) return variable_value[id];
+        if(g.nodes[id]->get_type()==2)
         {
             auto it=temp_value.find(id);
             if(it==temp_value.end())
@@ -59,16 +59,16 @@ namespace computational_graph
         }
         return temp_value[id]=g.nodes[id]->run(this,prev);
     }
-    const_pData eval(int id,std::map<int,const_pData> placeholder_value)
+    const_pData Session::eval(int id,std::map<int,const_pData> placeholder_value)
     {
         temp_value=std::move(placeholder_value);
         return dfs_eval(id);
     }
-    void set_variable(int id,const_pData v)
+    void Session::set_variable(int id,const_pData v)
     {
         variable_value[id]=v->copy();
     }
-    void set_variable(string symbol,const_pData v)
+    void Session::set_variable(string symbol,const_pData v)
     {
         variable_value[g.symbol_id[symbol]]=v->copy();
     }
