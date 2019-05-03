@@ -10,7 +10,7 @@ namespace computational_graph
     class Graph;
     class Session;
 
-    //the member function "run" of Node and its derived class may throw exception std::range_error when calculating
+    //the member function "run" of Node and its derived class may throw exception std::range_error, std::runtime_error when calculating
     class Node
     {
     private:
@@ -106,6 +106,7 @@ namespace computational_graph
         Print(Graph *_g,int x_id,std::string x_symbol);
     public:
         static const_pNode create(Graph *g,int x_id,std::string x_symbol);
+        static const_pNode create(Graph *g,const_pNode x,std::string x_symbol);
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
     };
@@ -121,7 +122,7 @@ namespace computational_graph
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
         static const_pNode create(const_pNode left,const_pNode right,string op_str);
-    }
+    };
 
     class Cond : public Node
     {
@@ -129,6 +130,7 @@ namespace computational_graph
         Cond(Graph *_g,int cond_id,int true_id,int false_id);
     public:
         static const_pNode create(Graph *g,int cond_id,int true_id,int false_id);
+        static const_pNode create(Graph *g,const_pNode cond_node,const_pNode true_node,const_pNode false_node);
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
     };
