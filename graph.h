@@ -29,12 +29,16 @@ namespace computational_graph
         std::map<int,const_pData> variable_value,temp_value;
         Graph &g;
         const_pData dfs_eval(int id);
+        int last_variable_id;
     public:
         Session(Graph &_g);
+        Graph* get_graph();
         const_pData eval(int id,std::map<int,const_pData> placeholder_value);
+        const_pData eval(const_pNode p,std::map<const_pNode,const_pData> placeholder_value);
 	//may throw std::invalid_argument, std::range_error or std::runtime_error when calculating
         void set_variable(int id,const_pData v);
         void set_variable(std::string symbol,const_pData v);
+        void set_variable(const_pNode p,const_pData v);
     };
 
 }
