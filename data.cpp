@@ -32,9 +32,10 @@ namespace computational_graph
         std::sprintf(buffer, "%.4lf", this->val); //4-digits output
         return std::string(buffer);
     }
+    const double eps=1e-7;
     bool Float::boolean() const //COND : when >0 return the second parameter
     {
-        return (this->val > 0);  
+        return (this->val > eps);  
     }
     std::unique_ptr<const Data> Float::copy() const
     {
