@@ -134,7 +134,7 @@ void set_variable(const_pNode p,const_pData v)
 ```cpp
 + virtual bool boolean() const
 ```  
-类似于```double_to_bool```的功能, 注意到因为```COND```要求, 在```val > 0```时回传真, 其余回传假。
+类似于```double_to_bool```的功能, 注意到因为```COND```要求, 我们订了误差```eps = 1e-7``` 在```val > eps```时回传真, 其余回传假。
 
 ```cpp
 + virtual std::unique_ptr<const Data> copy() const
