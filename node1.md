@@ -43,16 +43,14 @@
 #### 虚函数及其在子类中的实现
 
 ```cpp
-virtual int get_type() const
++virtual int get_type() const
 ```  
 + Node类：返回0
 
 ```cpp
-virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const
++virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const
 ```  
 可能抛出```std::runtime_error```或```std::range_error```异常。
 
 + Node类：引发```Message::error```并返回```nullptr```
-
-
 
