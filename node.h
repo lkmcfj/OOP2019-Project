@@ -39,6 +39,7 @@ namespace computational_graph
         //type=8 Cond
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;//error
         friend class Graph;
+        virtual ~Node() = default;
     };
     typedef std::shared_ptr<const Node> const_pNode;
 

@@ -12,6 +12,7 @@ namespace computational_graph
         virtual std::string to_string() const; //返回一个用于输出的std::string对象。在Data基类对象上调用它将会引发error并返回空字符串。子类需重新实现
         virtual bool boolean() const; //返回对bool的类型转换。在Data基类对象上调用它将会引发error并返回false。子类需重新实现
         virtual std::unique_ptr<const Data> copy() const; //创建一个与自身相同的新对象，并返回指向它的智能指针。子类需重新实现
+        virtual ~Data() = default;
     };
     typedef std::shared_ptr<const Data> const_pData; //a smart-pointer pointing to type data.
     class Float : public Data
