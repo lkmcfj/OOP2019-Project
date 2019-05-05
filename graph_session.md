@@ -62,7 +62,7 @@ const_pData eval(const_pNode p,std::map<const_pNode,const_pData> placeholder_val
 以```placeholder_value```表示的节点到值的映射作为```Placeholder```节点的取值，对```p```指向的节点求值。可能抛出```std::range_error```, ```std::invalid_argument```, ```std::runtime_error```异常。  
 如果```p```指向的节点并非此图中的合法节点，则引发```Message::error```并返回```nullptr```  
 如果```placeholder_value```中的节点并非```Placeholder```节点，则会引发```Message::warning```  
-*(suggested)*
+*(recommended)*
 
 ```cpp
 void set_variable(int id,const_pData v)
@@ -78,5 +78,5 @@ void set_variable(std::string symbol,const_pData v)
 void set_variable(const_pNode p,const_pData v)
 ```  
 更改```p```指向的```Variable```节点的取值。不会直接接管```v```指向的对象，而是将其复制一份。  
-*(suggested)*
+*(recommended)*
 
