@@ -19,5 +19,5 @@ parser.o : parser.cpp parser.h graph.h node.h data.h message.h
 debug : data.cpp data.h graph.cpp graph.h message.cpp message.h node.cpp node.h parser.h parser.cpp oj_main.cpp
 	g++ oj_main.cpp data.cpp graph.cpp message.cpp node.cpp parser.cpp -o main -g -std=c++14
 
-test : data.o graph.o message.o node.o parser.o test.cpp computational_graph.h
-	g++ test.cpp data.o graph.o message.o node.o parser.o -o test -std=c++14
+test : data.o graph.o message.o node.o parser.o example_test.cpp computational_graph.h
+	g++ example_test.cpp data.o graph.o message.o node.o parser.o -o test -std=c++14
