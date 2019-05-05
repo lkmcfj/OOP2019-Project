@@ -9,27 +9,27 @@
 ### 成员函数
 
 ```cpp
-const_pNode join(std::unique_ptr<Node> curnode)
++const_pNode join(std::unique_ptr<Node> curnode)
 ```  
 接管```curnode```并分配编号。你不应该调用这一方法。
 
 ```cpp
-const_pNode getnode(int id)
++const_pNode getnode(int id)
 ```  
 返回指向这一编号对应节点的智能指针。如果```id```不是合法编号，行为是未定义的。
 
 ```cpp
-const_pNode getnode(std::string symbol)
++const_pNode getnode(std::string symbol)
 ```  
 返回指向这一标识符对应节点的智能指针。如果```symbol```不是合法标识符，行为是未定义的。
 
 ```cpp
-int get_symbol_id(std::string symbol)
++int get_symbol_id(std::string symbol)
 ```  
 返回这一标识符对应的节点编号。如果```symbol```不是合法标识符，行为是未定义的。
 
 ```cpp
-void give_symbol(std::string symbol,int id)
++void give_symbol(std::string symbol,int id)
 ```  
 将```symbol```作为标识符绑定到编号为```id```的节点上。如果```id```不是合法的编号，结果是未定义的。
 
@@ -42,41 +42,41 @@ void give_symbol(std::string symbol,int id)
 ### 成员函数
 
 ```cpp
-Session(Graph &_g)
++Session(Graph &_g)
 ```  
 构造一个绑定在```_g```上的```Session```对象，并初始化已经被加入```_g```的```Variable```节点。
 
 ```cpp
-Graph* get_graph()
++Graph* get_graph()
 ```  
 返回指向该会话绑定的```Graph```对象的指针。
 
 ```cpp
-const_pData eval(int id,std::map<int,const_pData> placeholder_value)
++const_pData eval(int id,std::map<int,const_pData> placeholder_value)
 ```  
 以```placeholder_value```表示的编号到值的映射作为```Placeholder```节点的取值，对编号为```id```的节点求值。可能抛出```std::range_error```, ```std::invalid_argument```, ```std::runtime_error```异常。
 
 ```cpp
-const_pData eval(const_pNode p,std::map<const_pNode,const_pData> placeholder_value)
++const_pData eval(const_pNode p,std::map<const_pNode,const_pData> placeholder_value)
 ```  
 以```placeholder_value```表示的节点到值的映射作为```Placeholder```节点的取值，对```p```指向的节点求值。可能抛出```std::range_error```, ```std::invalid_argument```, ```std::runtime_error```异常。  
 如果```p```指向的节点并非此图中的合法节点，则引发```Message::error```并返回```nullptr```  
 如果```placeholder_value```中的节点并非```Placeholder```节点，则会引发```Message::warning```  
-*(suggested)*
+*(recommended)*
 
 ```cpp
-void set_variable(int id,const_pData v)
++void set_variable(int id,const_pData v)
 ```  
 更改编号为```id```的```Variable```节点的取值。不会直接接管```v```指向的对象，而是将其复制一份。
 
 ```cpp
-void set_variable(std::string symbol,const_pData v)
++void set_variable(std::string symbol,const_pData v)
 ```  
 更改标识符为```symbol```的```Variable```节点的取值。不会直接接管```v```指向的对象，而是将其复制一份。
 
 ```cpp
-void set_variable(const_pNode p,const_pData v)
++void set_variable(const_pNode p,const_pData v)
 ```  
 更改```p```指向的```Variable```节点的取值。不会直接接管```v```指向的对象，而是将其复制一份。  
-*(suggested)*
+*(recommended)*
 
