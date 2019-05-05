@@ -50,7 +50,9 @@ virtual int get_type() const
 ```cpp
 virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const
 ```  
-+ Node类：引发```error```并返回```nullptr```
+可能抛出```std::runtime_error```或```std::range_error```异常。
+
++ Node类：引发```Message::error```并返回```nullptr```
 
 
 
