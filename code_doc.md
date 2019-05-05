@@ -35,27 +35,27 @@
 
 ```cpp
 +const_pNode join(std::unique_ptr<Node> curnode)
-```  
+```
 接管```curnode```并分配编号。你不应该调用这一方法。
 
 ```cpp
 +const_pNode getnode(int id)
-```  
+```
 返回指向这一编号对应节点的智能指针。如果```id```不是合法编号，行为是未定义的。
 
 ```cpp
 +const_pNode getnode(std::string symbol)
-```  
+```
 返回指向这一标识符对应节点的智能指针。如果```symbol```不是合法标识符，行为是未定义的。
 
 ```cpp
 +int get_symbol_id(std::string symbol)
-```  
+```
 返回这一标识符对应的节点编号。如果```symbol```不是合法标识符，行为是未定义的。
 
 ```cpp
 +void give_symbol(std::string symbol,int id)
-```  
+```
 将```symbol```作为标识符绑定到编号为```id```的节点上。如果```id```不是合法的编号，结果是未定义的。
 
 ## Session类
@@ -68,22 +68,22 @@
 
 ```cpp
 +Session(Graph &_g)
-```  
+```
 构造一个绑定在```_g```上的```Session```对象，并初始化已经被加入```_g```的```Variable```节点。
 
 ```cpp
 +Graph* get_graph()
-```  
+```
 返回指向该会话绑定的```Graph```对象的指针。
 
 ```cpp
 +const_pData eval(int id,std::map<int,const_pData> placeholder_value)
-```  
+```
 以```placeholder_value```表示的编号到值的映射作为```Placeholder```节点的取值，对编号为```id```的节点求值。可能抛出```std::range_error```, ```std::invalid_argument```, ```std::runtime_error```异常。
 
 ```cpp
 +const_pData eval(const_pNode p,std::map<const_pNode,const_pData> placeholder_value)
-```  
+```
 以```placeholder_value```表示的节点到值的映射作为```Placeholder```节点的取值，对```p```指向的节点求值。可能抛出```std::range_error```, ```std::invalid_argument```, ```std::runtime_error```异常。  
 如果```p```指向的节点并非此图中的合法节点，则引发```Message::error```并返回```nullptr```  
 如果```placeholder_value```中的节点并非```Placeholder```节点，则会引发```Message::warning```  
@@ -91,17 +91,17 @@
 
 ```cpp
 +void set_variable(int id,const_pData v)
-```  
+```
 更改编号为```id```的```Variable```节点的取值。不会直接接管```v```指向的对象，而是将其复制一份。
 
 ```cpp
 +void set_variable(std::string symbol,const_pData v)
-```  
+```
 更改标识符为```symbol```的```Variable```节点的取值。不会直接接管```v```指向的对象，而是将其复制一份。
 
 ```cpp
 +void set_variable(const_pNode p,const_pData v)
-```  
+```
 更改```p```指向的```Variable```节点的取值。不会直接接管```v```指向的对象，而是将其复制一份。  
 *(recommended)*
 
@@ -114,44 +114,44 @@
 
 ```cpp
 #Node(Graph *_g)
-```  
+```
 创建的对象所属图为```_g```指向的```Graph```实例，依赖节点为空。
 
 ```cpp
 #Node(Graph *_g,std::vector<int> _father)
-```  
+```
 创建的对象所属图为```_g```指向的```Graph```实例，依赖节点编号为```_father```
 
 ```cpp
 #void give_id(int newid)
-```  
+```
 改变```Node```对象中存储的编号。此方法只会在```Graph```的```join```方法中调用一次，将默认值```-1```改为```newid```
 
 ```cpp
 +const std::vector<int> &get_father() const
-```  
+```
 返回对依赖节点编号列表的引用。
 
 ```cpp
 +int get_id() const
-```  
+```
 返回图中的编号。
 
 ```cpp
 +Graph *get_graph() const
-```  
+```
 返回其所在```Graph```对象的指针。
 
 ```cpp
 +void give_symbol(std::string symbol) const
-```  
+```
 在其所在的```Graph```对象中将```symbol```绑定到此节点上。
 
 #### 虚函数及其在子类中的实现
 
 ```cpp
 +virtual int get_type() const
-```  
+```
 + Node：返回0
 + Variable: 返回1
 + Placeholder: 返回2
@@ -164,7 +164,7 @@
 
 ```cpp
 +virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const
-```  
+```
 可能抛出```std::runtime_error```或```std::range_error```异常。  
 + Node类：引发```Message::error```并返回```nullptr```
 + Variable : 运行时会引发```Message::warning```并返回```default_value```
@@ -183,48 +183,48 @@
 ### 构造函数
 ```cpp
 # Variable(Graph *_g, const_pData default_v)
-```  
+```
 ```variable```的构造不直接接管传入的智能指针```default_v```, 而是利用```Data::copy()```创立新对象并拷贝一份
 
 ### 成员函数
 ```cpp
 + static const_pNode create(Graph *g,const_pData default_v)
-```  
-用于在给定的图中，拷贝传入的智能指针来构建新节点，赋值给```default_value```并返回其智能指针。
+```
+用于在给定的图中，利用给定的默认值创建```Variable```节点返回其智能指针。
 
 ```cpp
 + const_pData get_default_value() const
-```  
-返回default_value。
+```
+返回默认值。
 
 ##　Placeholder类（继承Node类）
 ```Placeholder```类用于创建占位符，即需要在计算时对其进行赋值的节点，若发现求值所依赖的占位符未赋值，则输出错误信息。
 ### 构造函数
 ```cpp
 # Placeholder(Graph *_g)
-```  
+```
 
 ### 成员函数
 ```cpp
 + static const_pNode create(Graph *g)
-```  
+```
 
 ## Constant类 (继承Node类)
 ```Constant```类用于创建常量节点。节点在创建时即给定其默认值```value```，在计算过程中无法对其赋值，也无法修改其默认值。
 ### 构造函数
 ```cpp
 # Constant(Graph *_g,const_pData v)
-```  
+```
 ```Constant```的构造不直接接管传入的智能指针```v```, 而是利用```Data::copy()```创立新对象并拷贝一份。
 
 ### 成员函数
 ```cpp
 + static const_pNode create(Graph *g,const_pData v)
-```  
+```
 用于在给定的图中，拷贝传入的智能指针来构建新节点，赋值给```value```并返回其智能指针。
 
 ## Arith类 (继承Node类)
-为了保持代码简洁, 我们将```arith_op```定义为接受两个```const_pData```为参数并返回运算结果为```const_pData```的```std::function```
+为了保持代码简洁, 我们将```arith_op```类型定义为接受两个```const_pData```为参数并返回运算结果为```const_pData```的```std::function```
 同时, 建立一个四则运算表```static map<string, arith_op> str2op```存放从```string```到```arith_op```的映射关系
 
 ### 构造函数
@@ -240,70 +240,76 @@
 用于在给定左右节点以及四则运算符时，创建新节点。会进行对```left```和```right```的必要检查。
 
 ## Single_op类（继承Node类）
-```Single_op```类用于处理单个函数运算。为了保持代码简洁, 我们将```single_op```定义为接受一个```const_pData```为参数并回传运算结果为```const_pData```的```std::function<>```。并在类的私有成员中用```map```实现了不同字符串与相应运算```function(sin,log,exp,tanh,sigmoid)```的关联。
+```Single_op```类用于处理一元函数运算。为了保持代码简洁, 我们将```single_op```类型定义为接受一个```const_pData```为参数并回传运算结果为```const_pData```的```std::function```。类的静态私有成员```str2op```中用```map```实现了不同字符串与相应运算```(sin,log,exp,tanh,sigmoid)```的```single_op```对象的关联。
+
 ### 构造函数
 ```cpp
 #Single_op(Graph *_g, int x_id, std::string op_str)
-```  
+```
 
 ### 成员函数
 ```cpp
 +static const_pNode create(const_pNode x, std::string op_str)
-```  
+```
 根据已有节点及运算符字符串创建新节点，并返回其智能指针。会进行对```x```的必要检查。
 
 ## Print类（继承Node类）
-```Print```类实现了对节点值的打印功能。始终与标识符所对应的节点绑定，使得在每次计算时，都额外输出与其绑定节点的值。
+```Print```类实现了对节点值的打印功能。每次计算时，都利用```Message::message```输出前驱节点的值。
+
 ### 构造函数
 ```cpp
 #Print(Graph *_g,int x_id,std::string x_symbol);
-```  
+```
 通过给出的前趋节点编号创建```Print```节点，在输出时将```x_symbol```作为前驱节点名称。
 
 ### 成员函数
 ```cpp
 +const_pNode create(Graph *_g, int x_id, std::string x_symbol)
 +const_pNode create(const_pNode x, std::string x_symbol)
-```  
+```
 提供了两种方法创建新节点
-1. 在给定图中由节点编号与标识符创建新节点
-2. 由指向被绑定节点的智能指针与标识符来创建新节点。*(recommended)*
+1. 在给定图中由节点编号与名称创建新节点
+2. 由指向前驱节点的智能指针与标识符来创建新节点。*(recommended)*
 
 ## Cmp类(继承Node类)
-```Cmp```类实现了对于比较运算符的处理。为了保持代码简洁, 我们将```cmp_op```定义为接受两个```const_pData```为参数并回传运算结果为```const_pData```的```std::function<>```。在类的私有成员中用```map```实现了字符串与相应比较运算```function(<,>,<=,>=,==)```之间的关联。
+```Cmp```类实现了对于比较运算符的处理。为了保持代码简洁, 我们将```cmp_op```类型定义为接受两个```const_pData```为参数并回传运算结果为```const_pData```的```std::function```。在类的静态私有成员```str2op```中用```map```实现了字符串与相应比较运算```(<,>,<=,>=,==)```的```cmp_op```对象之间的关联。
+
 ### 构造函数
 ```cpp
 #Cmp(Graph *_g, int left_id, int right_id, std::string op_str)
-```  
+```
 参数包含节点所在的图，左右节点的id，以及比较运算符。
 
 ### 成员函数
 ```cpp
 +static const_pNode create(const_pNode left, const_pNode right, std::string op_str)
-```  
+```
 用于在给定左右节点以及比较运算符时创建新节点。会进行对```left```和```right```的必要检查。
 
 ## Cond类（继承Node类）
-```Cond```类实现了在比较运算式为真/为假时，返回指向不同节点（真假节点）的智能指针的功能。
+```Cond```类实现了根据条件判断选择不同前驱节点计算结果的功能。当条件节点的计算结果向布尔的转换为真时，选择“真”节点，否则选择“假”节点。
+
 ### 构造函数
 ```cpp
 #Cond(Graph *_g,int cond_id,int true_id,int false_id)
-```  
+```
 
 ### 成员函数
 ```cpp
 static const_pNode create(Graph *g,int cond_id,int true_id,int false_id)
 static const_pNode create(const_pNode cond_node,const_pNode true_node,const_pNode false_node)
-```  
+```
 提供了两种方法创建新节点：
 1. 在给定图中依据条件节点id与真假节点id创建新节点
-2. 由指向真假节点的智能指针与标识符来创建新节点。*(recommended)*
+2. 由指向条件节点和真假节点的智能指针来创建新节点。*(recommended)*
 
 ## Data类
 
 为了保持代码简洁, 我们将```const_pData```定义为指向Data类对象的常量智能指针
 
-节点的数据由```Data```以及其派生类负责管理。**```Data```基类作为管理层，是所有数据类型(目前只实现Float)的父类，没有```val```值**。在```Data.cpp```中我们写出了智能指针```const_pData```类的单目运算、比较运算、四则运算等函数并重载了加减乘除以及输出流运算符, 使得```Session```类中进行dfs计算时能够顺利运行。同时, 为了维护计算图的安全性，在运算前我们实现```to_Float()```函数进行类型检查。**若试图在```Data```基类或是空指针上运算，会抛出```std::runtime_error```进行异常处理。**（任何时候你也不应该创建```Data```对象进行运算)。同时，因为输出前往往需要进行数据类型转换，我们利用虚函数的方式写出了两个接口让子类继承实现 : ```to_string()``` 、```boolean()```。 注意到, 为确保数据安全，任何时刻你都**不应该调用```Data```基类中的这两个函数**，否则我们给出错误提示。而虚函数```copy()```功能在于不直接接管指针，而是新创一个相同的新对象, 并返回指向新对象的智能指针。 因为在子类有```override```, 实际使用时会依照对象的实际类型并返回正确类型的智能指针。
+节点的数据由```Data```以及其派生类负责管理。**```Data```基类作为管理层，是所有数据类型(目前只实现Float)的父类，没有```val```值**。在```Data.cpp```中我们写出了智能指针```const_pData```类的单目运算、比较运算、四则运算等函数并重载了加减乘除以及输出流运算符, 使得```Session```类中进行dfs计算时能够顺利运行。同时, 为了维护计算图的安全性，在运算前我们实现```to_Float()```函数进行类型检查。**若试图在```Data```基类或是空指针上运算，会抛出```std::runtime_error```。**（任何时候你也不应该创建```Data```对象进行运算)。  
+
+同时，因为输出前往往需要进行数据类型转换，我们利用虚函数的方式写出了两个接口让子类继承实现 : ```to_string()``` 、```boolean()```。 注意到, 为确保数据安全，任何时刻你都**不应该调用```Data```基类中的这两个函数**，否则我们给出错误提示。而虚函数```copy()```功能在于不直接接管指针，而是新创一个相同的新对象, 并返回指向新对象的智能指针。 因为在子类有```override```, 实际使用时会依照对象的实际类型并返回正确类型的智能指针。
 
 基本上，```Data类```负责计算图中节点的数据**管理**，你**不需要**也没必要刻意**调用**它。
 
@@ -311,17 +317,17 @@ static const_pNode create(const_pNode cond_node,const_pNode true_node,const_pNod
 
 ```cpp
 + virtual std::string to_string() const
-```  
+```
 提供子类接口 , 调用时会调用```Message::error()```报错。
 
 ```cpp
 + virtual bool boolean() const
-```  
+```
 提供子类接口 , 调用时会调用```Message::error()```报错。
 
 ```cpp
 + virtual std::unique_ptr<const Data> copy() const
-```  
+```
 创建新对象，返回指向新对象(类型为```Data```)的智能指针，```Node```类会用到。
 
 
@@ -339,23 +345,23 @@ static const_pNode create(const_pNode cond_node,const_pNode true_node,const_pNod
 ### 成员函数 
 ```cpp
 + static const_pFloat create(double init_v)
-```  
+```
 得到指向以```init_v```为值创建的```Float```类对象的智能指针。
 
 ```cpp
 + double get_val() const;
-```  
+```
 得到该对象存储的浮点值
 
 ```cpp
 + virtual std::string to_string() const
-```  
+```
 返回一个用于输出的```std::string```对象, 我们利用```sprintf```设定为四位小数。(缓冲区的长度定为50)
 
 ```cpp
 + virtual bool boolean() const
-```  
-返回一个向布尔的类型转换。 注意到因为```COND```要求, 我们订了误差```eps = 1e-7``` 在```val > eps```时回传真, 其余回传假。
+```
+返回一个向布尔的类型转换。 注意到因为```COND```要求, 我们约定```eps = 1e-7``` 并在```val > eps```时得到真, 否则得到假。
 
 ```cpp
 + virtual std::unique_ptr<const Data> copy() const
@@ -371,7 +377,7 @@ static const_pNode create(const_pNode cond_node,const_pNode true_node,const_pNod
 -int Message::log_level=3;
 -std::ostream *Message::log_s = &std::cerr;
 -std::ostream *Message::message_s = &std::cout;
-```  
+```
 类的私有成员包括日志等级```log_level```以及输出流指针```log_s，message_s```，由日志等级来判断是否输出相应错误信息，上面给出了其默认值。
 ```log_level```取值为1至4时分别对应```debug,info,warning,error```日志等级。例如```log_level```为3时只有```warning,error```类型的日志会被输出至```*log_s```
 
@@ -379,7 +385,7 @@ static const_pNode create(const_pNode cond_node,const_pNode true_node,const_pNod
 +void Message::set_log_level(int level)
 +void Message::set_log_stream(std::ostream &s)
 +void Message::set_message_stream(std::ostream &s)
-```  
+```
 我们在类中提供了```set_log_level,set_log_stream,set_message_stream```函数，以实现对日志等级、输出流对象的可能的修改。  
 
 ```cpp
@@ -388,7 +394,7 @@ static const_pNode create(const_pNode cond_node,const_pNode true_node,const_pNod
 +void Message::warning(std::string s)
 +void Message::error(std::string s)
 +void Message::message(std::string s)
-```  
+```
 ```debug,info,warning,error```会在日志等级符合要求时输出至```*log_s```
 ```message```无论何时都会输出至```*message_s```
 
@@ -403,15 +409,15 @@ void split(std::string &s, std::vector<std::string> &res, char ch)
 ### 成员函数
 ```cpp
 const_pNode start(std::string s, Graph *g)
-```  
+```
 用于创建出```Placeholder/Constant/Variable```类型节点并返回指向该节点的智能指针。
 
 ```cpp
 const_pNode node(std::string s, Graph *g)
-```  
+```
 用于创建出依赖于其他节点的新节点，并返回新节点的智能指针。
 
 ```cpp
 const_pData run(std::string s, Session *sess)
-```  
+```
 用于执行计算或赋值操作，并返回求值结果的智能指针（若为赋值，则返回空指针）。
