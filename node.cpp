@@ -387,17 +387,17 @@ namespace computational_graph
         //TODO : 自动求导
         return;
     }
-    //only have a father Grad
-    At::At(Graph *_g, int grad_id, int x_id): Node(_g, vector<int>{grad_id}) {}
+
+    At::At(Graph *_g, int grad_id, int x_id): Node(_g, vector<int>{grad_id, x_id}) {}
     const_pNode At::create(Graph *g, int grad_id, int x_id)
     {
         Message::debug("At::create() (ID ver) called");
         return g->join(unique_ptr<At>(new At(g, grad_id, x_id)));          
     }
-    const_pNode At::create(const_pNode grad, int x_id)
+    const_pNode At::create(const_pNode grad, const_pNode x)
     {
         Message::debug("Grad::create() (const_pNode ver) called");
-        if(!check_single(grad)) return nullptr;
+        if(!check_binary(grad, x)) return nullptr;
         return create(grad->get_graph(), grad->get_id());              
     }      
     int At::get_type() const
@@ -406,13 +406,22 @@ namespace computational_graph
     }
     const_pData At::run(Session *sess, std::vector<const_pData> father_value) const
     {
-        if(father_value.size() != 1)
+        if(father_value.size() != 2)
         {
-            Message::error("evaluating node #"+to_string(get_id())+", expecting 1 input value,get "+to_string(father_value.size())+". returning nullptr.")
+            Message::error("evaluating node #"+to_string(get_id())+", expecting 2 input value,get "+to_string(father_value.size())+". returning nullptr.")
             return nullptr;
         }
-        //TODO : get_grad
-        return father_value[0].get_grad(x_id);
+        if(const_pData temp = father_value[0].get_grad(father[1]))
+                return temp;
+        if (auto x_t = std::dynamic_pointer_cast<const Tensor>(father_value[1]))
+        {
+            int n  = i;
+            vector<int> shape = father[0].get_fshape() + x_t.get_shape();
+            dimf = shape.size();
+            for(auto i : shape) n *= i;
+            return create(vector<double>(n,0), shape, dimf);
+        }
+        throw std::runtime_error("x is not a tensor");
     }
 
     Assign::Assign(Graph *_g, int left_id, int right_id):Node(_g, vector<int>{left_id, right_id}) {}
