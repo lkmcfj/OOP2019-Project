@@ -17,60 +17,61 @@ namespace computational_graph
         int cur=nodes.size();
         curnode->give_id(cur);
         nodes.push_back(std::move(curnode));
-        if(std::dynamic_pointer_cast<const Variable>(nodes[cur])) variable_id.push_back(cur);
         return nodes[cur];
     }
     const_pNode Graph::getnode(int id)
     {
         return nodes[id];
     }
-    Session::Session(Graph &_g):g(_g)
-    {
-        last_variable_id=-1;
-        for(const_pNode i:g.nodes) if(i->get_type()==1)
-        {
-            last_variable_id=i->get_id();
-            variable_value[i->get_id()]=std::dynamic_pointer_cast<const Variable>(i)->get_default_value();
-        }
-    }
+    Session::Session(Graph &_g):g(_g){}
     Graph* Session::get_graph()
     {
         return &g;
     }
-    const_pData Session::dfs_eval(int id)
+    const_pData Session::eval(int xid,std::map<int,const_pData> placeholder_value)
     {
-        Message::debug("Session::dfs_eval("+to_string(id)+")");
-        if(g.nodes[id]->get_type()==1) return variable_value[id];
-        if(g.nodes[id]->get_type()==2)
-        {
-            auto it=temp_value.find(id);
-            if(it==temp_value.end())
-            {
-                Message::message("ERROR: Placeholder missing");
-                throw std::invalid_argument("Missing Placeholder: node #"+std::to_string(id));
-            }
-            return it->second;
-        }
-        auto it=temp_value.find(id);
-        if(it!=temp_value.end()) return it->second;
-        std::vector<const_pData> prev;
-        for(int i: g.nodes[id]->get_father())
-        {
-            prev.push_back(dfs_eval(i));
-        }
-        return temp_value[id]=g.nodes[id]->run(this,prev);
-    }
-    const_pData Session::eval(int id,std::map<int,const_pData> placeholder_value)
-    {
-        for(int i=g.variable_id.size()-1;i>=0&&g.variable_id[i]>last_variable_id;--i)
-        {
-            if(variable_value.find(g.variable_id[i])==variable_value.end())
-                variable_value[g.variable_id[i]]=std::dynamic_pointer_cast<const Variable>(g.nodes[g.variable_id[i]])->get_default_value();
-
-        }
-        if(g.variable_id.size()>0) last_variable_id=g.variable_id[g.variable_id.size()-1];
         temp_value=std::move(placeholder_value);
-        return dfs_eval(id);
+        for(auto i: variable_value) temp_value[i.first]=i.second;
+        vis.clear();
+        vislist.clear();
+        std::queue<int> q;
+        q.push(xid);
+        vis.insert(xid);
+        while(!q.empty())
+        {
+            int cur=q.front();
+            q.pop();
+            for(int i: g.nodes[cur]->get_father()) if(vis.find(i)==vis.end())
+            {
+                q.push(i);
+                vis.insert(i);
+            }
+        }
+        for(int id:vis) 
+        {
+            vislist.push_back(id);
+            Message::debug("In Session::eval(),evaluating node#"+to_string(id));
+            if(g.nodes[id]->get_type()==1) 
+            {
+                auto i=temp_value.find(id);
+                if(i==temp_value.end())
+                    variable_value[id]=temp_value[id]=dynamic_pointer_cast<const Variable>(g.nodes[id])->get_default_value();
+            }
+            if(g.nodes[id]->get_type()==2)
+            {
+                auto i=temp_value.find(id);
+                if(i==temp_value.end())
+                {
+                    Message::message("ERROR: Placeholder missing");
+                    throw std::invalid_argument("Missing Placeholder: node #"+std::to_string(id));
+                }
+            }
+            std::vector<const_pData> prev;
+            for(int i: g.nodes[id]->get_father())
+                prev.push_back(temp_value[i]);
+            temp_value[id]=g.nodes[id]->run(this,prev);
+        }
+        return temp_value[xid];
     }
     const_pData Session::eval(const_pNode p,std::map<const_pNode,const_pData> placeholder_value)
     {
