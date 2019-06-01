@@ -84,10 +84,6 @@ namespace computational_graph
     {
         return g;
     }
-    void Node::give_symbol(string symbol) const
-    {
-        g->give_symbol(symbol,id);
-    }
     int Node::get_type() const
     {
         return 0;

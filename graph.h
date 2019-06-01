@@ -13,13 +13,9 @@ namespace computational_graph
     private:
         std::vector<const_pNode> nodes;
         std::vector<int> variable_id;
-        std::map<std::string,int> symbol_id;
     public:
         const_pNode join(std::unique_ptr<Node> curnode);
         const_pNode getnode(int id);
-        const_pNode getnode(std::string symbol);
-        int get_symbol_id(std::string symbol);
-        void give_symbol(std::string symbol,int id);
         friend class Session;
     };
 
@@ -37,7 +33,6 @@ namespace computational_graph
         const_pData eval(const_pNode p,std::map<const_pNode,const_pData> placeholder_value);
 	//may throw std::invalid_argument, std::range_error or std::runtime_error when calculating
         void set_variable(int id,const_pData v);
-        void set_variable(std::string symbol,const_pData v);
         void set_variable(const_pNode p,const_pData v);
     };
 
