@@ -26,7 +26,6 @@ namespace computational_graph
         const std::vector<int> &get_father() const;
         int get_id() const;
         Graph *get_graph() const;
-        void give_symbol(std::string symbol) const;
         virtual int get_type() const;
         //type=0 Node
         //type=1 Variable
@@ -37,8 +36,11 @@ namespace computational_graph
         //type=6 Print
         //type=7 Cmp
         //type=8 Cond
+        //type=9 Assert
+        //type=10 Bind
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;//error
         friend class Graph;
+        virtual ~Node() = default;
     };
     typedef std::shared_ptr<const Node> const_pNode;
 
@@ -136,6 +138,28 @@ namespace computational_graph
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
     };
+
+    class Assert : public Node
+    {
+    protected:
+    	Assert(Graph *_g, int x_id);
+    public:
+        static const_pNode create(Graph *g, int x_id);
+        static const_pNode create(const_pNode x);    	
+        virtual int get_type() const;
+        virtual const_pData run(Session *sess, std::vector<const_pData> father_value) const;
+    }
+
+    class Bind : public Node
+    {
+    protected:
+    	Bind(Graph *_g, int left_id, int right_id);
+    public: 
+        static const_pNode create(Graph *g, int left_id, int right_id);
+        static const_pNode create(const_pNode left, const_pNode right);    	
+        virtual int get_type() const;
+        virtual const_pData run(Session *sess, std::vector<const_pData> father_value) const;    	
+    }
 
     const_pNode operator +(const_pNode left,const_pNode right);
     const_pNode operator -(const_pNode left,const_pNode right);
