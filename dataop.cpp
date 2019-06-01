@@ -38,6 +38,7 @@ namespace computational_graph
         auto right_t = to_Tensor(right);
         if (right_t -> get_val() != 0)
             return std::make_shared<const Float>(left_t -> get_val() / right_t -> get_val()); 
+
         Message::message("ERROR: Division by zero");
         throw std::range_error("Division by zero");
     }
@@ -62,6 +63,7 @@ namespace computational_graph
         auto left_t = to_Tensor(left);
         auto right_t = to_Tensor(right);
         return std::make_shared<const Float>(left_t -> get_val() <= right_t -> get_val()); 
+
 
     }
     const_pData geq_float(const_pData left,const_pData right)
@@ -119,4 +121,6 @@ namespace computational_graph
             item = 1.0 / (1.0 + std::exp(-1 * item);
         return std::make_shared<const Tensor>(val, x_t -> get_shape());     
     }
+    //上述运算如果类型检查出现问题（如传入Data基类对象，传入nullptr），抛出std::runtime_error
+    //如果超出运算定义域（如log自变量<=0，除以0），则调用Message::message输出要求的错误信息并抛出std::range_error  
 }

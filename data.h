@@ -3,54 +3,85 @@
 #include <memory>
 #include <string>
 #include <iostream>
+#include <vector>
+#include <map>
 
 namespace computational_graph
 {
     class Data
     {
     public:
-        virtual std::string to_string() const; //返回一个用于输出的std::string对象。在Data基类对象上调用它将会引发error并返回空字符串。子类需重新实现
-        virtual bool boolean() const; //返回对bool的类型转换。在Data基类对象上调用它将会引发error并返回false。子类需重新实现
-        virtual std::unique_ptr<const Data> copy() const; //创建一个与自身相同的新对象，并返回指向它的智能指针。子类需重新实现
+        virtual std::string to_string() =0; //返回一个用于输出的std::string对象。子类需重新实现
+        virtual bool boolean() =0; //返回对bool的类型转换。子类需重新实现
+        virtual std::unique_ptr<const Data> copy() =0; //创建一个与自身相同的新对象，并返回指向它的智能指针。子类需重新实现
         virtual ~Data() = default;
     };
     typedef std::shared_ptr<const Data> const_pData; //a smart-pointer pointing to type data.
-    class Float : public Data
+
+    class Tensor : public Data
     {
-    private:
-        double val;
+    protected:
+        std::vector<double> p;
+        std::vector<int> shape;
+        int dim,size;
     public:
-        Float(double init_v) : val(init_v) {}
+        Tensor(std::vector<double> init_v, std::vector<int> init_shape);
+        static std::shared_ptr<const Tensor> create(double *init_v,std::vector<int> init_shape); 
+        const std::vector<double> get_val()& const;
+        double get_val(std::vector<int> index) const;
+        virtual std::string to_string() const;
+        virtual bool boolean() const;
+        virtual std::unique_ptr<const Data> copy() const;
+        std::vector<int> get_shape() const;
+        std::shared_ptr<const Tensor> reshape(std::vector<int> nshape);
+        virtual ~Tensor() =default;
+    };
+    typedef std::shared_ptr<const Tensor> const_pTensor;
+
+    class Float : public Tensor
+    {
+    public:
+        Float(double init_v);
         static std::shared_ptr<const Float> create(double init_v);
         double get_val() const;
         virtual std::string to_string() const;
-        virtual bool boolean() const;
-        virtual std::unique_ptr<const Data> copy() const;  
+        virtual std::unique_ptr<const Data> copy() const;
     };
-    typedef std::shared_ptr<const Float> const_pFloat; //a smart-pointer pointing to type float  
-    std::ostream& operator<<(std::ostream &out, const Data &x);
-    const_pFloat to_Float(const_pData x);
-    const_pData operator+(const_pData left,const_pData right); //need to do variable type check
-    const_pData operator-(const_pData left,const_pData right);
-    const_pData operator*(const_pData left,const_pData right);
-    const_pData operator/(const_pData left,const_pData right);
-    const_pData plus(const_pData left,const_pData right); //initialize std::function
-    const_pData minus(const_pData left,const_pData right);
-    const_pData multi(const_pData left,const_pData right);
-    const_pData div(const_pData left,const_pData right);
-    const_pData less_float(const_pData left,const_pData right);
-    const_pData greater_float(const_pData left,const_pData right);
-    const_pData leq_float(const_pData left,const_pData right);
-    const_pData geq_float(const_pData left,const_pData right);
-    const_pData equal_float(const_pData left,const_pData right);
-    //上述比较运算返回float
-    const_pData sin(const_pData x);
-    const_pData log(const_pData x);
-    const_pData exp(const_pData x);
-    const_pData tanh(const_pData x);
-    const_pData sigmoid(const_pData x);
-    //上述运算如果类型检查出现问题（如传入Data基类对象，传入nullptr），抛出std::runtime_error
-    //如果超出运算定义域（如log自变量<=0，除以0），则调用Message::message输出要求的错误信息并抛出std::range_error
+    typedef std::shared_ptr<const Float> const_pFloat;
+
+    class Diff : public Tensor
+    {
+    protected:
+        int dim1,dim2;
+    public:
+        Diff(std::vector<double> init_v, std::vector<int> init_shape, int dimf);
+        static std::shared_ptr<const Diff> create(std::vector<double> init_v, std::vector<int> init_shape, int dimf);
+        virtual std::unique_ptr<const Data> copy() const;
+    };
+    typedef std::shared_ptr<const Diff> const_pDiff;
+    
+    class Matrix : public Diff
+    {
+    private:
+        int n,m;
+    public:
+        Matrix(std::vector<double> init_v,int d1,int d2);
+        static std::shared_ptr<const Matrix> create(std::vector<double> init_v,int n,int m);
+        virtual std:unique_ptr<const Data> copy() const;
+    };
+
+    class Graddata : public Data
+    {
+    protected:
+        std::map<int, const_pDiff> grad;
+        std::vector<int> fshape;
+    public:
+        Grad(std::map<int, const_pDiff> init_grad, std::vector<int> init_shape);
+        virtual std::unique_ptr<const Data> copy() const;
+        const_pDiff get_grad(int x_id) const;
+        const std::vector<int>& get_fshape() const;
+        virtual bool boolean() const;
+    };
 }
 
 #endif
