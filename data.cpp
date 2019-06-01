@@ -7,148 +7,176 @@
 #include "message.h"
 namespace computational_graph
 {
-    std::ostream& operator<<(std::ostream &out, const Data &x)
-    {
-        out << x.to_string();
-        return out;
-    }
-    std::string Data::to_string() const
-    {
-        Message::error("Base Class 'Data' can't be transformed into string. 'Data::to_string()' should never be called. Returning default empty string");
-        return "";
-    } //返回一个用于输出的std::string对象。在Data基类对象上调用它将会引发error并返回空字符串。子类需重新实现
-    bool Data::boolean() const
-    {
-        Message::error("Base Class 'Data' can't be transformed into bool. 'Data::boolean()' should never be called. Returning default false");
-        return false;              
-    } //返回对bool的类型转换。在Data基类对象上调用它将会引发error并返回false。子类需重新实现
-    std::unique_ptr<const Data> Data::copy() const
-    {
-        return std::make_unique<Data>(*this);
-    } //创建一个与自身相同的新对象，并返回指向它的智能指针。子类需重新实现 
-    std::string Float::to_string() const
+
+    string double_to_string(double v)
     {
         char buffer[50];
-        std::sprintf(buffer, "%.4lf", this->val); //4-digits output
+        std::sprintf(buffer, "%.4lf", v); //4-digits output
         return std::string(buffer);
     }
-    std::shared_ptr<const Float> Float::create(double init_v)
-    {
-        return std::make_shared<const Float>(init_v);
-    }
+
     const double eps=1e-7;
-    bool Float::boolean() const //COND : when >0 return the second parameter
+    bool double_boolean(double v)
     {
-        return (this->val > eps);  
+        return v>eps;
     }
-    std::unique_ptr<const Data> Float::copy() const
+
+    Tensor::Tensor(const Tensor &y):shape(y.shape), dim(y.dim), size(y.size)
     {
-        return std::make_unique<Float>(*this);
-    }  
+        p=new double[size];
+        memcpy(p,y.p,size*sizeof(double));
+    }
+    Tensor::Tensor(vector<double> init_v, vector<int> init_shape):shape(init_shape), dim(init_shape.size())
+    {
+        int s=1;
+        for(auto i: shape) s*=i;
+        if(init_v.size()!=s)
+        {
+            throw std::runtime_error("Fail to construct a tensor: size doesn't fit.");
+        }
+        p=new double[s];
+        size=s;
+        for(int i=0;i<size;++i) p[i]=init_v[i];
+    }
+    
+    shared_ptr<const Tensor> Tensor::create(double *init_v, vector<int> init_shape)
+    {
+        return make_shared<const Tensor>(init_v, std::move(init_shape));
+    }
+
+    string Tensor::to_string() const
+    {
+        string res;
+        vector<int> index(dim,0);
+        for(int i=0;i<dim;++i) res+="[";
+        for(int i=0;i<size;++i)
+        {
+            res+=double_to_string(p[i]);
+            int j=dim-1;
+            while(j>=0&&index[j]==shape[j]-1)
+            {
+                index[j]=0;
+                res+="]";
+                --j;
+            }
+            if(j>=0)
+            {
+                ++index[j];
+                res+=", ";
+            }
+        }
+        return res;
+    }
+    vector<double> Tensor::get_val() const
+    {
+        return vector<double>(p,p+size);
+    }
+    double Tensor::getval(vector<int> index) const
+    {
+        int indexid=0,t=1;
+        for(int i=index.size()-1;i>=0;--i)
+        {
+            indexid+=index[i]*t;
+            t*=shape[i];
+        }
+        return p[indexid];
+    }
+    bool Tensor::boolean() const
+    {
+        if(size==1) return double_boolean(p[0]);
+        Message::error("connot convert a tensor(which is not a scalar) to boolean value. returning false.");
+        return false;
+    }
+    unique_ptr<const Data> Tensor::copy() const
+    {
+        return make_unique<const Tensor>(*this);
+    }
+    vector<int> Tensor::get_shape() const
+    {
+        return shape;
+    }
+    shared_ptr<const Tensor> Tensor::reshape(vector<int> nshape)
+    {
+        int nsize=1;
+        for(int i:nshape) nsize*=i;
+        if(nsize!=size)
+        {
+            Message::error("Fail to reshape:size doesn't fit.");
+            return nullptr;
+        }
+        return make_shared<const Tensor>(vector<double>(p,p+size), nshape);
+    }
+    Tensor::~Tensor()
+    {
+        delete[] p;
+    }
+
+    Float::Float(const Float &y):Tensor(y){}
+    Float::Float(double init_v):shape(1,1), dim(1), size(1)
+    {
+        p=new double[1];
+        p[0]=init_v;
+    }
+    shared_ptr<const Float> Float::create(double init_v)
+    {
+        return make_shared<const Float>(init_v);
+    }
     double Float::get_val() const
     {
-        return this->val;
+        return p[0];
     }
-    const_pFloat to_Float(const_pData x) //type check, change const_pData into const_pFloat
+    string Float::to_string() const
     {
-        if(x)
-        {
-            if (auto x_f = std::dynamic_pointer_cast<const Float>(x))
-                return x_f;
-            throw std::runtime_error("Can't compute on base class 'Data'");
-        }
-        throw std::runtime_error("Can't compute on null data");
+        return double_to_string(p[0]);
     }
-    const_pData operator+(const_pData left,const_pData right)
+    unique_ptr<const Data> Float::copy() const
     {
-        auto left_f = to_Float(left);
-        auto right_f = to_Float(right);
-        return std::make_shared<const Float>(left_f -> get_val() + right_f -> get_val()); 
+        return make_unique<const Float>(*this);
     }
-    const_pData operator-(const_pData left,const_pData right)
-    {
-        auto left_f = to_Float(left);
-        auto right_f = to_Float(right);
-        return std::make_shared<const Float>(left_f -> get_val() - right_f -> get_val()); 
-    }
-    const_pData operator*(const_pData left,const_pData right)
-    {
-        auto left_f = to_Float(left);
-        auto right_f = to_Float(right);
-        return std::make_shared<const Float>(left_f -> get_val() * right_f -> get_val()); 
-    }
-    const_pData operator/(const_pData left,const_pData right)
-    {
-        auto left_f = to_Float(left);
-        auto right_f = to_Float(right);
-        if (right_f -> get_val() != 0)
-            return std::make_shared<const Float>(left_f -> get_val() / right_f -> get_val()); 
-        Message::message("ERROR: Division by zero");
-        throw std::range_error("Division by zero");
-    }
-    const_pData plus(const_pData left,const_pData right){return left + right;}
-    const_pData minus(const_pData left,const_pData right){return left - right;}
-    const_pData multi(const_pData left,const_pData right){return left * right;}
-    const_pData div(const_pData left,const_pData right){return left / right;}
-    const_pData less_float(const_pData left,const_pData right)
-    {
-        auto left_f = to_Float(left);
-        auto right_f = to_Float(right);
-        return std::make_shared<const Float>(left_f -> get_val() < right_f -> get_val()); 
-    }
-    const_pData greater_float(const_pData left,const_pData right)
-    {
-        auto left_f = to_Float(left);
-        auto right_f = to_Float(right);
-        return std::make_shared<const Float>(left_f -> get_val() > right_f -> get_val()); 
-    }
-    const_pData leq_float(const_pData left,const_pData right)
-    {
-        auto left_f = to_Float(left);
-        auto right_f = to_Float(right);
-        return std::make_shared<const Float>(left_f -> get_val() <= right_f -> get_val()); 
 
+    Diff::Diff(const Diff &y):Tensor(y),dim1(y.dim1),dim2(y.dim2) {}
+    Diff::Diff(vector<double> init_v,vector<int> init_shape, int dimf):
+        dim1(dimf),dim2(init_shape.size()-dimf),Tensor(init_v,init_shape) 
+    {}
+    shared_ptr<const Diff> create(vector<double> init_v,vector<int> init_shape, int dimf)
+    {
+        return make_shared<const Diff>(init_v,init_shape,dimf);
     }
-    const_pData geq_float(const_pData left,const_pData right)
+    unique_ptr<const Data> Diff::copy() const
     {
-        auto left_f = to_Float(left);
-        auto right_f = to_Float(right);
-        return std::make_shared<const Float>(left_f -> get_val() >= right_f -> get_val()); 
+        return make_unique<const Diff>(*this);
     }
-    const_pData equal_float(const_pData left,const_pData right)
+    
+    Matrix::Matrix(const Matrix &y):Diff(y),n(y.n),m(y.m) {}
+    Matrix::Matrix(vector<double> init_v, int d1,int d2):
+        Diff(init_v,vector<int>{n,m},1),n(d1),m(d2)
     {
-        auto left_f = to_Float(left);
-        auto right_f = to_Float(right);
-        return std::make_shared<const Float>(left_f -> get_val() == right_f -> get_val()); 
-    } //上述比较运算返回float
-    const_pData sin(const_pData x)
-    {
-        auto x_f = to_Float(x);
-        return std::make_shared<const Float>(std::sin(x_f -> get_val()));    
-    }  
-    const_pData log(const_pData x)
-    {
-        auto x_f = to_Float(x);
-        if (x_f -> get_val() > 0)
-            return std::make_shared<const Float>(std::log(x_f -> get_val()));
-        Message::message("ERROR: LOG operator's input must be positive");
-        throw std::range_error("LOG operator's input must be positive");
+        if(d1*d2!=init_v.size())
+        {
+            throw std::runtime_error("Fail to construct a matrix: size doesn't fit.");
+        }
     }
-    const_pData exp(const_pData x)
+    shared_ptr<const Matrix> Matrix::create(vector<double> init_v,int n,int m)
     {
-        auto x_f = to_Float(x);
-        return std::make_shared<const Float>(std::exp(x_f -> get_val()));
+        return make_shared<const Matrix>(init_v,n,m);
     }
-    const_pData tanh(const_pData x)
+    unique_ptr<const Data> Matrix::copy() const
     {
-        auto x_f = to_Float(x);
-        return std::make_shared<const Float>(std::tanh(x_f -> get_val()));
+        return make_unique<const Matrix>(*this);
     }
-    const_pData sigmoid(const_pData x)
+    
+    Graddata::Grad(map<int,const_pDiff> init_grad):grad(init_grad){}
+    unique_ptr<const Data> Graddata::copy() const
     {
-        auto x_f = to_Float(x);
-        return std::make_shared<const Float>(1.0 / (1.0 + std::exp(-1 * x_f -> get_val())));   
+        return make_unique<const Grad>(*this);
     }
-    //上述运算如果类型检查出现问题（如传入Data基类对象，传入nullptr），抛出std::runtime_error
-    //如果超出运算定义域（如log自变量<=0，除以0），则调用Message::message输出要求的错误信息并抛出std::range_error  
+    const_pDiff Graddata::get_grad(int x_id) const
+    {
+        auto it=grad.find(x_id);
+        if(it!=grad.end()) return it->second;else return nullptr;
+    }
+    const vector<int>& Graddata::get_fshape()
+    {
+        return fshape;
+    }
 }
