@@ -144,6 +144,7 @@ namespace computational_graph
     protected:
     	Assert(Graph *_g, int x_id);
     public:
+        static const_pNode create(Graph *g, int x_id);
         static const_pNode create(const_pNode x);    	
         virtual int get_type() const;
         virtual const_pData run(Session *sess, std::vector<const_pData> father_value) const;
@@ -154,6 +155,7 @@ namespace computational_graph
     protected:
     	Bind(Graph *_g, int left_id, int right_id);
     public: 
+        static const_pNode create(Graph *g, int left_id, int right_id);
         static const_pNode create(const_pNode left, const_pNode right);    	
         virtual int get_type() const;
         virtual const_pData run(Session *sess, std::vector<const_pData> father_value) const;    	
