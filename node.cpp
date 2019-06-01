@@ -323,7 +323,7 @@ namespace computational_graph
     {
         if(father_value.size() != 1)
         {
-            Message::error("evaluating node #"+to_string(get_id())+", expecting 1 input value,get "+to_string(father_value.size())+". returning nullptr.")
+            Message::error("evaluating node #"+to_string(get_id())+", expecting 1 input value,get "+to_string(father_value.size())+". returning nullptr.");
             return nullptr;
         }
         if (father_value[0]->boolean())
@@ -355,11 +355,37 @@ namespace computational_graph
     {
         if(father_value.size() != 2)
         {
-            Message::error("evaluating node #"+to_string(get_id())+", expecting 2 input value,get "+to_string(father_value.size())+". returning nullptr.")
+            Message::error("evaluating node #"+to_string(get_id())+", expecting 2 input value,get "+to_string(father_value.size())+". returning nullptr.");
             return nullptr;
         }
         return father_value[0];
     }
+    
+    Assign::Assign(Graph *_g, int left_id, int right_id):Node(_g, vector<int>{left_id, right_id}) {}
+	const_pNode Assign::create(Graph *g, int left_id,int right_id)
+	{
+		Message::debug ("Assign::create() (ID ver) called");
+		return g->join(unique_ptr<Assign>(new Assign(g,left_id,right_id)));
+	} 
+	const_pNode Assign::create(const_pNode left, const_pNode right)
+	{
+		Message::debug("Assign::create() (const_pNode ver) called");
+		if(!check_binary(left, right)) return nullptr;
+		return create(left->get_graph(),left->get_id(),right->get_id());
+	}
+	int Assign::get_type() const
+	{
+		return 11;
+	}
+	const_pData Assign::run(Session *sess, std::vector<const_pData> father_value) const
+	{
+		if(father_value.size()!=2)
+		{
+			Message::error("evaluating node #"+to_string(get_id())+", expecting 2 input value,get "+to_string(father_value.size())+". returning nullptr.");
+		}
+		sess->assign_task(father[0], father_value[1]);
+		return father_value[1];
+	}
 
     const_pNode operator +(const_pNode left,const_pNode right)
     {
