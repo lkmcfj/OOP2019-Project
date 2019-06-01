@@ -24,18 +24,6 @@ namespace computational_graph
     {
         return nodes[id];
     }
-    const_pNode Graph::getnode(string symbol)
-    {
-        return nodes[symbol_id[symbol]];
-    }
-    int Graph::get_symbol_id(string symbol)
-    {
-        return symbol_id[symbol];
-    }
-    void Graph::give_symbol(string symbol,int id)
-    {
-        symbol_id[symbol]=id;
-    }
     Session::Session(Graph &_g):g(_g)
     {
         last_variable_id=-1;
@@ -112,16 +100,6 @@ namespace computational_graph
             return;
         }
         variable_value[id]=v->copy();
-    }
-    void Session::set_variable(string symbol,const_pData v)
-    {
-        auto it=g.symbol_id.find(symbol);
-        if(it==g.symbol_id.end())
-        {
-            Message::error("In Session::set_variable(),invalid node symbol");
-            return;
-        }
-        variable_value[it->second]=v->copy();
     }
     void Session::set_variable(const_pNode p,const_pData v)
     {

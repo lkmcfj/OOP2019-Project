@@ -26,7 +26,6 @@ namespace computational_graph
         const std::vector<int> &get_father() const;
         int get_id() const;
         Graph *get_graph() const;
-        void give_symbol(std::string symbol) const;
         virtual int get_type() const;
         //type=0 Node
         //type=1 Variable
