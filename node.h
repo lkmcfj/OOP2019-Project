@@ -38,6 +38,9 @@ namespace computational_graph
         //type=8 Cond
         //type=9 Assert
         //type=10 Bind
+        //type=11 Grad
+        //type=12 At
+        //type=13 Assign
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;//error
         friend class Graph;
         virtual ~Node() = default;
@@ -159,8 +162,31 @@ namespace computational_graph
         static const_pNode create(const_pNode left, const_pNode right);    	
         virtual int get_type() const;
         virtual const_pData run(Session *sess, std::vector<const_pData> father_value) const;    	
-    }; 
-	
+    };
+
+    //TODO: get_grad(int x_id)
+    class Grad : public Node
+    {
+    protected:
+    	Grad(Graph *_g, int x_id);
+    public:
+        static const_pNode create(Graph *g, int x_id);
+        static const_pNode create(const_pNode x);    	
+        virtual int get_type() const;
+        virtual const_pData run(Session *sess, std::vector<const_pData> father_value) const;    	
+    };
+
+    class At : public Node
+    {
+    protected:
+    	At(Graph *_g, int grad_id, int x_id);
+    public:
+        static const_pNode create(Graph *g, int grad_id, int x_id);
+        static const_pNode create(const_pNode grad, int x_id);    	
+        virtual int get_type() const;
+        virtual const_pData run(Session *sess, std::vector<const_pData> father_value) const;    	   	
+    };
+
 	class Assign : public Node
 	{
 	protected:
@@ -171,7 +197,7 @@ namespace computational_graph
 		virtual int get_type() const;
 		virtual const_pData run(Session *sess, std::vector<const_pData> father_value) const;
 	};
-	
+
     const_pNode operator +(const_pNode left,const_pNode right);
     const_pNode operator -(const_pNode left,const_pNode right);
     const_pNode operator *(const_pNode left,const_pNode right);
