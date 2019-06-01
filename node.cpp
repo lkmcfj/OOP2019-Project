@@ -303,8 +303,12 @@ namespace computational_graph
         }
         return (father_value[0]->boolean())?father_value[1]:father_value[2];
     }
-
     Assert::Assert(Graph *_g, int x_id): Node(_g, vector<int>{x_id}){}
+    const_pNode Assert::create(Graph *g,int x_id)
+    {
+        Message::debug("Assert::create() (ID ver) called");
+        return g->join(unique_ptr<Assert>(new Assert(g, x_id)));
+    }
     const_pNode Assert::create(const_pNode x)
     {
         Message::debug("Assert::create() (const_pNode ver) called");
@@ -332,10 +336,15 @@ namespace computational_graph
     }
 
     Bind::Bind(Graph *_g, int left_id, int right_id): Node(_g, vector<int>{left_id, right_id}) {}
+    const_pNode Bind::create(Graph *g,int left_id, int right_id)
+    {
+        Message::debug("Bind::create() (ID ver) called");
+        return g->join(unique_ptr<Bind>(new Bind(g, left_id, right_id)));
+    }
     const_pNode Bind::create(const_pNode left, const_pNode right)
     {
         Message::debug("Bind::create() (const_pNode ver) called");
-        if(!check_double(x)) return nullptr;
+        if(!check_binary(left, right)) return nullptr;
         return create(left->get_graph(), left->get_id(), right->get_id());
     }
     int Bind::get_type() const
