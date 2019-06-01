@@ -7,37 +7,38 @@ namespace computational_graph
         out << x.to_string();
         return out;
     }
-    const_pTensor to_Tensor(const_pData x) //type check, change const_pData into const_pFloat
+    const_pTensor to_Tensor(const_pData x) //type check, change const_pData into const_pTensor
     {
         if(!x) throw std::runtime_error("Computation failed on null data.");
-        if (auto x_f = std::dynamic_pointer_cast<const Tensor>(x))
-            return x_f;
+        if (auto x_t = std::dynamic_pointer_cast<const Tensor>(x))
+            return x_t;
         throw std::runtime_error("Computation failed on non-tensor data.");
     }
     const_pData plus(const_pData left,const_pData right)
     {
-        auto left_f = to_Tensor(left);
-        auto right_f = to_Tensor(right);
-        return std::make_shared<const Float>(left_f -> get_val() + right_f -> get_val()); 
+        auto left_t = to_Tensor(left);
+        auto right_t = to_Tensor(right);
+        return std::make_shared<const Float>(left_t -> get_val() + right_t -> get_val()); 
     }
     const_pData minus(const_pData left,const_pData right)
     {
-        auto left_f = to_Tensor(left);
-        auto right_f = to_Tensor(right);
-        return std::make_shared<const Float>(left_f -> get_val() - right_f -> get_val()); 
+        auto left_t = to_Tensor(left);
+        auto right_t = to_Tensor(right);
+        return std::make_shared<const Float>(left_t -> get_val() - right_t -> get_val()); 
     }
     const_pData multi(const_pData left,const_pData right)
     {
-        auto left_f = to_Tensor(left);
-        auto right_f = to_Tensor(right);
-        return std::make_shared<const Float>(left_f -> get_val() * right_f -> get_val()); 
+        auto left_t = to_Tensor(left);
+        auto right_t = to_Tensor(right);
+        return std::make_shared<const Float>(left_t -> get_val() * right_t -> get_val()); 
     }
     const_pData div(const_pData left,const_pData right)
     {
-        auto left_f = to_Tensor(left);
-        auto right_f = to_Tensor(right);
-        if (right_f -> get_val() != 0)
-            return std::make_shared<const Float>(left_f -> get_val() / right_f -> get_val()); 
+        auto left_t = to_Tensor(left);
+        auto right_t = to_Tensor(right);
+        if (right_t -> get_val() != 0)
+            return std::make_shared<const Float>(left_t -> get_val() / right_t -> get_val()); 
+
         Message::message("ERROR: Division by zero");
         throw std::range_error("Division by zero");
     }
@@ -47,63 +48,79 @@ namespace computational_graph
     const_pData operator/(const_pData left,const_pData right){return div(left, right);}
     const_pData less_float(const_pData left,const_pData right)
     {
-        auto left_f = to_Tensor(left);
-        auto right_f = to_Tensor(right);
-        return std::make_shared<const Float>(left_f -> get_val() < right_f -> get_val()); 
+        auto left_t = to_Tensor(left);
+        auto right_t = to_Tensor(right);
+        return std::make_shared<const Float>(left_t -> get_val() < right_t -> get_val()); 
     }
     const_pData greater_float(const_pData left,const_pData right)
     {
-        auto left_f = to_Tensor(left);
-        auto right_f = to_Tensor(right);
-        return std::make_shared<const Float>(left_f -> get_val() > right_f -> get_val()); 
+        auto left_t = to_Tensor(left);
+        auto right_t = to_Tensor(right);
+        return std::make_shared<const Float>(left_t -> get_val() > right_t -> get_val()); 
     }
     const_pData leq_float(const_pData left,const_pData right)
     {
-        auto left_f = to_Tensor(left);
-        auto right_f = to_Tensor(right);
-        return std::make_shared<const Float>(left_f -> get_val() <= right_f -> get_val()); 
+        auto left_t = to_Tensor(left);
+        auto right_t = to_Tensor(right);
+        return std::make_shared<const Float>(left_t -> get_val() <= right_t -> get_val()); 
+
 
     }
     const_pData geq_float(const_pData left,const_pData right)
     {
-        auto left_f = to_Tensor(left);
-        auto right_f = to_Tensor(right);
-        return std::make_shared<const Float>(left_f -> get_val() >= right_f -> get_val()); 
+        auto left_t = to_Tensor(left);
+        auto right_t = to_Tensor(right);
+        return std::make_shared<const Float>(left_t -> get_val() >= right_t -> get_val()); 
     }
     const_pData equal_float(const_pData left,const_pData right)
     {
-        auto left_f = to_Tensor(left);
-        auto right_f = to_Tensor(right);
-        return std::make_shared<const Float>(left_f -> get_val() == right_f -> get_val()); 
-    } //ÉÏÊö±È½ÏÔËËã·µ»Øfloat
+        auto left_t = to_Tensor(left);
+        auto right_t = to_Tensor(right);
+        return std::make_shared<const Float>(left_t -> get_val() == right_t -> get_val()); 
+    } 
     const_pData sin(const_pData x)
     {
-        auto x_f = to_Tensor(x);
-        return std::make_shared<const Float>(std::sin(x_f -> get_val()));    
+        auto x_t = to_Tensor(x);
+        auto val = x_t -> get_val();
+        for (double item : val)
+            item = std::sin(item);
+        return std::make_shared<const Tensor>(val, x_t -> get_shape());    
     }  
     const_pData log(const_pData x)
     {
-        auto x_f = to_Tensor(x);
-        if (x_f -> get_val() > 0)
-            return std::make_shared<const Float>(std::log(x_f -> get_val()));
-        Message::message("ERROR: LOG operator's input must be positive");
-        throw std::range_error("LOG operator's input must be positive");
+        auto x_t = to_Tensor(x);
+        auto val = x_t -> get_val();
+        for (double item : val)
+            if (item > 0)
+                item = std::log(item);
+            else
+            {
+                Message::message("ERROR: LOG operator's input must be positive");
+                throw std::range_error("LOG operator's input must be positive");
+            }
+        return std::make_shared<const Tensor>(val, x_t -> get_shape());   
     }
     const_pData exp(const_pData x)
     {
-        auto x_f = to_Tensor(x);
-        return std::make_shared<const Float>(std::exp(x_f -> get_val()));
+        auto val = x_t -> get_val();
+        for (double item : val)
+            item = std::exp(item);
+        return std::make_shared<const Tensor>(val, x_t -> get_shape());    
     }
     const_pData tanh(const_pData x)
     {
-        auto x_f = to_Tensor(x);
-        return std::make_shared<const Float>(std::tanh(x_f -> get_val()));
+        auto val = x_t -> get_val();
+        for (double item : val)
+            item = std::tanh(item);
+        return std::make_shared<const Tensor>(val, x_t -> get_shape());    
     }
     const_pData sigmoid(const_pData x)
     {
-        auto x_f = to_Tensor(x);
-        return std::make_shared<const Float>(1.0 / (1.0 + std::exp(-1 * x_f -> get_val())));   
+        auto val = x_t -> get_val();
+        for (double item : val)
+            item = 1.0 / (1.0 + std::exp(-1 * item);
+        return std::make_shared<const Tensor>(val, x_t -> get_shape());     
     }
-    //ÉÏÊöÔËËãÈç¹ûÀàĞÍ¼ì²é³öÏÖÎÊÌâ£¨Èç´«ÈëData»ùÀà¶ÔÏó£¬´«Èënullptr£©£¬Å×³östd::runtime_error
-    //Èç¹û³¬³öÔËËã¶¨ÒåÓò£¨Èçlog×Ô±äÁ¿<=0£¬³ıÒÔ0£©£¬Ôòµ÷ÓÃMessage::messageÊä³öÒªÇóµÄ´íÎóĞÅÏ¢²¢Å×³östd::range_error  
+    //ä¸Šè¿°è¿ç®—å¦‚æœç±»å‹æ£€æŸ¥å‡ºç°é—®é¢˜ï¼ˆå¦‚ä¼ å…¥DataåŸºç±»å¯¹è±¡ï¼Œä¼ å…¥nullptrï¼‰ï¼ŒæŠ›å‡ºstd::runtime_error
+    //å¦‚æœè¶…å‡ºè¿ç®—å®šä¹‰åŸŸï¼ˆå¦‚logè‡ªå˜é‡<=0ï¼Œé™¤ä»¥0ï¼‰ï¼Œåˆ™è°ƒç”¨Message::messageè¾“å‡ºè¦æ±‚çš„é”™è¯¯ä¿¡æ¯å¹¶æŠ›å‡ºstd::range_error  
 }
