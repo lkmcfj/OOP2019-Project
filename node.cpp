@@ -360,32 +360,86 @@ namespace computational_graph
         }
         return father_value[0];
     }
-    
+
+    Grad::Grad(Graph *_g, int x_id): Node(_g, vector<int>{x_id}) {}
+    const_pNode Grad::create(Graph *g, int x_id)
+    {
+        Message::debug("Grad::create() (ID ver) called");
+        return g->join(unique_ptr<Grad>(new Grad(g, x_id)));        
+    }
+    const_pNode Grad::create(const_pNode x)
+    {
+        Message::debug("Grad::create() (const_pNode ver) called");
+        if(!check_single(x)) return nullptr;
+        return create(x->get_graph(), x->get_id());       
+    }   
+    int Grad::get_type() const
+    {
+        return 11;        
+    }
+    const_pData Grad::run(Session *sess, std::vector<const_pData> father_value) const
+    {
+        if(father_value.size() != 1)
+        {
+            Message::error("evaluating node #"+to_string(get_id())+", expecting 1 input value,get "+to_string(father_value.size())+". returning nullptr.");
+            return nullptr;
+        }
+        //TODO : 自动求导
+        return;
+    }
+    //only have a father Grad
+    At::At(Graph *_g, int grad_id, int x_id): Node(_g, vector<int>{grad_id}) {}
+    const_pNode At::create(Graph *g, int grad_id, int x_id)
+    {
+        Message::debug("At::create() (ID ver) called");
+        return g->join(unique_ptr<At>(new At(g, grad_id, x_id)));          
+    }
+    const_pNode At::create(const_pNode grad, int x_id)
+    {
+        Message::debug("Grad::create() (const_pNode ver) called");
+        if(!check_single(grad)) return nullptr;
+        return create(grad->get_graph(), grad->get_id());              
+    }      
+    int At::get_type() const
+    {
+        return 12;  
+    }
+    const_pData At::run(Session *sess, std::vector<const_pData> father_value) const
+    {
+        if(father_value.size() != 1)
+        {
+            Message::error("evaluating node #"+to_string(get_id())+", expecting 1 input value,get "+to_string(father_value.size())+". returning nullptr.")
+            return nullptr;
+        }
+        //TODO : get_grad
+        return father_value[0].get_grad(x_id);
+    }
+
     Assign::Assign(Graph *_g, int left_id, int right_id):Node(_g, vector<int>{left_id, right_id}) {}
-	const_pNode Assign::create(Graph *g, int left_id,int right_id)
-	{
-		Message::debug ("Assign::create() (ID ver) called");
-		return g->join(unique_ptr<Assign>(new Assign(g,left_id,right_id)));
-	} 
-	const_pNode Assign::create(const_pNode left, const_pNode right)
-	{
-		Message::debug("Assign::create() (const_pNode ver) called");
-		if(!check_binary(left, right)) return nullptr;
-		return create(left->get_graph(),left->get_id(),right->get_id());
-	}
-	int Assign::get_type() const
-	{
-		return 11;
-	}
-	const_pData Assign::run(Session *sess, std::vector<const_pData> father_value) const
-	{
-		if(father_value.size()!=2)
-		{
-			Message::error("evaluating node #"+to_string(get_id())+", expecting 2 input value,get "+to_string(father_value.size())+". returning nullptr.");
-		}
-		sess->assign_task(father[0], father_value[1]);
-		return father_value[1];
-	}
+    const_pNode Assign::create(Graph *g, int left_id,int right_id)
+    {
+        Message::debug ("Assign::create() (ID ver) called");
+        return g->join(unique_ptr<Assign>(new Assign(g,left_id,right_id)));
+    } 
+    const_pNode Assign::create(const_pNode left, const_pNode right)
+    {
+        Message::debug("Assign::create() (const_pNode ver) called");
+        if(!check_binary(left, right)) return nullptr;
+        return create(left->get_graph(),left->get_id(),right->get_id());
+    }
+    int Assign::get_type() const
+    {
+        return 13;
+    }
+    const_pData Assign::run(Session *sess, std::vector<const_pData> father_value) const
+    {
+        if(father_value.size()!=2)
+        {
+            Message::error("evaluating node #"+to_string(get_id())+", expecting 2 input value,get "+to_string(father_value.size())+". returning nullptr.");
+        }
+        sess->assign_task(father[0], father_value[1]);
+        return father_value[1];
+    }  
 
     const_pNode operator +(const_pNode left,const_pNode right)
     {
