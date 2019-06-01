@@ -148,7 +148,7 @@ namespace computational_graph
         static const_pNode create(const_pNode x);    	
         virtual int get_type() const;
         virtual const_pData run(Session *sess, std::vector<const_pData> father_value) const;
-    }
+    };
 
     class Bind : public Node
     {
@@ -159,8 +159,19 @@ namespace computational_graph
         static const_pNode create(const_pNode left, const_pNode right);    	
         virtual int get_type() const;
         virtual const_pData run(Session *sess, std::vector<const_pData> father_value) const;    	
-    }
-
+    }; 
+	
+	class Assign : public Node
+	{
+	protected:
+		Assign(Graph *_g, int left_id, int right_id);
+	public:
+		static const_pNode create(Graph *g, int left_id, int right_id);
+		static const_pNode create(const_pNode left, const_pNode right);
+		virtual int get_type() const;
+		virtual const_pData run(Session *sess, std::vector<const_pData> father_value) const;
+	};
+	
     const_pNode operator +(const_pNode left,const_pNode right);
     const_pNode operator -(const_pNode left,const_pNode right);
     const_pNode operator *(const_pNode left,const_pNode right);
