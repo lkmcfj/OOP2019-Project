@@ -12,7 +12,6 @@ namespace computational_graph
     {
     private:
         std::vector<const_pNode> nodes;
-        std::vector<int> variable_id;
     public:
         const_pNode join(std::unique_ptr<Node> curnode);
         const_pNode getnode(int id);
@@ -23,6 +22,8 @@ namespace computational_graph
     {
     private:
         std::map<int,const_pData> variable_value,temp_value;
+        std::set<int> vis;
+        std::vector<int> vislist;
         Graph &g;
         const_pData dfs_eval(int id);
         int last_variable_id;
