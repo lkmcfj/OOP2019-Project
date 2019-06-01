@@ -46,7 +46,7 @@ namespace computational_graph
 				ret=Variable::create(g, v);
 			}//Variable
 		}
-		ret->give_symbol(nodes[0]);
+		symbol[nodes[0]]=ret;
 		return ret;
 	}
 	const_pNode Parser::node(string s, Graph *g)
@@ -57,59 +57,57 @@ namespace computational_graph
 		const_pNode ret;
 		if(new_node[3]=="+"||new_node[3]=="-"||new_node[3]=="*"||new_node[3]=="/")
 		{
-			ret=Arith::create(g->getnode(new_node[2]),g->getnode(new_node[4]),new_node[3]);
+			ret=Arith::create(symbol[new_node[2]],symbol[new_node[4]],new_node[3]);
 		}//Arith
 		if(new_node[2]=="SIN"||new_node[2]=="LOG"||new_node[2]=="EXP"||new_node[2]=="SIGMOID"||new_node[2]=="TANH")
 		{
-			ret=Single_op::create(g->getnode(new_node[3]),new_node[2]);
+			ret=Single_op::create(symbol[new_node[3]],new_node[2]);
 		}//Single_op
 		if(new_node[2]=="PRINT")
 		{
-			ret=Print::create(g->getnode(new_node[3]),new_node[3]);
+			ret=Print::create(symbol[new_node[3]],new_node[3]);
 		}//Print
 		if(new_node[3]=="<="||new_node[3]=="<"||new_node[3]==">="||new_node[3]==">"||new_node[3]=="==")
 		{
-			ret=Cmp::create(g->getnode(new_node[2]),g->getnode(new_node[4]),new_node[3]);
+			ret=Cmp::create(symbol[new_node[2]],symbol[new_node[4]],new_node[3]);
 		}//Cmp
 		if(new_node[2]=="COND")
 		{
-			ret=Cond::create(g->getnode(new_node[3]),g->getnode(new_node[4]),g->getnode(new_node[5]));
+			ret=Cond::create(symbol[new_node[3]],symbol[new_node[4]],symbol[new_node[5]]);
 		}//Cond
-		ret->give_symbol(new_node[0]);
+		symbol[new_node[0]]=ret;
         return ret;
 	}
 	const_pData Parser::run(string s, Session *sess)
 	{
         Message::debug("Parser::run() called, input string is "+s);
 		vector <string> eval;
-		map <int, const_pData> placeholder_value;
+		map <const_pNode, const_pData> placeholder_value;
 		split(s,eval,' ');
 		const_pData ret;
 		if(eval[0]=="SETCONSTANT")
 		{
 			const_pData v=Float::create(stod(eval[2]));
-			sess->set_variable(eval[1],v);
+			sess->set_variable(symbol[eval[1]],v);
 			ret=nullptr;
 		}//Variable-setconstant
 		if(eval[0]=="SETANSWER")
 		{
 			const_pData v=res[stoi(eval[2])-1];
-			sess->set_variable(eval[1],v);
+			sess->set_variable(symbol[eval[1]],v);
 			ret=nullptr;
 		}//Variable-setanswer	
 		if(eval[0]=="EVAL")
 		{
 			int k;
-			Graph *curg=sess->get_graph();
 			if(eval.size()>2) k=stoi(eval[2]);else k=0;
 			for(int i=1;i<=k;i++)
 			{
-				int id=curg->get_symbol_id(eval[2*i+1]);
-				placeholder_value[id]=Float::create(stod(eval[2*i+2]));
+				placeholder_value[symbol[eval[2*i+1]]]=Float::create(stod(eval[2*i+2]));
 			}
 			try
             {
-                ret=sess->eval(sess->get_graph()->get_symbol_id(eval[1]),placeholder_value);
+                ret=sess->eval(symbol[eval[1]],placeholder_value);
             }catch(std::invalid_argument err)
             {
                 Message::error(err.what());
