@@ -7,7 +7,9 @@
 #include "message.h"
 namespace computational_graph
 {
-
+    using std::vector;
+    using std::map;
+    using std::string;
     string double_to_string(double v)
     {
         char buffer[50];
@@ -21,22 +23,15 @@ namespace computational_graph
         return v>eps;
     }
 
-    Tensor::Tensor(const Tensor &y):shape(y.shape), dim(y.dim), size(y.size)
-    {
-        p=new double[size];
-        memcpy(p,y.p,size*sizeof(double));
-    }
-    Tensor::Tensor(vector<double> init_v, vector<int> init_shape):shape(init_shape), dim(init_shape.size())
+    Tensor::Tensor(vector<double> init_v, vector<int> init_shape):
+        shape(init_shape), dim(init_shape.size()), p(init_v), size(init_v.size())
     {
         int s=1;
         for(auto i: shape) s*=i;
-        if(init_v.size()!=s)
+        if(size!=s)
         {
             throw std::runtime_error("Fail to construct a tensor: size doesn't fit.");
         }
-        p=new double[s];
-        size=s;
-        for(int i=0;i<size;++i) p[i]=init_v[i];
     }
     
     shared_ptr<const Tensor> Tensor::create(double *init_v, vector<int> init_shape)
@@ -67,9 +62,9 @@ namespace computational_graph
         }
         return res;
     }
-    vector<double> Tensor::get_val() const
+    const vector<double>& Tensor::get_val() const
     {
-        return vector<double>(p,p+size);
+        return p;
     }
     double Tensor::getval(vector<int> index) const
     {
@@ -104,19 +99,10 @@ namespace computational_graph
             Message::error("Fail to reshape:size doesn't fit.");
             return nullptr;
         }
-        return make_shared<const Tensor>(vector<double>(p,p+size), nshape);
-    }
-    Tensor::~Tensor()
-    {
-        delete[] p;
+        return make_shared<const Tensor>(p, nshape);
     }
 
-    Float::Float(const Float &y):Tensor(y){}
-    Float::Float(double init_v):shape(1,1), dim(1), size(1)
-    {
-        p=new double[1];
-        p[0]=init_v;
-    }
+    Float::Float(double init_v):shape(1,1), dim(1), size(1),p(1,init_v){}
     shared_ptr<const Float> Float::create(double init_v)
     {
         return make_shared<const Float>(init_v);
@@ -134,7 +120,6 @@ namespace computational_graph
         return make_unique<const Float>(*this);
     }
 
-    Diff::Diff(const Diff &y):Tensor(y),dim1(y.dim1),dim2(y.dim2) {}
     Diff::Diff(vector<double> init_v,vector<int> init_shape, int dimf):
         dim1(dimf),dim2(init_shape.size()-dimf),Tensor(init_v,init_shape) 
     {}
@@ -147,7 +132,6 @@ namespace computational_graph
         return make_unique<const Diff>(*this);
     }
     
-    Matrix::Matrix(const Matrix &y):Diff(y),n(y.n),m(y.m) {}
     Matrix::Matrix(vector<double> init_v, int d1,int d2):
         Diff(init_v,vector<int>{n,m},1),n(d1),m(d2)
     {
@@ -179,4 +163,21 @@ namespace computational_graph
     {
         return fshape;
     }
+    bool Graddata::boolean() const
+    {
+        Message::warning("Fail to convert a gradient to boolean, returning false.");
+        return false;
+    }
+    string Graddata::to_string() const
+    {
+        string res="{";
+        for(map<int,const_pDiff>::iterator i=grad.begin();i!=grad.end();++i)
+        {
+            if(i!=grad.begin()) res+=",\n";
+            res+=to_string(i->first)+": "+i->second->to_string();
+        }
+        res+="\n}";
+        return res;
+    }
+
 }

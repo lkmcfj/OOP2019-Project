@@ -3,6 +3,8 @@
 #include <memory>
 #include <string>
 #include <iostream>
+#include <vector>
+#include <map>
 
 namespace computational_graph
 {
@@ -19,28 +21,26 @@ namespace computational_graph
     class Tensor : public Data
     {
     protected:
-        double *p;
+        std::vector<double> p;
         std::vector<int> shape;
         int dim,size;
     public:
-        Tensor(const Tensor &y);
         Tensor(std::vector<double> init_v, std::vector<int> init_shape);
         static std::shared_ptr<const Tensor> create(double *init_v,std::vector<int> init_shape); 
-        std::vector<double> get_val() const;
+        const std::vector<double> get_val()& const;
         double get_val(std::vector<int> index) const;
         virtual std::string to_string() const;
         virtual bool boolean() const;
         virtual std::unique_ptr<const Data> copy() const;
         std::vector<int> get_shape() const;
         std::shared_ptr<const Tensor> reshape(std::vector<int> nshape);
-        virtual ~Tensor();
+        virtual ~Tensor() =default;
     };
     typedef std::shared_ptr<const Tensor> const_pTensor;
 
     class Float : public Tensor
     {
     public:
-        Float(const Float &y);
         Float(double init_v);
         static std::shared_ptr<const Float> create(double init_v);
         double get_val() const;
@@ -54,7 +54,6 @@ namespace computational_graph
     protected:
         int dim1,dim2;
     public:
-        Diff(const Diff &y);
         Diff(std::vector<double> init_v, std::vector<int> init_shape, int dimf);
         static std::shared_ptr<const Diff> create(std::vector<double> init_v, std::vector<int> init_shape, int dimf);
         virtual std::unique_ptr<const Data> copy() const;
@@ -66,7 +65,6 @@ namespace computational_graph
     private:
         int n,m;
     public:
-        Matrix(const Matrix &y);
         Matrix(std::vector<double> init_v,int d1,int d2);
         static std::shared_ptr<const Matrix> create(std::vector<double> init_v,int n,int m);
         virtual std:unique_ptr<const Data> copy() const;
@@ -82,6 +80,7 @@ namespace computational_graph
         virtual std::unique_ptr<const Data> copy() const;
         const_pDiff get_grad(int x_id) const;
         const std::vector<int>& get_fshape() const;
+        virtual bool boolean() const;
     };
 }
 
