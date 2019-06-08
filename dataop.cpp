@@ -94,31 +94,27 @@ namespace computational_graph
 		}
 		return Tensor::create(res, new_shape);
 	}
-	
-	
-	
-    const_pData minus(const_pData left,const_pData right)
+	const_pData div(const_pData left,const_pData right)
     {
-        auto left_t = to_Tensor(left);
-        auto right_t = to_Tensor(right);
-        return std::make_shared<const Float>(left_t -> get_val() - right_t -> get_val()); 
-    }
-    const_pData multi(const_pData left,const_pData right)
-    {
-        auto left_t = to_Tensor(left);
-        auto right_t = to_Tensor(right);
-        return std::make_shared<const Float>(left_t -> get_val() * right_t -> get_val()); 
-    }
-    const_pData div(const_pData left,const_pData right)
-    {
-        auto left_t = to_Tensor(left);
-        auto right_t = to_Tensor(right);
-        if (right_t -> get_val() != 0)
-            return std::make_shared<const Float>(left_t -> get_val() / right_t -> get_val()); 
+        const_pTensor left_t = to_Tensor(left), right_t = to_Tensor(right);
+        vector<int> left_shape = left_t ->get_shape(), right_shape = right_t ->get_shape();
+		vector<int> new_shape=broadcast_shape(left_shape, right_shape);
+		int size=1;
+		for(int i: new_shape) size*=i;
+		vector<double> res(size,0);
+		vector<int> index(new_shape.size(),0);
+		for(int i=0;i<size;++i)
+		{	if (right_t ->get_val(rev_broadcast(index,right_shape)) == 0)
+			{
+		        Message::message("ERROR: Division by zero");
+		        throw std::range_error("Division by zero");				
+			}
+			res[i] = left_t ->get_val(rev_broadcast(index,left_shape)) / right_t ->get_val(rev_broadcast(index,right_shape));
+			if(i+1<size) inc(index,new_shape);
+		}
+		return Tensor::create(res, new_shape);
+	}
 
-        Message::message("ERROR: Division by zero");
-        throw std::range_error("Division by zero");
-    }
     const_pData operator+(const_pData left,const_pData right){return plus(left, right);}
     const_pData operator-(const_pData left,const_pData right){return minus(left, right);}
     const_pData operator*(const_pData left,const_pData right){return multi(left, right);}
