@@ -149,9 +149,9 @@ namespace computational_graph
     {
         return value;
     }
-    std::vector<const_pData> Constant::run_diff(Session *sess, std::vector<const_pData> father_value) const
+    std::vector<const_pDiff> Constant::run_diff(Session *sess, std::vector<const_pData> father_value) const
     {
-        return std::vector<const_pData>();
+        return std::vector<const_pDiff>();
     }
     
     map<string,arith_op> Arith::str2op{{"+",plus},{"-",minus},{"*",multi},{"/",div}};
@@ -192,7 +192,7 @@ namespace computational_graph
             Message::error("evaluating diff of node #"+to_string(get_id())+", expecting 2 input value,get "+to_string(father_value.size())+". returning empty vector.");
             return std::vector<const_pDiff>();
         }
-        TODO
+        //TODO
     }
 
     map<string,const SingleTensorOp&> Single_op::str2op{{"sin",SingleTensorOp::sin},{"log",SingleTensorOp::log},{"exp",SingleTensorOp::exp},{"tanh",SingleTensorOp::tanh},{"sigmoid",SingleTensorOp::sigmoid},{"SIN",SingleTensorOp::sin},{"LOG",SingleTensorOp::log},{"EXP",SingleTensorOp::exp},{"TANH",SingleTensorOp::tanh},{"SIGMOID",SingleTensorOp::sigmoid}};
@@ -233,7 +233,7 @@ namespace computational_graph
             Message::error("evaluating diff of node #"+to_string(get_id())+", expecting 1 input value,get "+to_string(father_value.size())+". returning empty vector.");
             return std::vector<const_pDiff>();
         }
-        return vector<const_pDdata>{op.diff(father_value[0])};
+        return vector<const_pDiff>{op.diff(father_value[0])};
     }
 
     Print::Print(Graph *_g,int x_id,string x_symbol):
@@ -271,6 +271,9 @@ namespace computational_graph
             Message::error("evaluating diff of node #"+to_string(get_id())+", expecting 1 input value,get "+to_string(father_value.size())+". returning empty vector.");
             return std::vector<const_pDiff>();
         }
+        const_pTensor f = to_Tensor(father_value[0]);
+        auto shape = f -> get_shape();
+        return vector<const_pDiff>{Diff::identity(shape)} ;
 
     }
 
@@ -307,9 +310,14 @@ namespace computational_graph
     }
     std::vector<const_pDiff> Cmp::run_diff(Session *sess, std::vector<const_pData> father_value) const
     {
-        std::vector<const_pDiff> v(1);
-        v[0] = Tensor::Zeros();
-        return v;
+        if(father_value.size() != 2)
+        {
+            Message::error("evaluating diff of node #"+to_string(get_id())+", expecting 2 input value,get "+to_string(father_value.size())+". returning empty vector.");
+            return std::vector<const_pDiff>();
+        }
+        const_pTensor f = to_Tensor(father_value[0]);
+        auto shape = f -> get_shape();
+        return vector<const_pDiff>{Tensor::zeros(shape)} ;
     }
 
     Cond::Cond(Graph *_g,int cond_id,int true_id,int false_id):
@@ -341,7 +349,19 @@ namespace computational_graph
     }
     std::vector<const_pDiff> Cond::run_diff(Session *sess, std::vector<const_pData> father_value) const
     {
-        return Tensor::Zeros();
+        if(father_value.size()!=3)
+        {
+            Message::error("evaluating diff of node #"+to_string(get_id())+", expecting 3 input value,get "+to_string(father_value.size())+". returning empty vector.");
+            return std::vector<const_pDiff>();
+        }
+        const_pTensor f[3]; vector <int> shape[3];
+        for (int i = 0; i < 3; i++){
+            f[i] = to_Tensor(father_value[i]);
+            shape[i] = f[i] -> get_shape();
+        }
+        if (father_value[0]->boolean())
+            return vector<const_pDiff>{ Tensor::zeros(shape[0]), Diff::identity(shape[1]), Tensor::zeros(shape[2])};
+        return vector<const_pDiff>{ Tensor::zeros(shape[0]), Tensor::zeros(shape[1]), Diff::identity(shape[2])};
     }
 
     Assert::Assert(Graph *_g, int x_id): Node(_g, vector<int>{x_id}){}
@@ -377,7 +397,14 @@ namespace computational_graph
     }
     std::vector<const_pDiff> Assert::run_diff(Session *sess, std::vector<const_pData> father_value) const
     {
-        TODO
+        if(father_value.size() != 1)
+        {
+            Message::error("evaluating diff of node #"+to_string(get_id())+", expecting 1 input value,get "+to_string(father_value.size())+". returning empty vector.");
+            return std::vector<const_pDiff>();
+        }
+        const_pTensor f = to_Tensor(father_value[0]);
+        auto shape = f -> get_shape();
+        return vector<const_pDiff>{Tensor::zeros(shape)} ;
     }
 
     Bind::Bind(Graph *_g, int left_id, int right_id): Node(_g, vector<int>{left_id, right_id}) {}
@@ -407,7 +434,14 @@ namespace computational_graph
     }
     std::vector<const_pDiff> Bind::run_diff(Session *sess, std::vector<const_pData> father_value) const
     {
-        TODO
+        if(father_value.size()!=2)
+        {
+            Message::error("evaluating diff of node #"+to_string(get_id())+", expecting 2 input value,get "+to_string(father_value.size())+". returning empty vector.");
+            return std::vector<const_pDiff>();
+        }
+        const_pTensor f = to_Tensor(father_value[0]);
+        auto shape = f -> get_shape();
+        return vector<const_pDiff>{Diff::(shape)} ;
     }
 
     Grad::Grad(Graph *_g, int x_id): Node(_g, vector<int>{x_id}) {}
@@ -462,7 +496,8 @@ namespace computational_graph
     }
     std::vector<const_pData> Grad::run_diff(Session *sess, std::vector<const_pData> father_value) const
     {
-        TODO
+        Message::error("Not Support");
+        throw std::runtime_error("Not Support");
     }
 
     At::At(Graph *_g, int grad_id, int x_id): Node(_g, vector<int>{grad_id, x_id}) {}
@@ -500,9 +535,10 @@ namespace computational_graph
         }
         throw std::runtime_error("x is not a tensor");
     }
-    std::vector<const_pData> At::run_diff(Session *sess, std::vector<const_pData> father_value) const
+    std::vector<const_pDiff> At::run_diff(Session *sess, std::vector<const_pData> father_value) const
     {
-        TODO
+        Message::error("Not Support");
+        throw std::runtime_error("Not Support");
     }
 
     Assign::Assign(Graph *_g, int left_id, int right_id):Node(_g, vector<int>{left_id, right_id}) {}
@@ -530,9 +566,16 @@ namespace computational_graph
         sess->add_assign_task(father[0], father_value[1]);
         return father_value[1];
     }  
-    std::vector<const_pData> Assign::run_diff(Session *sess, std::vector<const_pData> father_value) const
+    std::vector<const_pDiff> Assign::run_diff(Session *sess, std::vector<const_pData> father_value) const
     {
-        TODO
+        if(father_value.size()!=2)
+        {
+            Message::error("evaluating diff of node #"+to_string(get_id())+", expecting 2 input value,get "+to_string(father_value.size())+". returning empty vector.");
+            return std::vector<const_pDiff>();
+        }
+        const_pTensor f = to_Tensor(father_value[1]);
+        auto shape = f -> get_shape();
+        return vector<const_pDiff>{Diff::(shape)} ;
     }
 
     const_pNode operator +(const_pNode left,const_pNode right)
