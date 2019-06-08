@@ -36,7 +36,7 @@ namespace computational_graph
     }
     bool check_binary(const_pNode n1,const_pNode n2)
     {
-	    if((!n1)||(!n2))
+        if((!n1)||(!n2))
         {
             Message::error("previous node is null when creating node, returning null node.");
             return false;
@@ -108,6 +108,10 @@ namespace computational_graph
         Message::warning("trying to evaluate variable #"+to_string(get_id())+" directly. returning default value");
         return default_value;
     }
+    std::vector<const_pData> Variable::run_diff(Session *sess, std::vector<const_pData> father_value) const
+    {
+        return std::vector<const_pData>();
+    }
 
     Placeholder::Placeholder(Graph *_g):Node(_g){}
     const_pNode Placeholder::create(Graph *g)
@@ -123,6 +127,10 @@ namespace computational_graph
     {
         Message::error("trying to evaluate placeholder #"+to_string(get_id())+" directly. returning nullptr");
         return nullptr;
+    }
+    std::vector<const_pData> Placeholder::run_diff(Session *sess, std::vector<const_pData> father_value) const
+    {
+        return std::vector<const_pData>();
     }
 
     Constant::Constant(Graph *_g,const_pData v):
@@ -140,6 +148,10 @@ namespace computational_graph
     const_pData Constant::run(Session *sess,vector<const_pData> father_value) const
     {
         return value;
+    }
+    std::vector<const_pData> Constant::run_diff(Session *sess, std::vector<const_pData> father_value) const
+    {
+        return std::vector<const_pData>();
     }
     
     map<string,arith_op> Arith::str2op{{"+",plus},{"-",minus},{"*",multi},{"/",div}};
@@ -173,6 +185,15 @@ namespace computational_graph
         }
         return op(father_value[0],father_value[1]);
     }
+    std::vector<const_pData> Arith::run_diff(Session *sess, std::vector<const_pData> father_value) const
+    {
+        if(father_value.size()!=2)
+        {
+            Message::error("evaluating diff of node #"+to_string(get_id())+", expecting 2 input value,get "+to_string(father_value.size())+". returning empty vector.");
+            return std::vector<const_pData>();
+        }
+        //TODO
+    }
 
     map<string,const SingleTensorOp&> Single_op::str2op{{"sin",SingleTensorOp::sin},{"log",SingleTensorOp::log},{"exp",SingleTensorOp::exp},{"tanh",SingleTensorOp::tanh},{"sigmoid",SingleTensorOp::sigmoid},{"SIN",SingleTensorOp::sin},{"LOG",SingleTensorOp::log},{"EXP",SingleTensorOp::exp},{"TANH",SingleTensorOp::tanh},{"SIGMOID",SingleTensorOp::sigmoid}};
     Single_op::Single_op(Graph *_g,int x_id,string op_str):
@@ -205,6 +226,17 @@ namespace computational_graph
         }
         return op(father_value[0]);
     }
+    std::vector<const_pData> Single_op::run_diff(Session *sess, std::vector<const_pData> father_value) const
+    {
+        if(father_value.size()!=1)
+        {
+            Message::error("evaluating diff of node #"+to_string(get_id())+", expecting 1 input value,get "+to_string(father_value.size())+". returning empty vector.");
+            return std::vector<const_pData>();
+        }
+        std::vector<const_pDiff> v(1);
+        v[0] = op.diff(father_value[0]);
+        return v;
+    }
 
     Print::Print(Graph *_g,int x_id,string x_symbol):
         Node(_g,vector<int>{x_id}),father_symbol(x_symbol)
@@ -231,8 +263,17 @@ namespace computational_graph
             Message::error("evaluating node #"+to_string(get_id())+", expecting 1 input value,get "+to_string(father_value.size())+". returning nullptr.");
             return nullptr;
         }
-        Message::message("Print Operator: "+father_symbol+" = "+father_value[0]->to_string());
+        Message::message("Print Operator: " + father_symbol+" = "+father_value[0]->to_string());
         return father_value[0];
+    }
+    std::vector<const_pData> Print::run_diff(Session *sess, std::vector<const_pData> father_value) const
+    {
+        if(father_value.size()!=1)
+        {
+            Message::error("evaluating diff of node #"+to_string(get_id())+", expecting 1 input value,get "+to_string(father_value.size())+". returning empty vector.");
+            return std::vector<const_pData>();
+        }
+
     }
 
     map<string,cmp_op> Cmp::str2op{{"<",less_float},{">",greater_float},{"<=",leq_float},{">=",geq_float},{"==",equal_float}};
@@ -266,6 +307,12 @@ namespace computational_graph
         }
         return op(father_value[0],father_value[1]);
     }
+    std::vector<const_pData> Cmp::run_diff(Session *sess, std::vector<const_pData> father_value) const
+    {
+        std::vector<const_pData> v(1);
+        v[0] = Tensor::Zeros();
+        return v;
+    }
 
     Cond::Cond(Graph *_g,int cond_id,int true_id,int false_id):
         Node(_g,vector<int>{cond_id,true_id,false_id})
@@ -294,6 +341,11 @@ namespace computational_graph
         }
         return (father_value[0]->boolean())?father_value[1]:father_value[2];
     }
+    std::vector<const_pData> Cond::run_diff(Session *sess, std::vector<const_pData> father_value) const
+    {
+                return Tensor::Zeros();
+    }
+
     Assert::Assert(Graph *_g, int x_id): Node(_g, vector<int>{x_id}){}
     const_pNode Assert::create(Graph *g,int x_id)
     {
@@ -325,6 +377,10 @@ namespace computational_graph
             throw std::runtime_error("Assertion failed");
         }
     }
+    std::vector<const_pData> Assert::run_diff(Session *sess, std::vector<const_pData> father_value) const
+    {
+
+    }
 
     Bind::Bind(Graph *_g, int left_id, int right_id): Node(_g, vector<int>{left_id, right_id}) {}
     const_pNode Bind::create(Graph *g,int left_id, int right_id)
@@ -350,6 +406,10 @@ namespace computational_graph
             return nullptr;
         }
         return father_value[0];
+    }
+    std::vector<const_pData> Bind::run_diff(Session *sess, std::vector<const_pData> father_value) const
+    {
+
     }
 
     Grad::Grad(Graph *_g, int x_id): Node(_g, vector<int>{x_id}) {}
@@ -377,6 +437,10 @@ namespace computational_graph
         }
         //TODO : 自动求导
         return;
+    }
+    std::vector<const_pData> Grad::run_diff(Session *sess, std::vector<const_pData> father_value) const
+    {
+
     }
 
     At::At(Graph *_g, int grad_id, int x_id): Node(_g, vector<int>{grad_id, x_id}) {}
@@ -414,6 +478,10 @@ namespace computational_graph
         }
         throw std::runtime_error("x is not a tensor");
     }
+    std::vector<const_pData> At::run_diff(Session *sess, std::vector<const_pData> father_value) const
+    {
+
+    }
 
     Assign::Assign(Graph *_g, int left_id, int right_id):Node(_g, vector<int>{left_id, right_id}) {}
     const_pNode Assign::create(Graph *g, int left_id,int right_id)
@@ -440,6 +508,10 @@ namespace computational_graph
         sess->assign_task(father[0], father_value[1]);
         return father_value[1];
     }  
+    std::vector<const_pData> Assign::run_diff(Session *sess, std::vector<const_pData> father_value) const
+    {
+
+    }
 
     const_pNode operator +(const_pNode left,const_pNode right)
     {
