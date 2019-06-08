@@ -93,12 +93,11 @@ namespace computational_graph
         static const_pNode create(const_pNode left,const_pNode right,std::string op_str);
     };
 
-    typedef std::function<const_pData(const_pData)> single_op;
     class Single_op : public Node
     {
-        static std::map<std::string,single_op> str2op;
+        static std::map<std::string,const SingleTensorOp&> str2op;
     protected:
-        single_op op;
+        SingleTensorOp op;
         Single_op(Graph *_g,int x_id,std::string op_str);
     public:
         virtual int get_type() const;

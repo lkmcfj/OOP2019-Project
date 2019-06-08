@@ -183,7 +183,7 @@ namespace computational_graph
         return op(father_value[0],father_value[1]);
     }
 
-    map<string,single_op> Single_op::str2op{{"sin",sin},{"log",log},{"exp",exp},{"tanh",tanh},{"sigmoid",sigmoid},{"SIN",sin},{"LOG",log},{"EXP",exp},{"TANH",tanh},{"SIGMOID",sigmoid}};
+    map<string,const SingleTensorOp&> Single_op::str2op{{"sin",SingleTensorOp::sin},{"log",SingleTensorOp::log},{"exp",SingleTensorOp::exp},{"tanh",SingleTensorOp::tanh},{"sigmoid",SingleTensorOp::sigmoid},{"SIN",SingleTensorOp::sin},{"LOG",SingleTensorOp::log},{"EXP",SingleTensorOp::exp},{"TANH",SingleTensorOp::tanh},{"SIGMOID",SingleTensorOp::sigmoid}};
     Single_op::Single_op(Graph *_g,int x_id,string op_str):
         Node(_g,vector<int>{x_id})
     {
