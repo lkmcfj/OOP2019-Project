@@ -188,38 +188,55 @@ namespace computational_graph
     const_pData operator-(const_pData left,const_pData right){return minus(left, right);}
     const_pData operator*(const_pData left,const_pData right){return multi(left, right);}
     const_pData operator/(const_pData left,const_pData right){return div(left, right);}
-    
-    const_pData less_float(const_pData left,const_pData right)
+       const_pData less_float(const_pData left,const_pData right)
     {
         auto left_t = to_Tensor(left);
         auto right_t = to_Tensor(right);
-        return std::make_shared<const Float>(left_t -> get_val() < right_t -> get_val()); 
+        if (left_t -> getsize() != 1  || right_t -> getsize() != 1 ){
+       		Message::Error("Tensor can not be coverted to a scalar");
+        	throw std::runtime_error("Tensor can not be coverted to a scalar"); 
+        }
+        return std::make_shared<const Float>(left_t -> get_val()[0] < right_t -> get_val()[0]); 
     }
     const_pData greater_float(const_pData left,const_pData right)
     {
         auto left_t = to_Tensor(left);
         auto right_t = to_Tensor(right);
-        return std::make_shared<const Float>(left_t -> get_val() > right_t -> get_val()); 
+        if (left_t -> getsize() != 1  || right_t -> getsize() != 1 ){
+       		Message::Error("Tensor can not be coverted to a scalar");
+        	throw std::runtime_error("Tensor can not be coverted to a scalar"); 
+        }
+        return std::make_shared<const Float>(left_t -> get_val()[0] > right_t -> get_val()[0]); 
     }
     const_pData leq_float(const_pData left,const_pData right)
     {
         auto left_t = to_Tensor(left);
         auto right_t = to_Tensor(right);
-        return std::make_shared<const Float>(left_t -> get_val() <= right_t -> get_val()); 
-
-
+        if (left_t -> getsize() != 1  || right_t -> getsize() != 1 ){
+       		Message::Error("Tensor can not be coverted to a scalar");
+        	throw std::runtime_error("Tensor can not be coverted to a scalar"); 
+        }
+        return std::make_shared<const Float>(left_t -> get_val()[0] <= right_t -> get_val()[0]); 
     }
     const_pData geq_float(const_pData left,const_pData right)
     {
         auto left_t = to_Tensor(left);
         auto right_t = to_Tensor(right);
-        return std::make_shared<const Float>(left_t -> get_val() >= right_t -> get_val()); 
+        if (left_t -> getsize() != 1  || right_t -> getsize() != 1 ){
+       		Message::Error("Tensor can not be coverted to a scalar");
+        	throw std::runtime_error("Tensor can not be coverted to a scalar"); 
+        }
+        return std::make_shared<const Float>(left_t -> get_val()[0] >= right_t -> get_val()[0]);  
     }
     const_pData equal_float(const_pData left,const_pData right)
     {
         auto left_t = to_Tensor(left);
         auto right_t = to_Tensor(right);
-        return std::make_shared<const Float>(left_t -> get_val() == right_t -> get_val()); 
+        if (left_t -> getsize() != 1  || right_t -> getsize() != 1 ){
+       		Message::Error("Tensor can not be coverted to a scalar");
+        	throw std::runtime_error("Tensor can not be coverted to a scalar"); 
+        }
+        return std::make_shared<const Float>(left_t -> get_val()[0] == right_t -> get_val()[0]); 
     }
     
     double double_sin(double x)
