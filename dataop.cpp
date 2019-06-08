@@ -81,15 +81,31 @@ namespace computational_graph
     const_pData sin(const_pData x)
     {
         auto x_t = to_Tensor(x);
-        auto val = x_t -> get_val();
+        std::vector<double> val = x_t -> get_val();
         for (double item : val)
             item = std::sin(item);
         return std::make_shared<const Tensor>(val, x_t -> get_shape());    
     }  
+    //求导运算 , a tensor of shape n*m*k  --> a diff of (n*m*k) * (n*m*k)
+    const_pData sin_diff(const_pData x)
+    {
+    	auto x_t = to_Tensor(x);
+        std::vector<double> *val = x_t -> get_val(); 
+     	auto shape = x_t -> get_shape();
+    	int dim = shape.size();
+    	int size = val.size();
+    	auto shape_ = shape + shape;
+    	std::vector<double> val_(size*size, 0);
+    	for (int i = 0; i < size; i++){
+    		val_[i*size + i] = std::cos(*(val+i));
+    	}
+    	return std::make_shared<const Diff>(val_, shape_, dim);
+    }
+
     const_pData log(const_pData x)
     {
         auto x_t = to_Tensor(x);
-        auto val = x_t -> get_val();
+        std::vector<double> val = x_t -> get_val();
         for (double item : val)
             if (item > 0)
                 item = std::log(item);
@@ -102,7 +118,7 @@ namespace computational_graph
     }
     const_pData exp(const_pData x)
     {
-        auto val = x_t -> get_val();
+        std::vector<double> val = x_t -> get_val();
         for (double item : val)
             item = std::exp(item);
         return std::make_shared<const Tensor>(val, x_t -> get_shape());    
