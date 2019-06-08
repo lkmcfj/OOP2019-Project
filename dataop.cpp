@@ -20,7 +20,69 @@ namespace computational_graph
     {
         auto left_t = to_Tensor(left);
         auto right_t = to_Tensor(right);
-        return std::make_shared<const Float>(left_t -> get_val() + right_t -> get_val()); 
+        auto left_shape = left_t->get_shape();
+        auto right_shape = right_t->get_shape();
+        auto left_val = left_t->get_val();
+        auto right_val = right_t->get_val);
+        
+        int left_dim = left_shape.size();
+        int right_dim = right_shape.size();
+        int dim = max(left_dim, right_dim);
+        
+		std::vector<int> new_shape_left(dim);
+		std::vector<int> new_shape_right(dim);
+		std::vector<int> new_shape(dim); 
+        
+		for (int i = 0; i < dim; i++)
+        {
+        	if (left_dim <= right_dim)
+        	{
+        		if(i < right_dim - left_dim)
+					new_shape_left[i] = 1;
+				if(i >= right_dim - left_dim1)
+					new_shape_left[i] = left_shape[i - right_dim + left_dim];
+				new_shape_right[i] = right_shape[i];
+			}
+			if (left_dim > right_dim)
+			{
+				if(i < left_dim - right_dim)
+					new_shape_right[i] = 1;
+				if(i >= left_dim - right_dim)
+					new_shape_right[i] = right_shape[i - left_dim + right_dim];
+				new_shape_left[i] = left_shape[i];
+			}
+		}
+		for (int i = 0; i < dim; i++)
+		{
+			if (new_shape_left[i] != new_shape_right[i])
+			{
+				if (new_shape_left[i] == 1)
+				{
+					new_shape[i] = new_shape_right[i];	
+				}
+				if (new_shape_right[i] == 1)
+				{
+					new_shape = new_shape_left[i];
+				}
+				else
+				{
+					Message::error("Fail to broadcast:shape dosen't fit.");
+				}
+			}
+			if (new_shape_left[i] == new_shape_right[i])
+			{
+				new_shape[i] = new_shape_left[i];
+			}
+		}//broadcast
+		
+		int size = 1;
+		for (int i = 0; i < dim; i++)
+		{
+			size = size * new_shape[i];
+		}
+		std::vector<double> new_val(size);
+		
+        return Tensor::create(new_val, new_shape); 
     }
     const_pData minus(const_pData left,const_pData right)
     {
@@ -158,6 +220,6 @@ namespace computational_graph
 						 SingleTensorOp::exp(double_exp,double_diff_exp),
 						 SingleTensorOp::tanh(double_tanh,double_diff_tanh),
 						 SingleTensorOp::sigmoid(double_sigmoid,double_diff_sigmoid);
-    //ä¸Šè¿°è¿ç®—å¦‚æœç±»å‹æ£€æŸ¥å‡ºç°é—®é¢˜ï¼ˆå¦‚ä¼ å…¥DataåŸºç±»å¯¹è±¡ï¼Œä¼ å…¥nullptrï¼‰ï¼ŒæŠ›å‡ºstd::runtime_error
-    //å¦‚æœè¶…å‡ºè¿ç®—å®šä¹‰åŸŸï¼ˆå¦‚logè‡ªå˜é‡<=0ï¼Œé™¤ä»¥0ï¼‰ï¼Œåˆ™è°ƒç”¨Message::messageè¾“å‡ºè¦æ±‚çš„é”™è¯¯ä¿¡æ¯å¹¶æŠ›å‡ºstd::range_error  
+    //ÉÏÊöÔËËãÈç¹ûÀàĞÍ¼ì²é³öÏÖÎÊÌâ£¨Èç´«ÈëData»ùÀà¶ÔÏó£¬´«Èënullptr£©£¬Å×³östd::runtime_error
+    //Èç¹û³¬³öÔËËã¶¨ÒåÓò£¨Èçlog×Ô±äÁ¿<=0£¬³ıÒÔ0£©£¬Ôòµ÷ÓÃMessage::messageÊä³öÒªÇóµÄ´íÎóĞÅÏ¢²¢Å×³östd::range_error  
 }
