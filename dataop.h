@@ -19,11 +19,27 @@ namespace computational_graph
     const_pData geq_float(const_pData left,const_pData right);
     const_pData equal_float(const_pData left,const_pData right);
     //上述比较运算返回float
-    const_pData sin(const_pData x);
-    const_pData log(const_pData x);
-    const_pData exp(const_pData x);
-    const_pData tanh(const_pData x);
-    const_pData sigmoid(const_pData x);
+    double double_sin(double x);
+    double double_log(double x);
+    double double_exp(double x);
+    double double_tanh(double x);
+    double double_sigmoid(double x);
+    
+    double double_diff_sin(double x);
+    double double_diff_log(double x);
+    double double_diff_exp(double x);
+    double double_diff_tanh(double x);
+    double double_diff_sigmoid(double x);
+    
+    class SingleTensorOp
+    {
+		std::function<double(double)> op,diffop;
+	public:
+		SingleTensorOp(std::function<double(double)> op,std::function<double(double)> diffop);
+		const_pData operator()(const_pData x) const;
+		const_pDiff diff(const_pData x) const;
+		static const SingleTensorOp sin, log, exp, tanh, sigmoid;
+	};
     //上述运算如果类型检查出现问题（如传入Data基类对象，传入nullptr），抛出std::runtime_error
     //如果超出运算定义域（如log自变量<=0，除以0），则调用Message::message输出要求的错误信息并抛出std::range_error
 }
