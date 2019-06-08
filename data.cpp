@@ -34,9 +34,9 @@ namespace computational_graph
         }
     }
     
-    shared_ptr<const Tensor> Tensor::create(double *init_v, vector<int> init_shape)
+    shared_ptr<const Tensor> Tensor::create(vector<double> init_v, vector<int> init_shape)
     {
-        return make_shared<const Tensor>(init_v, std::move(init_shape));
+        return make_shared<const Tensor>(std::move(init_v), std::move(init_shape));
     }
 
     string Tensor::to_string() const

@@ -26,7 +26,7 @@ namespace computational_graph
         int dim,size;
     public:
         Tensor(std::vector<double> init_v, std::vector<int> init_shape);
-        static std::shared_ptr<const Tensor> create(double *init_v,std::vector<int> init_shape); 
+        static std::shared_ptr<const Tensor> create(std::vector<double> init_v,std::vector<int> init_shape); 
         const std::vector<double> get_val()& const;
         double get_val(std::vector<int> index) const;
         virtual std::string to_string() const;
