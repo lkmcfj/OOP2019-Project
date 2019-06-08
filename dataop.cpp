@@ -15,75 +15,83 @@ namespace computational_graph
         throw std::runtime_error("Computation failed on non-tensor data.");
     }
     
-    
+    vector<int> broadcast_shape(vector<int> s1,vector<int> s2)
+    {
+		if(s1.size()>s2.size()) std::swap(s1,s2);
+		int dim1=s1.size(),dim2=s2.size();
+		vector<int> res(dim2,0);
+		for(int i=0;i<dim2;++i)
+		{
+			if(i<dim2-dim1) res[i]=s2[i]; else
+			{
+				if(s1[i-(dim2-dim1)]==s2[i]||s1[i-(dim2-dim1)]==1||s2[i]==1) res[i]=max(s1[i-(dim2-dim1)],s2[i]);
+				else throw std::runtime_error("broadcast failed");
+			}
+		}
+		return res;
+	}
+	vector<int> rev_broadcast(vector<int> index,vector<int> shape)
+	{
+		vector<int> res(index.begin()+(index.size()-shape.size()),index.end());
+		for(int i=0;i<shape.size();++i) if(shape[i]==1) res[i]=0;
+		return res;
+	}
+	
     const_pData plus(const_pData left,const_pData right)
     {
-        auto left_t = to_Tensor(left);
-        auto right_t = to_Tensor(right);
-        auto left_shape = left_t->get_shape();
-        auto right_shape = right_t->get_shape();
-        auto left_val = left_t->get_val();
-        auto right_val = right_t->get_val);
+        const_pTensor left_t = to_Tensor(left), right_t = to_Tensor(right);
+        vector<int> left_shape = left_t ->get_shape(), right_shape = right_t ->get_shape();
         
-        int left_dim = left_shape.size();
-        int right_dim = right_shape.size();
-        int dim = max(left_dim, right_dim);
-        
-		std::vector<int> new_shape_left(dim);
-		std::vector<int> new_shape_right(dim);
-		std::vector<int> new_shape(dim); 
-        
-		for (int i = 0; i < dim; i++)
-        {
-        	if (left_dim <= right_dim)
-        	{
-        		if(i < right_dim - left_dim)
-					new_shape_left[i] = 1;
-				if(i >= right_dim - left_dim1)
-					new_shape_left[i] = left_shape[i - right_dim + left_dim];
-				new_shape_right[i] = right_shape[i];
-			}
-			if (left_dim > right_dim)
+		vector<int> new_shape=broadcast_shape(left_shape, right_shape);
+		int size=1;
+		for(int i: new_shape) size*=i;
+		vector<double> res(size,0);
+		vector<int> index(new_shape.size(),0);
+		for(int i=0;i<size;++i)
+		{
+			res[i]=left_t ->get_val(rev_broadcast(index,left_shape))+left_t ->get_val(rev_broadcast(index,right_shape));
+			if(i+1<size)
 			{
-				if(i < left_dim - right_dim)
-					new_shape_right[i] = 1;
-				if(i >= left_dim - right_dim)
-					new_shape_right[i] = right_shape[i - left_dim + right_dim];
-				new_shape_left[i] = left_shape[i];
+				int j=index.size()-1;
+				while(index[j]==new_shape[j]-1)
+				{
+					index[j]=0;
+					--j;
+				}
+				++index[j];
 			}
 		}
-		for (int i = 0; i < dim; i++)
+		return Tensor::create(res, new_shape);
+	}
+	const_pData minus(const_pData left,const_pData right)
+    {
+        const_pTensor left_t = to_Tensor(left), right_t = to_Tensor(right);
+        vector<int> left_shape = left_t ->get_shape(), right_shape = right_t ->get_shape();
+        
+		vector<int> new_shape=broadcast_shape(left_shape, right_shape);
+		int size=1;
+		for(int i: new_shape) size*=i;
+		vector<double> res(size,0);
+		vector<int> index(new_shape.size(),0);
+		for(int i=0;i<size;++i)
 		{
-			if (new_shape_left[i] != new_shape_right[i])
+			res[i]=left_t ->get_val(rev_broadcast(index,left_shape))-left_t ->get_val(rev_broadcast(index,right_shape));
+			if(i+1<size)
 			{
-				if (new_shape_left[i] == 1)
+				int j=index.size()-1;
+				while(index[j]==new_shape[j]-1)
 				{
-					new_shape[i] = new_shape_right[i];	
+					index[j]=0;
+					--j;
 				}
-				if (new_shape_right[i] == 1)
-				{
-					new_shape = new_shape_left[i];
-				}
-				else
-				{
-					Message::error("Fail to broadcast:shape dosen't fit.");
-				}
+				++index[j];
 			}
-			if (new_shape_left[i] == new_shape_right[i])
-			{
-				new_shape[i] = new_shape_left[i];
-			}
-		}//broadcast
-		
-		int size = 1;
-		for (int i = 0; i < dim; i++)
-		{
-			size = size * new_shape[i];
 		}
-		std::vector<double> new_val(size);
-		
-        return Tensor::create(new_val, new_shape); 
-    }
+		return Tensor::create(res, new_shape);
+	}
+	
+	
+	
     const_pData minus(const_pData left,const_pData right)
     {
         auto left_t = to_Tensor(left);
