@@ -14,6 +14,8 @@ namespace computational_graph
             return x_t;
         throw std::runtime_error("Computation failed on non-tensor data.");
     }
+    
+    
     const_pData plus(const_pData left,const_pData right)
     {
         auto left_t = to_Tensor(left);
@@ -46,6 +48,7 @@ namespace computational_graph
     const_pData operator-(const_pData left,const_pData right){return minus(left, right);}
     const_pData operator*(const_pData left,const_pData right){return multi(left, right);}
     const_pData operator/(const_pData left,const_pData right){return div(left, right);}
+    
     const_pData less_float(const_pData left,const_pData right)
     {
         auto left_t = to_Tensor(left);
@@ -77,66 +80,84 @@ namespace computational_graph
         auto left_t = to_Tensor(left);
         auto right_t = to_Tensor(right);
         return std::make_shared<const Float>(left_t -> get_val() == right_t -> get_val()); 
-    } 
-    const_pData sin(const_pData x)
-    {
-        auto x_t = to_Tensor(x);
-        std::vector<double> val = x_t -> get_val();
-        for (double item : val)
-            item = std::sin(item);
-        return std::make_shared<const Tensor>(val, x_t -> get_shape());    
-    }  
-    //求导运算 , a tensor of shape n*m*k  --> a diff of (n*m*k) * (n*m*k)
-    const_pData sin_diff(const_pData x)
-    {
-    	auto x_t = to_Tensor(x);
-        std::vector<double> *val = x_t -> get_val(); 
-     	auto shape = x_t -> get_shape();
-    	int dim = shape.size();
-    	int size = val.size();
-    	auto shape_ = shape + shape;
-    	std::vector<double> val_(size*size, 0);
-    	for (int i = 0; i < size; i++){
-    		val_[i*size + i] = std::cos(*(val+i));
-    	}
-    	return std::make_shared<const Diff>(val_, shape_, dim);
     }
-
-    const_pData log(const_pData x)
+    
+    double double_sin(double x)
     {
-        auto x_t = to_Tensor(x);
-        std::vector<double> val = x_t -> get_val();
-        for (double item : val)
-            if (item > 0)
-                item = std::log(item);
-            else
-            {
-                Message::message("ERROR: LOG operator's input must be positive");
-                throw std::range_error("LOG operator's input must be positive");
-            }
-        return std::make_shared<const Tensor>(val, x_t -> get_shape());   
-    }
-    const_pData exp(const_pData x)
+		return std::sin(x);
+	}
+	double double_diff_sin(double x)
     {
-        std::vector<double> val = x_t -> get_val();
-        for (double item : val)
-            item = std::exp(item);
-        return std::make_shared<const Tensor>(val, x_t -> get_shape());    
-    }
-    const_pData tanh(const_pData x)
-    {
-        auto val = x_t -> get_val();
-        for (double item : val)
-            item = std::tanh(item);
-        return std::make_shared<const Tensor>(val, x_t -> get_shape());    
-    }
-    const_pData sigmoid(const_pData x)
-    {
-        auto val = x_t -> get_val();
-        for (double item : val)
-            item = 1.0 / (1.0 + std::exp(-1 * item);
-        return std::make_shared<const Tensor>(val, x_t -> get_shape());     
-    }
+		return std::cos(x);
+	}
+	double double_log(double x)
+	{
+		if(x<=0)
+		{
+			Message::message("ERROR: LOG operator's input must be positive");
+			throw std::range_error("LOG operator's input must be positive");
+		}
+		return std::log(x);
+	}
+	double double_diff_log(double x)
+	{
+		if(x<=0)
+		{
+			Message::message("ERROR: LOG operator's input must be positive");
+			throw std::range_error("LOG operator's input must be positive");
+		}
+		return 1/x;
+	}
+	double double_exp(double x)
+	{
+		return std::exp(x);
+	}
+	double double_diff_exp(double x)
+	{
+		return std::exp(x);
+	}
+	double double_tanh(double x)
+	{
+		return std::tanh(x);
+	}
+	double double_diff_tanh(double x)
+	{
+		double t=std::exp(x)+std::exp(-x);
+		return 4/(t*t);
+	}
+	double double_sigmoid(double x)
+	{
+		return 1/(1+std::exp(-x));
+	}
+	double double_diff_sigmoid(double x)
+	{
+		return 1/(std::exp(x)+2+std::exp(-x));
+	}
+	
+	SingleTensorOp::SingleTensorOp(std::function<double(double)> op,std::function<double(double)> diffop):
+			op(op), diffop(diffop){}
+	const_pData SingleTensorOp::operator()(const_pData x) const
+	{
+		const_pTensor t=to_Tensor(x);
+		vector<double> ans=t->get_val();
+		for(double &i: ans) i=op(i);
+		return Tensor::create(ans,t->get_shape());
+	}
+	const_pDiff SingleTensorOp::diff(const_pData x) const
+	{
+		const_pTensor t=to_Tensor(x);
+		vector<double> &val=t->get_val();
+		vector<double> ans(val.size()*val.size(),0);
+		for(int i=0;i<val.size();++i) ans[i*val.size()+i]=diffop(val[i]);
+		vector<int> shape=t->get_shape();
+		return Diff::create(ans,shape+shape,shape.size());
+	}
+	
+	const SingleTensorOp SingleTensorOp::sin(double_sin,double_diff_sin),
+						 SingleTensorOp::log(double_log,double_diff_log),
+						 SingleTensorOp::exp(double_exp,double_diff_exp),
+						 SingleTensorOp::tanh(double_tanh,double_diff_tanh),
+						 SingleTensorOp::sigmoid(double_sigmoid,double_diff_sigmoid);
     //上述运算如果类型检查出现问题（如传入Data基类对象，传入nullptr），抛出std::runtime_error
     //如果超出运算定义域（如log自变量<=0，除以0），则调用Message::message输出要求的错误信息并抛出std::range_error  
 }
