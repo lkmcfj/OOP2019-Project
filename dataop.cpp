@@ -36,12 +36,28 @@ namespace computational_graph
 		for(int i=0;i<shape.size();++i) if(shape[i]==1) res[i]=0;
 		return res;
 	}
+    void inc(vector<int> &index,const vector<int> &shape)
+    {
+        int i=shape.size()-1;
+        while(index[i]==shape[i]-1)
+        {
+            index[i]=0;
+            --i;
+        }
+        ++index[i];
+    }
 	
     const_pData plus(const_pData left,const_pData right)
     {
         const_pTensor left_t = to_Tensor(left), right_t = to_Tensor(right);
+        const_pDiff left_d=dynamic_pointer_cast<const Diff>(left_t), right_d=dynamic_pointer_cast<const Diff>(right_t);
+        if(left_d&&right_d && left_d->get_shape()==right_d->get_shape() && left_d->get_dim1()==right_d->get_dim1())
+        {
+            vector<double> v1(left_d->get_val()),v2(right_d->get_val());
+            for(int i=0;i<v1.size();++i) v1[i]+=v2[i];
+            return Diff::create(v1,left_d->get_shape(), left_d->get_dim1());
+        }
         vector<int> left_shape = left_t ->get_shape(), right_shape = right_t ->get_shape();
-        
 		vector<int> new_shape=broadcast_shape(left_shape, right_shape);
 		int size=1;
 		for(int i: new_shape) size*=i;
@@ -49,16 +65,8 @@ namespace computational_graph
 		vector<int> index(new_shape.size(),0);
 		for(int i=0;i<size;++i)
 		{
-			res[i]=left_t ->get_val(rev_broadcast(index,left_shape))+left_t ->get_val(rev_broadcast(index,right_shape));
-			if(i+1<size)
-			{
-				int j=index.size()-1;
-				while(index[j]==new_shape[j]-1)
-				{
-					index[j]=0;
-					--j;
-				}
-				++index[j];
+			res[i]=left_t ->get_val(rev_broadcast(index,left_shape))+right_t ->get_val(rev_broadcast(index,right_shape));
+			if(i+1<size) inc(index,new_shape);
 			}
 		}
 		return Tensor::create(res, new_shape);
@@ -66,8 +74,14 @@ namespace computational_graph
 	const_pData minus(const_pData left,const_pData right)
     {
         const_pTensor left_t = to_Tensor(left), right_t = to_Tensor(right);
+		const_pDiff left_d=dynamic_pointer_cast<const Diff>(left_t), right_d=dynamic_pointer_cast<const Diff>(right_t);
+        if(left_d&&right_d && left_d->get_shape()==right_d->get_shape() && left_d->get_dim1()==right_d->get_dim1())
+        {
+            vector<double> v1(left_d->get_val()),v2(right_d->get_val());
+            for(int i=0;i<v1.size();++i) v1[i]-=v2[i];
+            return Diff::create(v1,left_d->get_shape(), left_d->get_dim1());
+        }
         vector<int> left_shape = left_t ->get_shape(), right_shape = right_t ->get_shape();
-        
 		vector<int> new_shape=broadcast_shape(left_shape, right_shape);
 		int size=1;
 		for(int i: new_shape) size*=i;
@@ -75,17 +89,8 @@ namespace computational_graph
 		vector<int> index(new_shape.size(),0);
 		for(int i=0;i<size;++i)
 		{
-			res[i]=left_t ->get_val(rev_broadcast(index,left_shape))-left_t ->get_val(rev_broadcast(index,right_shape));
-			if(i+1<size)
-			{
-				int j=index.size()-1;
-				while(index[j]==new_shape[j]-1)
-				{
-					index[j]=0;
-					--j;
-				}
-				++index[j];
-			}
+			res[i]=left_t ->get_val(rev_broadcast(index,left_shape))-right_t ->get_val(rev_broadcast(index,right_shape));
+			if(i+1<size) inc(index,new_shape);
 		}
 		return Tensor::create(res, new_shape);
 	}
