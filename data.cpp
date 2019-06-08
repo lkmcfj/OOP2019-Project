@@ -22,6 +22,17 @@ namespace computational_graph
     {
         return v>eps;
     }
+    
+    int Tensor::index2id(vector<int> index) const
+    {
+		int ret=0,t=1;
+        for(int i=index.size()-1;i>=0;--i)
+        {
+            ret+=index[i]*t;
+            t*=shape[i];
+        }
+        return ret;
+	}
 
     Tensor::Tensor(vector<double> init_v, vector<int> init_shape):
         shape(init_shape), dim(init_shape.size()), p(init_v), size(init_v.size())
@@ -34,10 +45,16 @@ namespace computational_graph
         }
     }
     
-    shared_ptr<const Tensor> Tensor::create(vector<double> init_v, vector<int> init_shape)
+    const_pTensor Tensor::create(vector<double> init_v, vector<int> init_shape)
     {
         return make_shared<const Tensor>(std::move(init_v), std::move(init_shape));
     }
+    const_pTensor Tensor::zeros(vector<int> shape)
+    {
+		int size=1;
+		for(int i: shape) size*=i;
+		return Tensor::create(vector<double>(size,0),shape);
+	}
 
     string Tensor::to_string() const
     {
@@ -68,14 +85,12 @@ namespace computational_graph
     }
     double Tensor::getval(vector<int> index) const
     {
-        int indexid=0,t=1;
-        for(int i=index.size()-1;i>=0;--i)
-        {
-            indexid+=index[i]*t;
-            t*=shape[i];
-        }
-        return p[indexid];
+        return p[index2id(std::move(index))];
     }
+    void Tensor::set_val(vector<int> index, double v)
+    {
+		p[index2id(std::move(index))]=v;
+	}
     bool Tensor::boolean() const
     {
         if(size==1) return double_boolean(p[0]);
@@ -90,7 +105,7 @@ namespace computational_graph
     {
         return shape;
     }
-    shared_ptr<const Tensor> Tensor::reshape(vector<int> nshape)
+    shared_ptr<const Tensor> Tensor::reshape(vector<int> nshape) const
     {
         int nsize=1;
         for(int i:nshape) nsize*=i;

@@ -25,16 +25,19 @@ namespace computational_graph
         std::vector<int> shape;
         int dim,size;
     public:
+        int index2id(std::vector<int> index) const;
         Tensor(std::vector<double> init_v, std::vector<int> init_shape);
-        static std::shared_ptr<const Tensor> create(std::vector<double> init_v,std::vector<int> init_shape); 
         const std::vector<double> get_val()& const;
         double get_val(std::vector<int> index) const;
+        void set_val(std::vector<int> index,double v);
         virtual std::string to_string() const;
         virtual bool boolean() const;
         virtual std::unique_ptr<const Data> copy() const;
         std::vector<int> get_shape() const;
-        std::shared_ptr<const Tensor> reshape(std::vector<int> nshape);
+        std::shared_ptr<const Tensor> reshape(std::vector<int> nshape) const;
         int getsize() const;
+        static std::shared_ptr<const Tensor> create(std::vector<double> init_v,std::vector<int> init_shape); 
+        static std::shared_ptr<const Tensor> zeros(std::vector<int> shape);
         virtual ~Tensor() =default;
     };
     typedef std::shared_ptr<const Tensor> const_pTensor;
