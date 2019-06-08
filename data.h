@@ -34,6 +34,7 @@ namespace computational_graph
         virtual std::unique_ptr<const Data> copy() const;
         std::vector<int> get_shape() const;
         std::shared_ptr<const Tensor> reshape(std::vector<int> nshape);
+        int getsize() const;
         virtual ~Tensor() =default;
     };
     typedef std::shared_ptr<const Tensor> const_pTensor;

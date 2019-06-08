@@ -101,6 +101,10 @@ namespace computational_graph
         }
         return make_shared<const Tensor>(p, nshape);
     }
+    int Tensor::getsize() const
+    {
+		return size;
+	}
 
     Float::Float(double init_v):shape(1,1), dim(1), size(1),p(1,init_v){}
     shared_ptr<const Float> Float::create(double init_v)
