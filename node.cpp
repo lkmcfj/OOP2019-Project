@@ -84,17 +84,8 @@ namespace computational_graph
     {
         return g;
     }
-    int Node::get_type() const
-    {
-        return 0;
-    }
     Node::Node(Graph *_g):g(_g),id(-1){}
     Node::Node(Graph *_g,vector<int> _father): g(_g), id(-1), father(std::move(_father)) {}
-    const_pData Node::run(Session *sess,vector<const_pData> father_value) const
-    {
-        Message::error("raw node #"+std::to_string(id)+" can't be evaluated. returning nullptr.");
-        return nullptr;
-    }
 
     Variable::Variable(Graph *_g,const_pData default_v):
         Node(_g), default_value(default_v->copy())

@@ -26,7 +26,7 @@ namespace computational_graph
         const std::vector<int> &get_father() const;
         int get_id() const;
         Graph *get_graph() const;
-        virtual int get_type() const;
+        virtual int get_type()=0 const;
         //type=0 Node
         //type=1 Variable
         //type=2 Placeholder
@@ -41,7 +41,7 @@ namespace computational_graph
         //type=11 Grad
         //type=12 At
         //type=13 Assign
-        virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;//error
+        virtual const_pData run(Session *sess,std::vector<const_pData> father_value)=0 const;//error
         friend class Graph;
         virtual ~Node() = default;
     };
