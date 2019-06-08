@@ -115,6 +115,75 @@ namespace computational_graph
 		return Tensor::create(res, new_shape);
 	}
 
+    bool checkmulti(const_pDiff l,const_pDiff r)
+    {
+        if(l -> get_dim2()!=r -> get_dim1()) return false;
+        vector<int> shapel(l -> get_shape()), shaper(r -> get_shape());
+        shapel=vector<int>(shapel.begin()+l -> get_dim1(),shapel.end());
+        shaper=vector<int>(shaper.begin(),shaper.begin()+r -> get_dim1());
+        return shapel==shaper;
+    }
+    void raw_multi(double *a,double *b,double *res,int len1,int len2,int len3)
+    {
+        int i,j,k;
+        double cur;
+        double *p1,*p2,*end_p1;
+        for(i=0;i<len1;++i) for(j=0;j<len3;++j) res[i*len3+j]=0;
+        for(i=0;i<len1;++i)
+            for(j=0;j<len2;++j)
+            {
+                double cur=a[i*len2+j];
+                end_p1=res+i*len3+len3;
+                for(p1=res+i*len3,p2=b+j*len3;p1!=end_p1;++p1,++p2)
+                    (*p1)=cur*(*p2);
+                //for(k=0;k<len3;++k)
+                //    res[i*len3+k]+=cur*b[j*len3+k];
+            }
+    }
+
+    const_pData multi(const_pData left,const_pData right)
+    {
+        const_pTensor left_t = to_Tensor(left), right_t=to_Tensor(right);
+        const_pDiff left_d=dynamic_pointer_cast<const Diff>(left_t),right_d=dynamic_pointer_cast<const Diff>(right_t);
+        if(left_d&&right_d&&checkmulti(left_d,right_d))
+        {
+            vector<int> shape1(left_d -> get_shape()), shape2(right_d -> get_shape());
+            int dimi=left_d -> get_dim1(), dimj=left_d -> get_dim2(), dimk=right_d -> get_dim2();
+            vector<int> shapei(shape1.begin(),shape1.begin()+dimi), shapej(shape1.begin()+dimi,shape1.end()), shapek(shape2.begin()+dimj, shape2.end());
+            int sizei=1,sizej=1,sizek=1;
+            for(int i:shapei) sizei*=i;
+            for(int i:shapej) sizej*=i;
+            for(int i:shapek) sizek*=i;
+            const vector<double> &v1=left_d -> get_val(), &v2=right_d -> get_val();
+            double *a=new double[sizei*sizej],*b=new double[sizej*sizek];
+            double *p=a;
+            for(double i:v1) *(p++)=i;
+            p=b;
+            for(double i:v2) *(p++)=i;
+            double *res=new double[sizei*sizek];
+            raw_multi(a,b,res,sizei,sizej,sizek);
+            vector<double> res_vec(res,res+sizei*sizek);
+            delete[] a;
+            delete[] b;
+            delete[] res;
+            return Diff::create(res_vec,shapei+shapek,dimi);
+        }
+        vector<int> left_shape = left_t ->get_shape(), right_shape = right_t ->get_shape();
+		vector<int> new_shape=broadcast_shape(left_shape, right_shape);
+		int size=1;
+		for(int i: new_shape) size*=i;
+		vector<double> res(size,0);
+		vector<int> index(new_shape.size(),0);
+		for(int i=0;i<size;++i)
+		{
+			res[i]=left_t ->get_val(rev_broadcast(index,left_shape))*right_t ->get_val(rev_broadcast(index,right_shape));
+			if(i+1<size) inc(index,new_shape);
+			}
+		}
+		return Tensor::create(res, new_shape);
+    }	
+
+
     const_pData operator+(const_pData left,const_pData right){return plus(left, right);}
     const_pData operator-(const_pData left,const_pData right){return minus(left, right);}
     const_pData operator*(const_pData left,const_pData right){return multi(left, right);}
