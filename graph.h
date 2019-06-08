@@ -35,6 +35,7 @@ namespace computational_graph
         void set_variable(int id,const_pData v);
         void set_variable(const_pNode p,const_pData v);
         void add_assign_task(int id, const_pData v);
+        friend class Grad;
     };
 
 }
