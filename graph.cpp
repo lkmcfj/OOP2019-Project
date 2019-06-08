@@ -52,7 +52,7 @@ namespace computational_graph
                 vis.insert(i);
             }
         }
-        for(int id:vis) 
+        for(int id:vis)
         {
             vislist.push_back(id);
             Message::debug("In Session::eval(),evaluating node#"+to_string(id));

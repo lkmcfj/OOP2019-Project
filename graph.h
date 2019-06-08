@@ -16,6 +16,7 @@ namespace computational_graph
         const_pNode join(std::unique_ptr<Node> curnode);
         const_pNode getnode(int id);
         friend class Session;
+        friend class Grad;
     };
 
     class Session

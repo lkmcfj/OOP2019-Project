@@ -42,7 +42,7 @@ namespace computational_graph
         //type=12 At
         //type=13 Assign
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value)=0 const;//error
-        virtual std::vector<const_pData> run_diff(Session *sess, std::vector<const_pData> father_value)=0 const;
+        virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value)=0 const;
         friend class Graph;
         virtual ~Node() = default;
     };
@@ -58,7 +58,7 @@ namespace computational_graph
         const_pData get_default_value() const;
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;//warning
-        virtual std::vector<const_pData> run_diff(Session *sess, std::vector<const_pData> father_value) const;
+        virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
     };
 
     class Placeholder : public Node
@@ -69,7 +69,7 @@ namespace computational_graph
         static const_pNode create(Graph *g);
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;//error
-        virtual std::vector<const_pData> run_diff(Session *sess, std::vector<const_pData> father_value) const;
+        virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
     };
 
     class Constant : public Node
@@ -81,7 +81,7 @@ namespace computational_graph
         static const_pNode create(Graph *g,const_pData v);
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
-        virtual std::vector<const_pData> run_diff(Session *sess, std::vector<const_pData> father_value) const;
+        virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
     };
         
     typedef std::function<const_pData(const_pData,const_pData)> arith_op;
@@ -95,7 +95,7 @@ namespace computational_graph
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
         static const_pNode create(const_pNode left,const_pNode right,std::string op_str);
-        virtual std::vector<const_pData> run_diff(Session *sess, std::vector<const_pData> father_value) const;
+        virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
     };
 
     class Single_op : public Node
@@ -108,7 +108,7 @@ namespace computational_graph
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
         static const_pNode create(const_pNode x,std::string op_str);
-        virtual std::vector<const_pData> run_diff(Session *sess, std::vector<const_pData> father_value) const;
+        virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
     };
 
     class Print : public Node
@@ -121,7 +121,7 @@ namespace computational_graph
         static const_pNode create(const_pNode x,std::string x_symbol);
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
-        virtual std::vector<const_pData> run_diff(Session *sess, std::vector<const_pData> father_value) const;
+        virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
     };
 
     typedef std::function<const_pData(const_pData,const_pData)> cmp_op;
@@ -135,7 +135,7 @@ namespace computational_graph
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
         static const_pNode create(const_pNode left,const_pNode right,std::string op_str);
-        virtual std::vector<const_pData> run_diff(Session *sess, std::vector<const_pData> father_value) const;
+        virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
     };
 
     class Cond : public Node
@@ -147,7 +147,7 @@ namespace computational_graph
         static const_pNode create(const_pNode cond_node,const_pNode true_node,const_pNode false_node);
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
-        virtual std::vector<const_pData> run_diff(Session *sess, std::vector<const_pData> father_value) const;
+        virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
     };
 
     class Assert : public Node
@@ -159,7 +159,7 @@ namespace computational_graph
         static const_pNode create(const_pNode x);       
         virtual int get_type() const;
         virtual const_pData run(Session *sess, std::vector<const_pData> father_value) const;
-        virtual std::vector<const_pData> run_diff(Session *sess, std::vector<const_pData> father_value) const;
+        virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
     };
 
     class Bind : public Node
@@ -171,7 +171,7 @@ namespace computational_graph
         static const_pNode create(const_pNode left, const_pNode right);     
         virtual int get_type() const;
         virtual const_pData run(Session *sess, std::vector<const_pData> father_value) const;        
-        virtual std::vector<const_pData> run_diff(Session *sess, std::vector<const_pData> father_value) const;
+        virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
     };
 
     //TODO: get_grad(int x_id)
@@ -184,7 +184,7 @@ namespace computational_graph
         static const_pNode create(const_pNode x);       
         virtual int get_type() const;
         virtual const_pData run(Session *sess, std::vector<const_pData> father_value) const;        
-        virtual std::vector<const_pData> run_diff(Session *sess, std::vector<const_pData> father_value) const;
+        virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
     };
 
     class At : public Node
@@ -196,7 +196,7 @@ namespace computational_graph
         static const_pNode create(const_pNode grad, int x_id);      
         virtual int get_type() const;
         virtual const_pData run(Session *sess, std::vector<const_pData> father_value) const;            
-        virtual std::vector<const_pData> run_diff(Session *sess, std::vector<const_pData> father_value) const;
+        virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
     };
 
     class Assign : public Node
@@ -208,7 +208,7 @@ namespace computational_graph
         static const_pNode create(const_pNode left, const_pNode right);
         virtual int get_type() const;
         virtual const_pData run(Session *sess, std::vector<const_pData> father_value) const;
-        virtual std::vector<const_pData> run_diff(Session *sess, std::vector<const_pData> father_value) const;
+        virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
     };
 
     const_pNode operator +(const_pNode left,const_pNode right);
