@@ -28,8 +28,13 @@ namespace computational_graph
     {
         return &g;
     }
+    void Session::add_assign_task(int id,const_pData v)
+    {
+		assign_tasks.push_back(std::make_pair(id,v->copy()));
+	}
     const_pData Session::eval(int xid,std::map<int,const_pData> placeholder_value)
     {
+		assign_tasks.clear();
         temp_value=std::move(placeholder_value);
         for(auto i: variable_value) temp_value[i.first]=i.second;
         vis.clear();
@@ -56,7 +61,7 @@ namespace computational_graph
                 auto i=temp_value.find(id);
                 if(i==temp_value.end())
                     variable_value[id]=temp_value[id]=dynamic_pointer_cast<const Variable>(g.nodes[id])->get_default_value();
-            }
+            } else
             if(g.nodes[id]->get_type()==2)
             {
                 auto i=temp_value.find(id);
@@ -65,12 +70,15 @@ namespace computational_graph
                     Message::message("ERROR: Placeholder missing");
                     throw std::invalid_argument("Missing Placeholder: node #"+std::to_string(id));
                 }
-            }
-            std::vector<const_pData> prev;
-            for(int i: g.nodes[id]->get_father())
-                prev.push_back(temp_value[i]);
-            temp_value[id]=g.nodes[id]->run(this,prev);
-        }
+            } else
+            {
+				std::vector<const_pData> prev;
+				for(int i: g.nodes[id]->get_father())
+					prev.push_back(temp_value[i]);
+				temp_value[id]=g.nodes[id]->run(this,prev);
+			}
+		}
+		for(auto &i: assign_tasks) variable_value[i.first]=i.second;
         return temp_value[xid];
     }
     const_pData Session::eval(const_pNode p,std::map<const_pNode,const_pData> placeholder_value)

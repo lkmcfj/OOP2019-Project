@@ -505,7 +505,7 @@ namespace computational_graph
         {
             Message::error("evaluating node #"+to_string(get_id())+", expecting 2 input value,get "+to_string(father_value.size())+". returning nullptr.");
         }
-        sess->assign_task(father[0], father_value[1]);
+        sess->add_assign_task(father[0], father_value[1]);
         return father_value[1];
     }  
     std::vector<const_pData> Assign::run_diff(Session *sess, std::vector<const_pData> father_value) const

@@ -24,9 +24,8 @@ namespace computational_graph
         std::map<int,const_pData> variable_value,temp_value;
         std::set<int> vis;
         std::vector<int> vislist;
+        std::vector<std::pair<int,const_pData>> assign_tasks;
         Graph &g;
-        const_pData dfs_eval(int id);
-        int last_variable_id;
     public:
         Session(Graph &_g);
         Graph* get_graph();
@@ -35,6 +34,7 @@ namespace computational_graph
 	//may throw std::invalid_argument, std::range_error or std::runtime_error when calculating
         void set_variable(int id,const_pData v);
         void set_variable(const_pNode p,const_pData v);
+        void add_assign_task(int id, const_pData v);
     };
 
 }
