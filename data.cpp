@@ -142,13 +142,29 @@ namespace computational_graph
     Diff::Diff(vector<double> init_v,vector<int> init_shape, int dimf):
         dim1(dimf),dim2(init_shape.size()-dimf),Tensor(init_v,init_shape) 
     {}
-    shared_ptr<const Diff> create(vector<double> init_v,vector<int> init_shape, int dimf)
+    const_pDiff Diff::identity(vector<int> shape)
+    {
+        int size=1;
+        for(int i:shape) size*=i;
+        vector<double> v(size*size,0);
+        for(int i=0;i<size;++i) v[i*size+i]=1;
+        return Diff::create(v,shape+shape,shape.size());
+    }
+    const_pDiff Diff::create(vector<double> init_v,vector<int> init_shape, int dimf)
     {
         return make_shared<const Diff>(init_v,init_shape,dimf);
     }
     unique_ptr<const Data> Diff::copy() const
     {
         return make_unique<const Diff>(*this);
+    }
+    int Diff::get_dim1() const
+    {
+        return dim1;
+    }
+    int Diff::get_dim2() const
+    {
+        return dim2;
     }
     
     Matrix::Matrix(vector<double> init_v, int d1,int d2):

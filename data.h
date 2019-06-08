@@ -59,8 +59,11 @@ namespace computational_graph
         int dim1,dim2;
     public:
         Diff(std::vector<double> init_v, std::vector<int> init_shape, int dimf);
+        static std::shared_ptr<const Diff> identity(std::vector<int> shape);
         static std::shared_ptr<const Diff> create(std::vector<double> init_v, std::vector<int> init_shape, int dimf);
         virtual std::unique_ptr<const Data> copy() const;
+        int get_dim1() const;
+        int get_dim2() const;
     };
     typedef std::shared_ptr<const Diff> const_pDiff;
     
