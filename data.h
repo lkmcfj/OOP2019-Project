@@ -11,10 +11,12 @@ namespace computational_graph
     class Data
     {
     public:
-        virtual std::string to_string() =0; //返回一个用于输出的std::string对象。子类需重新实现
-        virtual bool boolean() =0; //返回对bool的类型转换。子类需重新实现
-        virtual std::unique_ptr<const Data> copy() =0; //创建一个与自身相同的新对象，并返回指向它的智能指针。子类需重新实现
+        virtual std::string to_string() const =0; //返回一个用于输出的std::string对象。子类需重新实现
+        virtual bool boolean() const =0; //返回对bool的类型转换。子类需重新实现
+        virtual std::unique_ptr<const Data> copy() const =0; //创建一个与自身相同的新对象，并返回指向它的智能指针。子类需重新实现
         virtual ~Data() = default;
+        virtual bool is_scalar() const =0;
+        virtual double scalar() const =0;
     };
     typedef std::shared_ptr<const Data> const_pData; //a smart-pointer pointing to type data.
 
@@ -33,6 +35,8 @@ namespace computational_graph
         virtual std::string to_string() const;
         virtual bool boolean() const;
         virtual std::unique_ptr<const Data> copy() const;
+        virtual bool is_scalar() const;
+        virtual double scalar() const;
         std::vector<int> get_shape() const;
         std::shared_ptr<const Tensor> reshape(std::vector<int> nshape) const;
         int getsize() const;
@@ -88,6 +92,9 @@ namespace computational_graph
         const_pDiff get_grad(int x_id) const;
         const std::vector<int>& get_fshape() const;
         virtual bool boolean() const;
+        virtual bool is_scalar() const;
+        virtual double scalar() const;
+
     };
 }
 
