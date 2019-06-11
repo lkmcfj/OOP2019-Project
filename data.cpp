@@ -1,27 +1,16 @@
 #include <cmath>
 #include <memory>
 #include <string>
-#include <stdio.h>
+#include <cstdio>
 #include <iostream>
 #include "data.h"
+#include "floatfunc.h"
 #include "message.h"
 namespace computational_graph
 {
     using std::vector;
     using std::map;
     using std::string;
-    string double_to_string(double v)
-    {
-        char buffer[50];
-        std::sprintf(buffer, "%.4lf", v); //4-digits output
-        return std::string(buffer);
-    }
-
-    const double eps=1e-7;
-    bool double_boolean(double v)
-    {
-        return v>eps;
-    }
     
     int Tensor::index2id(vector<int> index) const
     {
@@ -63,7 +52,7 @@ namespace computational_graph
         for(int i=0;i<dim;++i) res+="[";
         for(int i=0;i<size;++i)
         {
-            res+=double_to_string(p[i]);
+            res+=double_string(p[i]);
             int j=dim-1;
             while(j>=0&&index[j]==shape[j]-1)
             {
@@ -132,7 +121,7 @@ namespace computational_graph
     }
     string Float::to_string() const
     {
-        return double_to_string(p[0]);
+        return double_string(p[0]);
     }
     unique_ptr<const Data> Float::copy() const
     {

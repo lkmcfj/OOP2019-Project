@@ -1,7 +1,11 @@
 #include "data.h"
 #include "dataop.h"
+#include "floatfunc.h"
+#include <functional>
+#include <iostream>
 namespace computational_graph
 {
+	using std::function;
     std::ostream& operator<<(std::ostream &out, const Data &x)
     {
         out << x.to_string();
@@ -46,73 +50,49 @@ namespace computational_graph
         }
         ++index[i];
     }
+    const_pData tensor_bc_calc(const_pData left,const_pData right,function<double(double)> op)
+    {
+        const_pTensor left_t = to_Tensor(left), right_t = to_Tensor(right);
+        vector<int> left_shape = left_t ->get_shape(), right_shape = right_t ->get_shape();
+		vector<int> new_shape=broadcast_shape(left_shape, right_shape);
+		int size=1;
+		for(int i: new_shape) size*=i;
+		vector<double> res(size,0);
+		vector<int> index(new_shape.size(),0);
+		for(int i=0;i<size;++i)
+		{
+			res[i] = op(left_t ->get_val(rev_broadcast(index,left_shape)), right_t ->get_val(rev_broadcast(index,right_shape)));
+			if(i+1<size) inc(index,new_shape);
+		}
+		return Tensor::create(res, new_shape);
+	}
+
 	
     const_pData plus(const_pData left,const_pData right)
     {
-        const_pTensor left_t = to_Tensor(left), right_t = to_Tensor(right);
-        const_pDiff left_d=dynamic_pointer_cast<const Diff>(left_t), right_d=dynamic_pointer_cast<const Diff>(right_t);
+        const_pDiff left_d=dynamic_pointer_cast<const Diff>(left), right_d=dynamic_pointer_cast<const Diff>(right);
         if(left_d&&right_d && left_d->get_shape()==right_d->get_shape() && left_d->get_dim1()==right_d->get_dim1())
         {
             vector<double> v1(left_d->get_val()),v2(right_d->get_val());
             for(int i=0;i<v1.size();++i) v1[i]+=v2[i];
             return Diff::create(v1,left_d->get_shape(), left_d->get_dim1());
         }
-        vector<int> left_shape = left_t ->get_shape(), right_shape = right_t ->get_shape();
-		vector<int> new_shape=broadcast_shape(left_shape, right_shape);
-		int size=1;
-		for(int i: new_shape) size*=i;
-		vector<double> res(size,0);
-		vector<int> index(new_shape.size(),0);
-		for(int i=0;i<size;++i)
-		{
-			res[i]=left_t ->get_val(rev_broadcast(index,left_shape))+right_t ->get_val(rev_broadcast(index,right_shape));
-			if(i+1<size) inc(index,new_shape);
-			}
-		}
-		return Tensor::create(res, new_shape);
+        return tensor_bc_calc(left,right,double_plus);
 	}
 	const_pData minus(const_pData left,const_pData right)
     {
-        const_pTensor left_t = to_Tensor(left), right_t = to_Tensor(right);
-		const_pDiff left_d=dynamic_pointer_cast<const Diff>(left_t), right_d=dynamic_pointer_cast<const Diff>(right_t);
+		const_pDiff left_d=dynamic_pointer_cast<const Diff>(left), right_d=dynamic_pointer_cast<const Diff>(right);
         if(left_d&&right_d && left_d->get_shape()==right_d->get_shape() && left_d->get_dim1()==right_d->get_dim1())
         {
             vector<double> v1(left_d->get_val()),v2(right_d->get_val());
             for(int i=0;i<v1.size();++i) v1[i]-=v2[i];
             return Diff::create(v1,left_d->get_shape(), left_d->get_dim1());
         }
-        vector<int> left_shape = left_t ->get_shape(), right_shape = right_t ->get_shape();
-		vector<int> new_shape=broadcast_shape(left_shape, right_shape);
-		int size=1;
-		for(int i: new_shape) size*=i;
-		vector<double> res(size,0);
-		vector<int> index(new_shape.size(),0);
-		for(int i=0;i<size;++i)
-		{
-			res[i]=left_t ->get_val(rev_broadcast(index,left_shape))-right_t ->get_val(rev_broadcast(index,right_shape));
-			if(i+1<size) inc(index,new_shape);
-		}
-		return Tensor::create(res, new_shape);
+        return tensor_bc_calc(left,right,double_minus);
 	}
 	const_pData div(const_pData left,const_pData right)
     {
-        const_pTensor left_t = to_Tensor(left), right_t = to_Tensor(right);
-        vector<int> left_shape = left_t ->get_shape(), right_shape = right_t ->get_shape();
-		vector<int> new_shape=broadcast_shape(left_shape, right_shape);
-		int size=1;
-		for(int i: new_shape) size*=i;
-		vector<double> res(size,0);
-		vector<int> index(new_shape.size(),0);
-		for(int i=0;i<size;++i)
-		{	if (right_t ->get_val(rev_broadcast(index,right_shape)) == 0)
-			{
-		        Message::message("ERROR: Division by zero");
-		        throw std::range_error("Division by zero");				
-			}
-			res[i] = left_t ->get_val(rev_broadcast(index,left_shape)) / right_t ->get_val(rev_broadcast(index,right_shape));
-			if(i+1<size) inc(index,new_shape);
-		}
-		return Tensor::create(res, new_shape);
+        return tensor_bc_calc(left,right,double_div);
 	}
 
     bool checkmulti(const_pDiff l,const_pDiff r)
@@ -143,8 +123,7 @@ namespace computational_graph
 
     const_pData multi(const_pData left,const_pData right)
     {
-        const_pTensor left_t = to_Tensor(left), right_t=to_Tensor(right);
-        const_pDiff left_d=dynamic_pointer_cast<const Diff>(left_t),right_d=dynamic_pointer_cast<const Diff>(right_t);
+        const_pDiff left_d=dynamic_pointer_cast<const Diff>(left),right_d=dynamic_pointer_cast<const Diff>(right);
         if(left_d&&right_d&&checkmulti(left_d,right_d))
         {
             vector<int> shape1(left_d -> get_shape()), shape2(right_d -> get_shape());
@@ -168,19 +147,7 @@ namespace computational_graph
             delete[] res;
             return Diff::create(res_vec,shapei+shapek,dimi);
         }
-        vector<int> left_shape = left_t ->get_shape(), right_shape = right_t ->get_shape();
-		vector<int> new_shape=broadcast_shape(left_shape, right_shape);
-		int size=1;
-		for(int i: new_shape) size*=i;
-		vector<double> res(size,0);
-		vector<int> index(new_shape.size(),0);
-		for(int i=0;i<size;++i)
-		{
-			res[i]=left_t ->get_val(rev_broadcast(index,left_shape))*right_t ->get_val(rev_broadcast(index,right_shape));
-			if(i+1<size) inc(index,new_shape);
-			}
-		}
-		return Tensor::create(res, new_shape);
+        return tensor_bc_calc(left,right,double_multi);
     }	
 
 
@@ -188,7 +155,7 @@ namespace computational_graph
     const_pData operator-(const_pData left,const_pData right){return minus(left, right);}
     const_pData operator*(const_pData left,const_pData right){return multi(left, right);}
     const_pData operator/(const_pData left,const_pData right){return div(left, right);}
-       const_pData less_float(const_pData left,const_pData right)
+    const_pData less_float(const_pData left,const_pData right)
     {
         auto left_t = to_Tensor(left);
         auto right_t = to_Tensor(right);
@@ -239,58 +206,6 @@ namespace computational_graph
         return std::make_shared<const Float>(left_t -> get_val()[0] == right_t -> get_val()[0]); 
     }
     
-    double double_sin(double x)
-    {
-		return std::sin(x);
-	}
-	double double_diff_sin(double x)
-    {
-		return std::cos(x);
-	}
-	double double_log(double x)
-	{
-		if(x<=0)
-		{
-			Message::message("ERROR: LOG operator's input must be positive");
-			throw std::range_error("LOG operator's input must be positive");
-		}
-		return std::log(x);
-	}
-	double double_diff_log(double x)
-	{
-		if(x<=0)
-		{
-			Message::message("ERROR: LOG operator's input must be positive");
-			throw std::range_error("LOG operator's input must be positive");
-		}
-		return 1/x;
-	}
-	double double_exp(double x)
-	{
-		return std::exp(x);
-	}
-	double double_diff_exp(double x)
-	{
-		return std::exp(x);
-	}
-	double double_tanh(double x)
-	{
-		return std::tanh(x);
-	}
-	double double_diff_tanh(double x)
-	{
-		double t=std::exp(x)+std::exp(-x);
-		return 4/(t*t);
-	}
-	double double_sigmoid(double x)
-	{
-		return 1/(1+std::exp(-x));
-	}
-	double double_diff_sigmoid(double x)
-	{
-		return 1/(std::exp(x)+2+std::exp(-x));
-	}
-	
 	SingleTensorOp::SingleTensorOp(std::function<double(double)> op,std::function<double(double)> diffop):
 			op(op), diffop(diffop){}
 	const_pData SingleTensorOp::operator()(const_pData x) const

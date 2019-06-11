@@ -1,7 +1,9 @@
 #ifndef _DATAOP_H_
 #define _DATAOP_H_
 #include "data.h"
+#include "floatfunc.h"
 #include <cmath>
+#include <functional>
 namespace computational_graph
 {
     std::ostream& operator<<(std::ostream &out, const Data &x);
@@ -19,17 +21,6 @@ namespace computational_graph
     const_pData geq_float(const_pData left,const_pData right);
     const_pData equal_float(const_pData left,const_pData right);
     //上述比较运算返回float
-    double double_sin(double x);
-    double double_log(double x);
-    double double_exp(double x);
-    double double_tanh(double x);
-    double double_sigmoid(double x);
-    
-    double double_diff_sin(double x);
-    double double_diff_log(double x);
-    double double_diff_exp(double x);
-    double double_diff_tanh(double x);
-    double double_diff_sigmoid(double x);
     
     class SingleTensorOp
     {
