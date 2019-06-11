@@ -82,9 +82,12 @@ namespace computational_graph
 	}
     bool Tensor::boolean() const
     {
-        if(size==1) return double_boolean(p[0]);
-        Message::error("connot convert a tensor(which is not a scalar) to boolean value. returning false.");
-        return false;
+		if(!is_scalar())
+		{
+			Message::error("connot convert a tensor(which is not a scalar) to boolean value. returning false.");
+			return false;
+		}
+        return double_boolean(scalar());
     }
     unique_ptr<const Data> Tensor::copy() const
     {
@@ -108,6 +111,18 @@ namespace computational_graph
     int Tensor::getsize() const
     {
 		return size;
+	}
+	bool Tensor::is_scalar() const
+	{
+		return size==1;
+	}
+	double Tensor::scalar() const
+	{
+		if(size!=1)
+		{
+			Message::warning("Fail to convert a tensor to scalar");
+		}
+		return p[0];
 	}
 
     Float::Float(double init_v):shape(1,1), dim(1), size(1),p(1,init_v){}
@@ -203,5 +218,12 @@ namespace computational_graph
         res+="\n}";
         return res;
     }
-
+    bool Graddata::is_scalar() const
+    {
+		return false;
+	}
+	double Graddata::scalar() const
+	{
+		throw std::runtime_error("cannot convert a Graddata instance to scalar");
+	}
 }
