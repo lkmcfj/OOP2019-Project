@@ -4,7 +4,7 @@
 using namespace computational_graph;
 int main()
 {
-    Graph default_graph;
+    pGraph default_graph=Graph::create();
     Parser default_parser;
     int n;
     std::cin>>n;
@@ -13,7 +13,7 @@ int main()
         std::string input_s;
         std::getline(std::cin,input_s);
         while(input_s.length()==0) std::getline(std::cin,input_s);
-        default_parser.start(input_s,&default_graph);
+        default_parser.start(input_s,default_graph);
     }
     int m;
     std::cin>>m;
@@ -22,7 +22,7 @@ int main()
         std::string input_s;
         std::getline(std::cin,input_s);
         while(input_s.length()==0) std::getline(std::cin,input_s);
-        default_parser.node(input_s,&default_graph);
+        default_parser.node(input_s,default_graph);
     }
     Session default_sess(default_graph);
     int q;

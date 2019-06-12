@@ -23,7 +23,7 @@ namespace computational_graph
     		}
     	if(last<s.length()-1) res.push_back(s.substr(last+1));
 	}
-	const_pNode Parser::start(string s, Graph *g)
+	const_pNode Parser::start(string s, pGraph g)
 	{
         Message::debug("Parser::start() called, input string is "+s);
 		vector<string> nodes;
@@ -49,7 +49,7 @@ namespace computational_graph
 		symbol[nodes[0]]=ret;
 		return ret;
 	}
-	const_pNode Parser::node(string s, Graph *g)
+	const_pNode Parser::node(string s, pGraph g)
 	{
         Message::debug("Parser::node() called, input string is "+s);
 		vector<string> new_node;
