@@ -29,6 +29,7 @@ namespace computational_graph
     public:
         int index2id(std::vector<int> index) const;
         Tensor(std::vector<double> init_v, std::vector<int> init_shape);
+        Tensor(std::vector<int> init_shape);
         const std::vector<double> get_val()& const;
         double get_val(std::vector<int> index) const;
         void set_val(std::vector<int> index,double v);
@@ -62,9 +63,11 @@ namespace computational_graph
     protected:
         int dim1,dim2;
     public:
+        Diff(std::vector<int> init_shape, int dimf);
         Diff(std::vector<double> init_v, std::vector<int> init_shape, int dimf);
         static std::shared_ptr<const Diff> identity(std::vector<int> shape);
         static std::shared_ptr<const Diff> create(std::vector<double> init_v, std::vector<int> init_shape, int dimf);
+        static std::shared_ptr<const Diff> zeros(std::vector<int> shape1,std::vector<int> shape2);
         virtual std::unique_ptr<const Data> copy() const;
         int get_dim1() const;
         int get_dim2() const;

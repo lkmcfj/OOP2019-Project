@@ -33,6 +33,14 @@ namespace computational_graph
             throw std::runtime_error("Fail to construct a tensor: size doesn't fit.");
         }
     }
+    Tensor::Tensor(vector<int> init_shape):
+        shape(init_shape), dim(init_shape.size())
+    {
+        int s=1;
+        for(auto i:shape) s*=i;
+        p=vector<double>(s,0);
+        size=s;
+    }
     
     const_pTensor Tensor::create(vector<double> init_v, vector<int> init_shape)
     {
@@ -40,9 +48,7 @@ namespace computational_graph
     }
     const_pTensor Tensor::zeros(vector<int> shape)
     {
-		int size=1;
-		for(int i: shape) size*=i;
-		return Tensor::create(vector<double>(size,0),shape);
+        return make_shared<const Tensor>(std::move(shape));
 	}
 
     string Tensor::to_string() const
@@ -146,6 +152,9 @@ namespace computational_graph
     Diff::Diff(vector<double> init_v,vector<int> init_shape, int dimf):
         dim1(dimf),dim2(init_shape.size()-dimf),Tensor(init_v,init_shape) 
     {}
+    Diff::Diff(vector<int> init_shape,int dimf):
+        dim1(dimf),dim2(init_shape.size()-dimf),Tensor(init_shape)
+    {}
     const_pDiff Diff::identity(vector<int> shape)
     {
         int size=1;
@@ -157,6 +166,10 @@ namespace computational_graph
     const_pDiff Diff::create(vector<double> init_v,vector<int> init_shape, int dimf)
     {
         return make_shared<const Diff>(init_v,init_shape,dimf);
+    }
+    const_pDiff Diff::zeros(vector<int> shape1,vector<int> shape2)
+    {
+        return make_shared<const Diff>(shape1+shape2,shape1.size());
     }
     unique_ptr<const Data> Diff::copy() const
     {
