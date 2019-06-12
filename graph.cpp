@@ -12,6 +12,11 @@ namespace computational_graph
 {
     using std::string;
     using std::to_string;
+    Graph::Graph(){}
+    pGraph Graph::create()
+    {
+		return std::make_shared<Graph>();
+	}
     const_pNode Graph::join(std::unique_ptr<Node> curnode)
     {
         int cur=nodes.size();
@@ -23,10 +28,10 @@ namespace computational_graph
     {
         return nodes[id];
     }
-    Session::Session(Graph &_g):g(_g){}
-    Graph* Session::get_graph()
+    Session::Session(pGraph _g):g(_g){}
+    pGraph Session::get_graph()
     {
-        return &g;
+        return g;
     }
     void Session::add_assign_task(int id,const_pData v)
     {
@@ -46,7 +51,7 @@ namespace computational_graph
         {
             int cur=q.front();
             q.pop();
-            for(int i: g.nodes[cur]->get_father()) if(vis.find(i)==vis.end())
+            for(int i: g->nodes[cur]->get_father()) if(vis.find(i)==vis.end())
             {
                 q.push(i);
                 vis.insert(i);
@@ -56,13 +61,13 @@ namespace computational_graph
         {
             vislist.push_back(id);
             Message::debug("In Session::eval(),evaluating node#"+to_string(id));
-            if(g.nodes[id]->get_type()==1) 
+            if(g->nodes[id]->get_type()==1) 
             {
                 auto i=temp_value.find(id);
                 if(i==temp_value.end())
                     variable_value[id]=temp_value[id]=dynamic_pointer_cast<const Variable>(g.nodes[id])->get_default_value();
             } else
-            if(g.nodes[id]->get_type()==2)
+            if(g->nodes[id]->get_type()==2)
             {
                 auto i=temp_value.find(id);
                 if(i==temp_value.end())
@@ -73,9 +78,9 @@ namespace computational_graph
             } else
             {
 				std::vector<const_pData> prev;
-				for(int i: g.nodes[id]->get_father())
+				for(int i: g->nodes[id]->get_father())
 					prev.push_back(temp_value[i]);
-				temp_value[id]=g.nodes[id]->run(this,prev);
+				temp_value[id]=g->nodes[id]->run(this,prev);
 			}
 		}
 		for(auto &i: assign_tasks) variable_value[i.first]=i.second;
@@ -83,7 +88,7 @@ namespace computational_graph
     }
     const_pData Session::eval(const_pNode p,std::map<const_pNode,const_pData> placeholder_value)
     {
-        if((p->get_graph()!=&g)||(p->get_id()<0))
+        if((p->get_graph()!=g)||(p->get_id()<0))
         {
             Message::error("In Session::eval(),the node evaluated is not in this session, returning null data");
             return nullptr;
@@ -91,7 +96,7 @@ namespace computational_graph
         std::map<int,const_pData> pvalue;
         for(auto i: placeholder_value)
         {
-            if((i.first->get_graph()!=&g)||(i.first->get_id()<0))
+            if((i.first->get_graph()!=g)||(i.first->get_id()<0))
             {
                 Message::warning("In Session::eval(), get a placeholder value pair which is not in this session");
             } else if(i.first->get_type()!=2)
@@ -112,7 +117,7 @@ namespace computational_graph
     }
     void Session::set_variable(const_pNode p,const_pData v)
     {
-        if((p->get_graph()!=&g)||(p->get_id()<0))
+        if((p->get_graph()!=g)||(p->get_id()<0))
         {
             Message::error("in Session::set_variable():the variable node is not in this session, failed");
             return;
