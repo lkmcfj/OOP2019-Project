@@ -1,9 +1,13 @@
 #include "floatfunc.h"
 #include <string>
 #include <cstdio>
+#include <utility>
 
 namespace computational_graph
 {
+    using std::pair;
+    using std::make_pair;
+    typedef pair<double,double> pdd;
 	TODO:implement of FloatSetting
 	TODO:implement of double_string
 	bool double_boolean(double v)
@@ -32,7 +36,29 @@ namespace computational_graph
 		}
 		return x/y;
 	}
-	
+
+    pdd double_diff_plus(double x,double y)
+    {
+        return pdd(1,1);
+    }
+    pdd double_diff_minus(double x,double y)
+    {
+        return pdd(1,-1);
+    }
+    pdd double_diff_multi(double x,double y)
+    {
+        return pdd(y,x);
+    }
+    pdd double_diff_div(double x,double y)
+    {
+        if(std::abs(y)<FloatSetting::get_eps())
+        {
+            Message::message("ERROR: Division by zero");
+            throw std::range_error("Division by zero");
+        }
+        return pdd(1/y,-x/(y*y));
+    }
+
 	double double_sin(double x)
     {
 		return std::sin(x);

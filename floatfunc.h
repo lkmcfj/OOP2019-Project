@@ -2,6 +2,7 @@
 #define _FLOAT_FUNC_H_
 #include <string>
 #include <cstdio>
+#include <utility>
 namespace computational_graph
 {
 	class FloatSetting
@@ -22,6 +23,11 @@ namespace computational_graph
 	double double_minus(double x,double y);
 	double double_multi(double x,double y);
 	double double_div(double x,double y);
+	
+    std::pair<double,double> double_diff_plus(double x,double y);
+    std::pair<double,double> double_diff_minus(double x,double y);
+    std::pair<double,double> double_diff_multi(double x,double y);
+    std::pair<double,double> double_diff_div(double x,double y);
 	
 	double double_sin(double x);
     double double_log(double x);
