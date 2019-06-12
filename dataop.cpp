@@ -66,6 +66,25 @@ namespace computational_graph
 		}
 		return Tensor::create(res, new_shape);
 	}
+    pairdiff tensor_bc_diff(const_pData left,const_pData right,function<std::pair<double,double>(double,double)> op_diff)
+    {
+        const_pTensor left_t = to_Tensor(left), right_t = to_Tensor(right);
+        vector<int> left_shape = left_t ->get_shape(), right_shape=right_t ->get_shape();
+        vector<int> new_shape=broadcast_shape(left_shape, right_shape);
+        Diff *left_res=new Diff(new_shape+left_shape,new_shape.size()), right_res=new Diff(new_shape+right_shape,new_shape.size());
+        int size=1;
+        for(int i: new_shape) size*=i;
+        vector<int> index(new_shape.size(),0);
+        for(int i=0;i<size;++i)
+        {
+            vector<int> lindex=rev_broadcast(index,left_shape),rindex=rev_broadcast(index,right_shape);
+            auto cur=op(left_t->get_val(lindex),right_t->get_val(rindex));
+            left_res->set_val(index+lindex,cur.first);
+            right_res->set_val(index+rindex,cur.second);
+            if(i+1<size) inc(index,new_shape);
+        }
+        return std::make_pair(const_pDiff(left_res),const_pDiff(right_res));
+    }
 
 	
     const_pData plus(const_pData left,const_pData right)
@@ -120,7 +139,6 @@ namespace computational_graph
                 //    res[i*len3+k]+=cur*b[j*len3+k];
             }
     }
-
     const_pData multi(const_pData left,const_pData right)
     {
         const_pDiff left_d=dynamic_pointer_cast<const Diff>(left),right_d=dynamic_pointer_cast<const Diff>(right);
@@ -148,13 +166,60 @@ namespace computational_graph
             return Diff::create(res_vec,shapei+shapek,dimi);
         }
         return tensor_bc_calc(left,right,double_multi);
-    }	
-
-
+    }
     const_pData operator+(const_pData left,const_pData right){return plus(left, right);}
     const_pData operator-(const_pData left,const_pData right){return minus(left, right);}
     const_pData operator*(const_pData left,const_pData right){return multi(left, right);}
     const_pData operator/(const_pData left,const_pData right){return div(left, right);}
+
+    pairdiff diff_plus(const_pData left,const_pData right)
+    {
+        return tensor_bc_diff(left,right,double_diff_plus);
+    }
+    pairdiff diff_minus(const_pData left,const_pData right)
+    {
+        return tensor_bc_diff(left,right,double_diff_minus);
+    }
+    pairdiff diff_div(const_pData left,const_pData right)
+    {
+        return tensor_bc_diff(left,right,double_diff_div);
+    }
+    pairdiff diff_multi(const_pData left,const_pData right)
+    {
+        const_pDiff left_d = dynamic_pointer_cast<const Diff>(left), right_d = dynamic_pointer_cast<const Diff>(right);
+        if(left_d&&right_d&& check_multi(left_d,right_d))
+        {
+            vector<int> lshape=left_d->get_shape(), rshape=right_d->get_shape();
+            int dim1=left_d->get_dim1(),dim2=left_d->get_dim2(),dim3=right_d->get_dim2();
+            vector<int> shape1(lshape.begin(),lshape.begin()+dim1),
+                        shape2(rshape.begin(),rshape.begin()+dim2),
+                        shape3(rshape.begin()+dim2,rshape.end());
+            int size1=1,size2=1,size3=1;
+            for(int i:shape1) size1*=i;
+            for(int i:shape2) size2*=i;
+            for(int i:shape3) size3*=i;
+            Diff *lres=new Diff(shape1+shape3+shape1+shape2,dim1+dim3), *rres=new Diff(shape1+shape3+shape2+shape3,dim1+dim3);
+            vector<int> index1, index2, index3;
+            int i,j,k;
+            for(i=0,index1=vector<int>(dim1,0);i<size1;++i)
+            {
+                for(j=0,index2=vector<int>(dim2,0);j<size2;++j)
+                {
+                    for(k=0,index3=vector<int>(dim3,0);k<size3;++k)
+                    {
+                        lres->set_val(index1+index3+index1+index2,right_d->get_val(index2+index3));
+                        rres->set_val(index1+index3+index2+index3,left_d->get_val(index1+index2));
+                        inc(index3,shape3);
+                    }
+                    inc(index2,shape2);
+                }
+                inc(index1,shape1);
+            }
+            return make_pair(const_pDiff(lres),const_pDiff(rres));
+        }
+        return tensor_bc_diff(left,right,double_diff_multi);
+    }
+
     const_pData less_float(const_pData left,const_pData right)
     {
 		return Float::create(left->scalar()<right->scalar());
@@ -200,6 +265,20 @@ namespace computational_graph
 						 SingleTensorOp::exp(double_exp,double_diff_exp),
 						 SingleTensorOp::tanh(double_tanh,double_diff_tanh),
 						 SingleTensorOp::sigmoid(double_sigmoid,double_diff_sigmoid);
+
+    BinaryTensorOp::BinaryTensorOp(function<const_pData(const_pData, const_pData)> op, function<pairdiff(const_pData,const_pData)> diffop):op(op),diffop(diffop){}
+    const_pData BinaryTensorOp::operator()(const_pData x,const_pData y) const
+    {
+        return op(x,y);
+    }
+    pairdiff BinaryTensorOp::diff(const_pData x,const_pData y) const
+    {
+        return diffop(x,y);
+    }
+    const BinaryTensorOp BinaryTensorOp::plus(plus,diff_plus),
+                         BinaryTensorOp::minus(minus,diff_minus),
+                         BinaryTensorOp::multi(multi,diff_multi),
+                         BinaryTensorOp::div(div,diff_div);
     //上述运算如果类型检查出现问题（如传入Data基类对象，传入nullptr），抛出std::runtime_error
     //如果超出运算定义域（如log自变量<=0，除以0），则调用Message::message输出要求的错误信息并抛出std::range_error  
 }
