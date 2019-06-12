@@ -468,12 +468,8 @@ namespace computational_graph
             return nullptr;
         }
         const_pTensor f=to_Tensor(father_value[0]);
-        int size=f->getsize();
-        vector<int> shape=f->get_shape();
-        vector<double> t(size*size,0);
-        for(int i=0;i<size;++i) t[i*size+i]=1;
         map<int,const_pDiff> res;
-        res[father[0]]=Diff::create(t,shape+shape,shape.size());
+        res[father[0]]=Diff:identity(f->get_shape());
         vector<int> &q=sess->vislist;
         for(int i=q.size()-1;i>=0;--i)
         {
