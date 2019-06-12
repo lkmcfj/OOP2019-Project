@@ -388,7 +388,7 @@ namespace computational_graph
             return nullptr;
         }
         if (father_value[0]->boolean())
-            return std::make_shared<const Float>(0);
+            return Float::create(0);
         else
         {
             Message::message("ERROR: Assertion failed");
@@ -404,7 +404,7 @@ namespace computational_graph
         }
         const_pTensor f = to_Tensor(father_value[0]);
         auto shape = f -> get_shape();
-        return vector<const_pDiff>{Tensor::zeros(shape)} ;
+        return vector<const_pDiff>{Diff::zeros(vector<int>{1},shape)} ;
     }
 
     Bind::Bind(wGraph _g, int left_id, int right_id): Node(_g, vector<int>{left_id, right_id}) {}
@@ -441,7 +441,7 @@ namespace computational_graph
         }
         const_pTensor f = to_Tensor(father_value[0]);
         auto shape = f -> get_shape();
-        return vector<const_pDiff>{Diff::(shape)} ;
+        return vector<const_pDiff>{Diff::identity(shape), Diff::zeros(shape, to_Tensor(father_value[1])->get_shape()} ;
     }
 
     Grad::Grad(wGraph _g, int x_id): Node(_g, vector<int>{x_id}) {}
@@ -492,7 +492,6 @@ namespace computational_graph
     }
     std::vector<const_pData> Grad::run_diff(Session *sess, std::vector<const_pData> father_value) const
     {
-        Message::error("Not Support");
         throw std::runtime_error("Not Support");
     }
 
@@ -519,22 +518,19 @@ namespace computational_graph
             Message::error("evaluating node #"+to_string(get_id())+", expecting 2 input value,get "+to_string(father_value.size())+". returning nullptr.")
             return nullptr;
         }
-        if(const_pData temp = father_value[0].get_grad(father[1]))
-                return temp;
-        if (auto x_t = std::dynamic_pointer_cast<const Tensor>(father_value[1]))
+        shared_ptr<const Graddata> f0=dynamic_pointer_cast<const Graddata>(father_value[0]);
+        if(const_pData temp = f0 -> get_grad(father[1]))
+			return temp;
+		
+        if (const_pTensor x_t = std::dynamic_pointer_cast<const Tensor>(father_value[1]))
         {
-            int n  = i;
-            vector<int> shape = father[0].get_fshape() + x_t.get_shape();
-            dimf = shape.size();
-            for(auto i : shape) n *= i;
-            return create(vector<double>(n,0), shape, dimf);
+			return Diff::zeros(f0 -> get_fshape(), x_t -> get_shape());
         }
-        throw std::runtime_error("x is not a tensor");
+        throw std::runtime_error("In At::run(),the second parameter is not a tensor");
     }
     std::vector<const_pDiff> At::run_diff(Session *sess, std::vector<const_pData> father_value) const
     {
-        Message::error("Not Support");
-        throw std::runtime_error("Not Support");
+        throw std::runtime_error("Not Supported");
     }
 
     Assign::Assign(wGraph _g, int left_id, int right_id):Node(_g, vector<int>{left_id, right_id}) {}
@@ -569,9 +565,8 @@ namespace computational_graph
             Message::error("evaluating diff of node #"+to_string(get_id())+", expecting 2 input value,get "+to_string(father_value.size())+". returning empty vector.");
             return std::vector<const_pDiff>();
         }
-        const_pTensor f = to_Tensor(father_value[1]);
-        auto shape = f -> get_shape();
-        return vector<const_pDiff>{Diff::(shape)} ;
+        const_pTensor f0 = to_Tensor(father_value[0]), f1 = to_Tensor(father_value[1]);
+        return vector<const_pDiff>{Diff::zeros(f1->get_shape(),f0->get_shape()),Diff::identity(f1->get_shape())};
     }
 
     const_pNode operator +(const_pNode left,const_pNode right)

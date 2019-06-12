@@ -176,7 +176,6 @@ namespace computational_graph
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
     };
 
-    //TODO: get_grad(int x_id)
     class Grad : public Node
     {
     protected:
