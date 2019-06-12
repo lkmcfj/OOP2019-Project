@@ -154,7 +154,7 @@ namespace computational_graph
         return std::vector<const_pDiff>();
     }
     
-    map<string,arith_op> Arith::str2op{{"+",plus},{"-",minus},{"*",multi},{"/",div}};
+    map<string,const BinaryTensorOp&> Arith::str2op{{"+",BinaryTensorOp::plus},{"-",BinaryTensorOp::minus},{"*",BinaryTensorOp::multi},{"/",BinaryTensorOp::div}};
     Arith::Arith(wGraph _g,int left_id,int right_id,string op_str):
         Node(_g,vector<int>{left_id,right_id})
     {
@@ -192,7 +192,8 @@ namespace computational_graph
             Message::error("evaluating diff of node #"+to_string(get_id())+", expecting 2 input value,get "+to_string(father_value.size())+". returning empty vector.");
             return std::vector<const_pDiff>();
         }
-        //TODO
+        auto ans=op.diff(father_value[0],father_value[1]);
+        return vector<const_pDiff>{ans.first,ans.second};
     }
 
     map<string,const SingleTensorOp&> Single_op::str2op{{"sin",SingleTensorOp::sin},{"log",SingleTensorOp::log},{"exp",SingleTensorOp::exp},{"tanh",SingleTensorOp::tanh},{"sigmoid",SingleTensorOp::sigmoid},{"SIN",SingleTensorOp::sin},{"LOG",SingleTensorOp::log},{"EXP",SingleTensorOp::exp},{"TANH",SingleTensorOp::tanh},{"SIGMOID",SingleTensorOp::sigmoid}};
@@ -315,9 +316,8 @@ namespace computational_graph
             Message::error("evaluating diff of node #"+to_string(get_id())+", expecting 2 input value,get "+to_string(father_value.size())+". returning empty vector.");
             return std::vector<const_pDiff>();
         }
-        const_pTensor f = to_Tensor(father_value[0]);
-        auto shape = f -> get_shape();
-        return vector<const_pDiff>{Tensor::zeros(shape)} ;
+        vector<int> shape0 = to_Tensor(father_value[0]) -> get_shape(), shape1=to_Tensor(father_value[1]) ->get_shape();
+        return vector<const_pDiff>{Diff::zeros(vector<int>{1},shape0), Diff::zeros(vector<int>{1}, shape1)} ;
     }
 
     Cond::Cond(wGraph _g,int cond_id,int true_id,int false_id):

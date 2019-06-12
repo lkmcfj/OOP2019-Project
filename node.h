@@ -86,12 +86,11 @@ namespace computational_graph
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
     };
         
-    typedef std::function<const_pData(const_pData,const_pData)> arith_op;
     class Arith : public Node
     {
-        static std::map<std::string,arith_op> str2op;
+        static std::map<std::string,const BinaryTensorOp&> str2op;
     protected:
-        arith_op op;
+        BinaryTensorOp op;
         Arith(wGraph _g,int left_id,int right_id,std::string op_str);
     public:
         virtual int get_type() const;
