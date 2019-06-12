@@ -12,12 +12,15 @@ namespace computational_graph
     {
     private:
         std::vector<const_pNode> nodes;
+        Graph();
     public:
         const_pNode join(std::unique_ptr<Node> curnode);
         const_pNode getnode(int id);
         friend class Session;
         friend class Grad;
+        static std::shared_ptr<Graph> create();
     };
+    typedef std::shared_ptr<Graph> pGraph;
 
     class Session
     {
@@ -26,10 +29,10 @@ namespace computational_graph
         std::set<int> vis;
         std::vector<int> vislist;
         std::vector<std::pair<int,const_pData>> assign_tasks;
-        Graph &g;
+        pGraph g;
     public:
-        Session(Graph &_g);
-        Graph* get_graph();
+        Session(pGraph _g);
+        pGraph get_graph();
         const_pData eval(int id,std::map<int,const_pData> placeholder_value);
         const_pData eval(const_pNode p,std::map<const_pNode,const_pData> placeholder_value);
 	//may throw std::invalid_argument, std::range_error or std::runtime_error when calculating

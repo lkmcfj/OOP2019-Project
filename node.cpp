@@ -80,17 +80,17 @@ namespace computational_graph
     {
         if(id==-1) id=newid;else Message::warning("trying to modify ID for node #"+to_string(id)+", failed.");
     }
-    Graph* Node::get_graph() const
+    wGraph Node::get_graph() const
     {
         return g;
     }
-    Node::Node(Graph *_g):g(_g),id(-1){}
-    Node::Node(Graph *_g,vector<int> _father): g(_g), id(-1), father(std::move(_father)) {}
+    Node::Node(wGraph _g):g(_g),id(-1){}
+    Node::Node(wGraph _g,vector<int> _father): g(_g), id(-1), father(std::move(_father)) {}
 
-    Variable::Variable(Graph *_g,const_pData default_v):
+    Variable::Variable(wGraph _g,const_pData default_v):
         Node(_g), default_value(default_v->copy())
     {}
-    const_pNode Variable::create(Graph *g,const_pData default_v)
+    const_pNode Variable::create(pGraph g,const_pData default_v)
     {
         Message::debug("Variable::create() called");
         return g->join(unique_ptr<Variable>(new Variable(g,default_v)));
@@ -113,8 +113,8 @@ namespace computational_graph
         return std::vector<const_pDiff>();
     }
 
-    Placeholder::Placeholder(Graph *_g):Node(_g){}
-    const_pNode Placeholder::create(Graph *g)
+    Placeholder::Placeholder(wGraph _g):Node(_g){}
+    const_pNode Placeholder::create(pGraph g)
     {
         Message::debug("Placeholder::create() called");
         return g->join(unique_ptr<Placeholder>(new Placeholder(g)));
@@ -133,10 +133,10 @@ namespace computational_graph
         return std::vector<const_pDiff>();
     }
 
-    Constant::Constant(Graph *_g,const_pData v):
+    Constant::Constant(wGraph _g,const_pData v):
         Node(_g),value(v->copy())
     {}
-    const_pNode Constant::create(Graph *g,const_pData v)
+    const_pNode Constant::create(pGraph g,const_pData v)
     {
         Message::debug("Constant::create() called");
         return g->join(unique_ptr<Constant>(new Constant(g,v)));
@@ -155,7 +155,7 @@ namespace computational_graph
     }
     
     map<string,arith_op> Arith::str2op{{"+",plus},{"-",minus},{"*",multi},{"/",div}};
-    Arith::Arith(Graph *_g,int left_id,int right_id,string op_str):
+    Arith::Arith(wGraph _g,int left_id,int right_id,string op_str):
         Node(_g,vector<int>{left_id,right_id})
     {
         auto it=str2op.find(op_str);
@@ -169,7 +169,7 @@ namespace computational_graph
     {
         Message::debug("Arith::create() called");
         if(!check_binary(left,right)) return nullptr;
-        Graph *g=left->get_graph();
+        pGraph g=left->get_graph();
         return g->join(unique_ptr<Arith>(new Arith(g,left->get_id(),right->get_id(),op_str)));
     }
     int Arith::get_type() const
@@ -196,7 +196,7 @@ namespace computational_graph
     }
 
     map<string,const SingleTensorOp&> Single_op::str2op{{"sin",SingleTensorOp::sin},{"log",SingleTensorOp::log},{"exp",SingleTensorOp::exp},{"tanh",SingleTensorOp::tanh},{"sigmoid",SingleTensorOp::sigmoid},{"SIN",SingleTensorOp::sin},{"LOG",SingleTensorOp::log},{"EXP",SingleTensorOp::exp},{"TANH",SingleTensorOp::tanh},{"SIGMOID",SingleTensorOp::sigmoid}};
-    Single_op::Single_op(Graph *_g,int x_id,string op_str):
+    Single_op::Single_op(wGraph _g,int x_id,string op_str):
         Node(_g,vector<int>{x_id})
     {
         auto it=str2op.find(op_str);
@@ -210,7 +210,7 @@ namespace computational_graph
     {
         Message::debug("Single_op::create() called");
         if(!check_single(x)) return nullptr;
-        Graph *g=x->get_graph();
+        pGraph g=x->get_graph();
         return g->join(unique_ptr<Single_op>(new Single_op(g,x->get_id(),op_str)));
     }
     int Single_op::get_type() const
@@ -236,10 +236,10 @@ namespace computational_graph
         return vector<const_pDiff>{op.diff(father_value[0])};
     }
 
-    Print::Print(Graph *_g,int x_id,string x_symbol):
+    Print::Print(wGraph _g,int x_id,string x_symbol):
         Node(_g,vector<int>{x_id}),father_symbol(x_symbol)
     {}
-    const_pNode Print::create(Graph *g,int x_id,string x_symbol)
+    const_pNode Print::create(pGraph g,int x_id,string x_symbol)
     {
         Message::debug("Print::create() (ID ver) called");
         return g->join(unique_ptr<Print>(new Print(g,x_id,x_symbol)));
@@ -278,7 +278,7 @@ namespace computational_graph
     }
 
     map<string,cmp_op> Cmp::str2op{{"<",less_float},{">",greater_float},{"<=",leq_float},{">=",geq_float},{"==",equal_float}};
-    Cmp::Cmp(Graph *_g,int left_id,int right_id,string op_str):
+    Cmp::Cmp(wGraph _g,int left_id,int right_id,string op_str):
         Node(_g,vector<int>{left_id,right_id})
     {
         auto it=str2op.find(op_str);
@@ -292,7 +292,7 @@ namespace computational_graph
     {
         Message::debug("Cmp::create() called");
         if(!check_binary(left,right)) return nullptr;
-        Graph *g=left->get_graph();
+        pGraph g=left->get_graph();
         return g->join(unique_ptr<Cmp>(new Cmp(g,left->get_id(),right->get_id(),op_str)));
     }
     int Cmp::get_type() const
@@ -320,10 +320,10 @@ namespace computational_graph
         return vector<const_pDiff>{Tensor::zeros(shape)} ;
     }
 
-    Cond::Cond(Graph *_g,int cond_id,int true_id,int false_id):
+    Cond::Cond(wGraph _g,int cond_id,int true_id,int false_id):
         Node(_g,vector<int>{cond_id,true_id,false_id})
     {}
-    const_pNode Cond::create(Graph *g,int cond_id,int true_id,int false_id)
+    const_pNode Cond::create(pGraph g,int cond_id,int true_id,int false_id)
     {
         Message::debug("Cond::create() (ID ver) called");
         return g->join(unique_ptr<Cond>(new Cond(g,cond_id,true_id,false_id)));
@@ -364,8 +364,8 @@ namespace computational_graph
         return vector<const_pDiff>{ Tensor::zeros(shape[0]), Tensor::zeros(shape[1]), Diff::identity(shape[2])};
     }
 
-    Assert::Assert(Graph *_g, int x_id): Node(_g, vector<int>{x_id}){}
-    const_pNode Assert::create(Graph *g,int x_id)
+    Assert::Assert(wGraph _g, int x_id): Node(_g, vector<int>{x_id}){}
+    const_pNode Assert::create(pGraph g,int x_id)
     {
         Message::debug("Assert::create() (ID ver) called");
         return g->join(unique_ptr<Assert>(new Assert(g, x_id)));
@@ -407,8 +407,8 @@ namespace computational_graph
         return vector<const_pDiff>{Tensor::zeros(shape)} ;
     }
 
-    Bind::Bind(Graph *_g, int left_id, int right_id): Node(_g, vector<int>{left_id, right_id}) {}
-    const_pNode Bind::create(Graph *g,int left_id, int right_id)
+    Bind::Bind(wGraph _g, int left_id, int right_id): Node(_g, vector<int>{left_id, right_id}) {}
+    const_pNode Bind::create(pGraph g,int left_id, int right_id)
     {
         Message::debug("Bind::create() (ID ver) called");
         return g->join(unique_ptr<Bind>(new Bind(g, left_id, right_id)));
@@ -444,8 +444,8 @@ namespace computational_graph
         return vector<const_pDiff>{Diff::(shape)} ;
     }
 
-    Grad::Grad(Graph *_g, int x_id): Node(_g, vector<int>{x_id}) {}
-    const_pNode Grad::create(Graph *g, int x_id)
+    Grad::Grad(wGraph _g, int x_id): Node(_g, vector<int>{x_id}) {}
+    const_pNode Grad::create(pGraph g, int x_id)
     {
         Message::debug("Grad::create() (ID ver) called");
         return g->join(unique_ptr<Grad>(new Grad(g, x_id)));        
@@ -500,8 +500,8 @@ namespace computational_graph
         throw std::runtime_error("Not Support");
     }
 
-    At::At(Graph *_g, int grad_id, int x_id): Node(_g, vector<int>{grad_id, x_id}) {}
-    const_pNode At::create(Graph *g, int grad_id, int x_id)
+    At::At(wGraph _g, int grad_id, int x_id): Node(_g, vector<int>{grad_id, x_id}) {}
+    const_pNode At::create(pGraph g, int grad_id, int x_id)
     {
         Message::debug("At::create() (ID ver) called");
         return g->join(unique_ptr<At>(new At(g, grad_id, x_id)));          
@@ -541,8 +541,8 @@ namespace computational_graph
         throw std::runtime_error("Not Support");
     }
 
-    Assign::Assign(Graph *_g, int left_id, int right_id):Node(_g, vector<int>{left_id, right_id}) {}
-    const_pNode Assign::create(Graph *g, int left_id,int right_id)
+    Assign::Assign(wGraph _g, int left_id, int right_id):Node(_g, vector<int>{left_id, right_id}) {}
+    const_pNode Assign::create(pGraph g, int left_id,int right_id)
     {
         Message::debug ("Assign::create() (ID ver) called");
         return g->join(unique_ptr<Assign>(new Assign(g,left_id,right_id)));
