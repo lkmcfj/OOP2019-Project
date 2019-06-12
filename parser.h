@@ -4,6 +4,8 @@
 #include "data.h"
 #include "graph.h"
 #include <string>
+#include <map>
+#include <vector>
 namespace computational_graph
 {
 	class Parser

@@ -1,4 +1,5 @@
 #include "floatfunc.h"
+#include "message.h"
 #include <string>
 #include <cstdio>
 #include <utility>

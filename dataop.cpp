@@ -1,6 +1,7 @@
 #include "data.h"
 #include "dataop.h"
 #include "floatfunc.h"
+#include "message.h"
 #include <functional>
 #include <iostream>
 namespace computational_graph
