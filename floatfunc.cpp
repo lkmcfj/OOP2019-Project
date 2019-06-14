@@ -1,6 +1,8 @@
 #include "floatfunc.h"
 #include "message.h"
 #include <string>
+#include <sstream>
+#include <iomanip>
 #include <cstdio>
 #include <utility>
 
@@ -9,8 +11,20 @@ namespace computational_graph
     using std::pair;
     using std::make_pair;
     typedef pair<double,double> pdd;
-	TODO:implement of FloatSetting
-	TODO:implement of double_string
+	int FloatSetting::precision = 4 ; //预设4位
+	double FloatSetting::eps = 1e-7;
+	void FloatSetting::set_precision(int digit){ precision = digit; }
+	void FloatSetting::set_eps(double neweps){ eps = neweps; }
+	int FloatSetting::get_precision(){ return precision; }
+	int FloatSetting::get_eps(){ return eps; }
+
+	std::string double_string(double v){
+   		std::ostringstream out;
+    	out.precision(FloatSetting::get_precision());
+    	out << std::fixed << v;
+    	return out.str();
+	}
+
 	bool double_boolean(double v)
 	{
 		return v>FloatSetting::get_eps();
