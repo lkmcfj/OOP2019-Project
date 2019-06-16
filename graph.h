@@ -12,8 +12,8 @@ namespace computational_graph
     {
     private:
         std::vector<const_pNode> nodes;
-        Graph();
     public:
+        Graph();
         const_pNode join(std::unique_ptr<Node> curnode);
         const_pNode getnode(int id);
         friend class Session;
