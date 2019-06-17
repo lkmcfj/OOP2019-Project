@@ -12,17 +12,17 @@ namespace computational_graph
     using std::pair;
     using std::make_pair;
     typedef pair<double,double> pdd;
-	int FloatSetting::precision = 4 ; //预设4位
+	int FloatSetting::precision = 4; //预设4位
 	double FloatSetting::eps = 1e-7;
 	void FloatSetting::set_precision(int digit){ precision = digit; }
 	void FloatSetting::set_eps(double neweps){ eps = neweps; }
 	int FloatSetting::get_precision(){ return precision; }
-	int FloatSetting::get_eps(){ return eps; }
+	double FloatSetting::get_eps(){ return eps; }
 
 	std::string double_string(double v){
    		std::ostringstream out;
     	out.precision(FloatSetting::get_precision());
-    	out << v;
+    	out  << v;
     	return out.str();
 	}
 
@@ -45,7 +45,8 @@ namespace computational_graph
     }
     double double_div(double x,double y)
     {
-		if(std::abs(y)<FloatSetting::get_eps())
+		Message::debug("double_div called x="+double_string(x)+" y="+double_string(y));
+		if(std::fabs(y)<FloatSetting::get_eps())
 		{
 			Message::message("ERROR: Division by zero");
 			throw std::range_error("Division by zero");	
@@ -67,7 +68,7 @@ namespace computational_graph
     }
     pdd double_diff_div(double x,double y)
     {
-        if(std::abs(y)<FloatSetting::get_eps())
+        if(std::fabs(y)<FloatSetting::get_eps())
         {
             Message::message("ERROR: Division by zero");
             throw std::range_error("Division by zero");

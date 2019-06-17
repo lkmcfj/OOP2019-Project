@@ -13,7 +13,7 @@ namespace computational_graph
 		static void set_precision(int digit);
 		static void set_eps(double neweps);
 		static int get_precision();
-		static int get_eps();
+		static double get_eps();
 		FloatSetting() = delete;
 	};
 	std::string double_string(double v);
