@@ -12,6 +12,8 @@ namespace computational_graph
 {
     using std::string;
     using std::to_string;
+    using std::dynamic_pointer_cast;
+
     Graph::Graph(){}
     pGraph Graph::create()
     {
@@ -65,7 +67,7 @@ namespace computational_graph
             {
                 auto i=temp_value.find(id);
                 if(i==temp_value.end())
-                    variable_value[id]=temp_value[id]=dynamic_pointer_cast<const Variable>(g.nodes[id])->get_default_value();
+                    variable_value[id]=temp_value[id]=dynamic_pointer_cast<const Variable>(g->nodes[id])->get_default_value();
             } else
             if(g->nodes[id]->get_type()==2)
             {
@@ -88,7 +90,7 @@ namespace computational_graph
     }
     const_pData Session::eval(const_pNode p,std::map<const_pNode,const_pData> placeholder_value)
     {
-        if((p->get_graph()!=g)||(p->get_id()<0))
+        if(( p->get_graph().lock() != g ) || (p->get_id()<0))
         {
             Message::error("In Session::eval(),the node evaluated is not in this session, returning null data");
             return nullptr;
@@ -96,7 +98,7 @@ namespace computational_graph
         std::map<int,const_pData> pvalue;
         for(auto i: placeholder_value)
         {
-            if((i.first->get_graph()!=g)||(i.first->get_id()<0))
+            if((i.first->get_graph().lock() !=g)||(i.first->get_id()<0))
             {
                 Message::warning("In Session::eval(), get a placeholder value pair which is not in this session");
             } else if(i.first->get_type()!=2)
@@ -108,7 +110,7 @@ namespace computational_graph
     }
     void Session::set_variable(int id,const_pData v)
     {
-        if(id<0||id>=g.nodes.size())
+        if(id<0||id>=g->nodes.size())
         {
             Message::error("In Session::set_variable(), invalid node id");
             return;
@@ -117,7 +119,7 @@ namespace computational_graph
     }
     void Session::set_variable(const_pNode p,const_pData v)
     {
-        if((p->get_graph()!=g)||(p->get_id()<0))
+        if((p->get_graph().lock() !=g)||(p->get_id()<0))
         {
             Message::error("in Session::set_variable():the variable node is not in this session, failed");
             return;
