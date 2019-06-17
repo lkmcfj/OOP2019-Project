@@ -30,4 +30,4 @@ parser.o : parser.cpp $(deps)
 	$(cc) parser.cpp -o parser.o -c -std=c++14
 
 clean :
-	rm -rf $(obj) $(prom)
+	rm -rf $(obj) test
