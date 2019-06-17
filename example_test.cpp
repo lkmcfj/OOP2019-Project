@@ -4,11 +4,14 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <fstream>
 #define pf(x) Float::create(x)
 using namespace computational_graph;
-using namespace std;
+using std::cout;
+using std::string;
+using std::endl;
 const string errp="ERROR: Placeholder missing\n",err0="ERROR: Division by zero\n",errlog="ERROR: LOG operator's input must be positive\n";
-void test_eval(Session &s,const_pNode x,map<const_pNode,const_pData> p)
+void test_eval(Session &s,const_pNode x,std::map<const_pNode,const_pData> p)
 {
     try
     {
@@ -22,11 +25,11 @@ void example1()
     cout<<"\nEx1:\n"
     "Expected output:\n"
     "1.0000\n3.0000\n-2.0000\n"+errp+err0+"---------------\n";
-    Graph g;
+    pGraph g=Graph::create();
     Session s(g);
-    auto x=Placeholder::create(&g),
-         y=Placeholder::create(&g),
-         z=Constant::create(&g,Float::create(3));
+    auto x=Placeholder::create(g),
+         y=Placeholder::create(g),
+         z=Constant::create(g,Float::create(3));
     auto a=x+y,
          b=a-z,
          c=b*a,
@@ -47,11 +50,11 @@ void example2()
     cout<<"\nEx2:\n"
     "Expected output:\n"
     "0.6126\n"+errlog+"2.7183\n0.9381\n---------------\n";
-    Graph g;
+    pGraph g=Graph::create();
     Session s(g);
-    auto x=Placeholder::create(&g),
-         y=Placeholder::create(&g),
-         z=Constant::create(&g,Float::create(3));
+    auto x=Placeholder::create(g),
+         y=Placeholder::create(g),
+         z=Constant::create(g,Float::create(3));
     
     auto a=sin_node(z),
          b=log_node(y),
@@ -75,12 +78,12 @@ void example3()
     cout<<"\nEx3: calculate 1/sqrt(c) using Newton's method\n"
     "Expected output:\n"
     "0.7071\n1.4142\n0.0312\n0.0039\n--------------\n";
-    Graph g;
+    pGraph g=Graph::create();
     Session s(g);
-    auto x0=Constant::create(&g,pf(0.000001)),
-         c=Variable::create(&g,pf(2)),
-         half=Constant::create(&g,pf(0.5)),
-         one=Constant::create(&g,pf(1));
+    auto x0=Constant::create(g,pf(0.000001)),
+         c=Variable::create(g,pf(2)),
+         half=Constant::create(g,pf(0.5)),
+         one=Constant::create(g,pf(1));
     const_pNode x=x0;
     const int iteration_times=100;
     for(int i=0;i<iteration_times;++i) x=x+half*x*(one-c*x*x);
@@ -100,7 +103,9 @@ void example3()
 
 int main()
 {
-    //Message::set_log_level(1);
+    Message::set_log_level(1);
+    std::ofstream logfile("log.txt");
+    Message::set_log_stream(logfile);
     //Message::set_message_stream(cout);
     example1();
     example2();
