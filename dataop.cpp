@@ -30,6 +30,10 @@ namespace computational_graph
         throw std::runtime_error("Computation failed on non-tensor data.");
     }
     
+    const_pFloat float_calc(const_pFloat left,const_pFloat right,function<double(double,double)> op)
+    {
+        return Float::create(op(left->get_val(),right->get_val()));
+    }
     vector<int> broadcast_shape(vector<int> s1,vector<int> s2)
     {
 		if(s1.size()>s2.size()) std::swap(s1,s2);
@@ -100,6 +104,9 @@ namespace computational_graph
 	
     const_pData plus(const_pData left,const_pData right)
     {
+		const_pFloat left_f=dynamic_pointer_cast<const Float>(left),
+                     right_f=dynamic_pointer_cast<const Float>(right);
+        if(left_f && right_f) return float_calc(left_f,right_f,double_plus);
         const_pDiff left_d=dynamic_pointer_cast<const Diff>(left), right_d=dynamic_pointer_cast<const Diff>(right);
         if(left_d&&right_d && left_d->get_shape()==right_d->get_shape() && left_d->get_dim1()==right_d->get_dim1())
         {
@@ -109,6 +116,9 @@ namespace computational_graph
 	}
 	const_pData minus(const_pData left,const_pData right)
     {
+		const_pFloat left_f=dynamic_pointer_cast<const Float>(left),
+                     right_f=dynamic_pointer_cast<const Float>(right);
+        if(left_f && right_f) return float_calc(left_f,right_f,double_minus);
 		const_pDiff left_d=dynamic_pointer_cast<const Diff>(left), right_d=dynamic_pointer_cast<const Diff>(right);
         if(left_d&&right_d && left_d->get_shape()==right_d->get_shape() && left_d->get_dim1()==right_d->get_dim1())
         {
@@ -118,6 +128,9 @@ namespace computational_graph
 	}
 	const_pData div(const_pData left,const_pData right)
     {
+		const_pFloat left_f=dynamic_pointer_cast<const Float>(left),
+                     right_f=dynamic_pointer_cast<const Float>(right);
+        if(left_f && right_f) return float_calc(left_f,right_f,double_div);
         return tensor_bc_calc(left,right,double_div);
 	}
 
@@ -148,6 +161,9 @@ namespace computational_graph
     }
     const_pData multi(const_pData left,const_pData right)
     {
+		const_pFloat left_f=dynamic_pointer_cast<const Float>(left),
+                     right_f=dynamic_pointer_cast<const Float>(right);
+        if(left_f && right_f) return float_calc(left_f,right_f,double_multi);
         const_pDiff left_d=dynamic_pointer_cast<const Diff>(left),right_d=dynamic_pointer_cast<const Diff>(right);
         if(left_d&&right_d&&check_multi(left_d,right_d))
         {
@@ -278,6 +294,10 @@ namespace computational_graph
 			op(_op), diffop(_diffop){}
 	const_pData SingleTensorOp::operator()(const_pData x) const
 	{
+		if(const_pFloat f=dynamic_pointer_cast<const Float>(x))
+		{
+			return Float::create(op(f->get_val()));
+		}
 		const_pTensor t=to_Tensor(x);
 		vector<double> ans=t->get_val();
 		for(double &i: ans) i=op(i);
