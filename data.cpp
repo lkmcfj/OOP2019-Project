@@ -57,22 +57,27 @@ namespace computational_graph
     {
         string res;
         vector<int> index(dim,0);
-        for(int i=0;i<dim;++i) res+="[";
         for(int i=0;i<size;++i)
         {
+			int j=dim-1;
+			while(j>=0&&index[j]==0)
+			{
+				res+="[";
+				--j;
+			}
             res+=double_string(p[i]);
-            int j=dim-1;
-            while(j>=0&&index[j]==shape[j]-1)
-            {
-                index[j]=0;
-                res+="]";
-                --j;
-            }
-            if(j>=0)
-            {
-                ++index[j];
-                res+=", ";
-            }
+			j=dim-1;
+			while(j>=0&&index[j]==shape[j]-1)
+			{
+				index[j]=0;
+				res+="]";
+				--j;
+			}
+			if(j>=0)
+			{
+				++index[j];
+				res+=", ";
+			}
         }
         return res;
     }
