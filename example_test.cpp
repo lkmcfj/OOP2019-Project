@@ -80,25 +80,30 @@ void example3()
     "0.7071\n1.4142\n0.0312\n0.0039\n--------------\n";
     pGraph g=Graph::create();
     Session s(g);
-    auto x0=Constant::create(g,pf(0.000001)),
+    auto x=Variable::create(g,pf(0.000001)),
          c=Variable::create(g,pf(2)),
          half=Constant::create(g,pf(0.5)),
-         one=Constant::create(g,pf(1));
-    const_pNode x=x0;
-    const int iteration_times=100;
-    for(int i=0;i<iteration_times;++i) x=x+half*x*(one-c*x*x);
-    const_pNode res=x;
-    
-    test_eval(s,res,{});
-    
+         one=Constant::create(g,pf(1)),
+         newx=x+half*x*(one-c*x*x),
+         optimizer=Assign::create(x,newx);
+    const int epoches=50;
+    for(int i=0;i<epoches;++i) s.eval(optimizer,{});
+	test_eval(s,x,{});
+	
     s.set_variable(c,pf(0.5));
-    test_eval(s,res,{});
+    s.set_variable(x,pf(0.000001));
+    for(int i=0;i<epoches;++i) s.eval(optimizer,{});
+    test_eval(s,x,{});
     
     s.set_variable(c,pf(1024));
-    test_eval(s,res,{});
+    s.set_variable(x,pf(0.000001));
+    for(int i=0;i<epoches;++i) s.eval(optimizer,{});
+    test_eval(s,x,{});
     
     s.set_variable(c,pf(65535));
-    test_eval(s,res,{});
+    s.set_variable(x,pf(0.000001));
+    for(int i=0;i<epoches;++i) s.eval(optimizer,{});
+    test_eval(s,x,{});
 }
 
 int main()
