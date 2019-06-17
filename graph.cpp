@@ -8,6 +8,7 @@
 #include <map>
 #include <exception>
 #include <utility>
+#include <queue>
 namespace computational_graph
 {
     using std::string;
@@ -17,7 +18,7 @@ namespace computational_graph
     Graph::Graph(){}
     pGraph Graph::create()
     {
-		return std::make_shared<Graph>();
+		return std::shared_ptr<Graph>(new Graph());
 	}
     const_pNode Graph::join(std::unique_ptr<Node> curnode)
     {

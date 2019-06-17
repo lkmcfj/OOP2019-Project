@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <cstdio>
 #include <utility>
+#include <cmath>
 
 namespace computational_graph
 {
@@ -125,3 +126,4 @@ namespace computational_graph
 	{
 		return 1/(std::exp(x)+2+std::exp(-x));
 	}
+}

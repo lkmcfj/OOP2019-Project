@@ -10,6 +10,10 @@ namespace computational_graph
     std::ostream& operator<<(std::ostream &out, const Data &x);
     const_pTensor to_Tensor(const_pData x);
 
+	const_pDiff operator+(const_pDiff left,const_pDiff right);
+	const_pDiff operator-(const_pDiff left,const_pDiff right);
+	const_pDiff operator*(const_pDiff left,const_pDiff right);
+
     const_pData operator+(const_pData left,const_pData right); //need to do variable type check
     const_pData operator-(const_pData left,const_pData right);
     const_pData operator*(const_pData left,const_pData right);
@@ -35,6 +39,7 @@ namespace computational_graph
     {
 		std::function<double(double)> op,diffop;
 	public:
+		SingleTensorOp() =default;
 		SingleTensorOp(std::function<double(double)> op,std::function<double(double)> diffop);
 		const_pData operator()(const_pData x) const;
 		const_pDiff diff(const_pData x) const;
@@ -45,6 +50,7 @@ namespace computational_graph
         std::function<const_pData(const_pData,const_pData)> op;
         std::function<pairdiff(const_pData,const_pData)> diffop;
     public:
+		BinaryTensorOp() =default;
         BinaryTensorOp(std::function<const_pData(const_pData,const_pData)> op, std::function<pairdiff(const_pData,const_pData)> diffop);
         const_pData operator()(const_pData x,const_pData y) const;
         pairdiff diff(const_pData x,const_pData y) const;

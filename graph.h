@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 #include <map>
+#include <set>
 namespace computational_graph
 {
 
@@ -12,8 +13,8 @@ namespace computational_graph
     {
     private:
         std::vector<const_pNode> nodes;
-    public:
         Graph();
+    public:
         const_pNode join(std::unique_ptr<Node> curnode);
         const_pNode getnode(int id);
         friend class Session;

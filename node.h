@@ -1,6 +1,7 @@
 #ifndef _NODE_H_
 #define _NODE_H_
 #include "data.h"
+#include "dataop.h"
 #include <memory>
 #include <vector>
 #include <functional>
@@ -28,7 +29,7 @@ namespace computational_graph
         const std::vector<int> &get_father() const;
         int get_id() const;
         wGraph get_graph() const;
-        virtual int get_type()=0 const;
+        virtual int get_type() const =0;
         //type=0 Node
         //type=1 Variable
         //type=2 Placeholder
@@ -43,8 +44,8 @@ namespace computational_graph
         //type=11 Grad
         //type=12 At
         //type=13 Assign
-        virtual const_pData run(Session *sess,std::vector<const_pData> father_value)=0 const;//error
-        virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value)=0 const;
+        virtual const_pData run(Session *sess,std::vector<const_pData> father_value)const =0;//error
+        virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value)const =0;
         friend class Graph;
         virtual ~Node() = default;
     };
@@ -88,7 +89,7 @@ namespace computational_graph
         
     class Arith : public Node
     {
-        static std::map<std::string,const BinaryTensorOp&> str2op;
+        static std::map<std::string,BinaryTensorOp> str2op;
     protected:
         BinaryTensorOp op;
         Arith(wGraph _g,int left_id,int right_id,std::string op_str);
@@ -101,7 +102,7 @@ namespace computational_graph
 
     class Single_op : public Node
     {
-        static std::map<std::string,const SingleTensorOp&> str2op;
+        static std::map<std::string,SingleTensorOp> str2op;
     protected:
         SingleTensorOp op;
         Single_op(wGraph _g,int x_id,std::string op_str);
@@ -193,7 +194,7 @@ namespace computational_graph
         At(wGraph _g, int grad_id, int x_id);
     public:
         static const_pNode create(pGraph g, int grad_id, int x_id);
-        static const_pNode create(const_pNode grad, int x_id);      
+        static const_pNode create(const_pNode grad, const_pNode x);      
         virtual int get_type() const;
         virtual const_pData run(Session *sess, std::vector<const_pData> father_value) const;            
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;

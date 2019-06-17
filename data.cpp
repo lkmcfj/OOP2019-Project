@@ -1,4 +1,3 @@
-#include <cmath>
 #include <memory>
 #include <string>
 #include <cstdio>
@@ -11,7 +10,10 @@ namespace computational_graph
     using std::vector;
     using std::map;
     using std::string;
-    
+    using std::make_shared;
+    using std::unique_ptr;
+	using std::make_unique;
+	using std::shared_ptr;
     int Tensor::index2id(vector<int> index) const
     {
 		int ret=0,t=1;
@@ -78,7 +80,7 @@ namespace computational_graph
     {
         return p;
     }
-    double Tensor::getval(vector<int> index) const
+    double Tensor::get_val(vector<int> index) const
     {
         return p[index2id(std::move(index))];
     }
@@ -131,7 +133,7 @@ namespace computational_graph
 		return p[0];
 	}
 
-    Float::Float(double init_v):shape(1,1), dim(1), size(1),p(1,init_v){}
+    Float::Float(double init_v):Tensor(vector<double>{init_v},vector<int>{1}){}
     shared_ptr<const Float> Float::create(double init_v)
     {
         return make_shared<const Float>(init_v);
@@ -161,15 +163,18 @@ namespace computational_graph
         for(int i:shape) size*=i;
         vector<double> v(size*size,0);
         for(int i=0;i<size;++i) v[i*size+i]=1;
-        return Diff::create(v,shape+shape,shape.size());
+        int len=shape.size();
+        shape.insert(shape.end(),shape.begin(),shape.end());
+        return Diff::create(v,shape,len);
     }
     const_pDiff Diff::create(vector<double> init_v,vector<int> init_shape, int dimf)
     {
-        return make_shared<const Diff>(init_v,init_shape,dimf);
+        return make_shared<const Diff>(std::move(init_v),std::move(init_shape),dimf);
     }
     const_pDiff Diff::zeros(vector<int> shape1,vector<int> shape2)
     {
-        return make_shared<const Diff>(shape1+shape2,shape1.size());
+		shape1.insert(shape1.end(),shape2.begin(),shape2.end());
+        return make_shared<const Diff>(shape1,shape1.size()-shape2.size());
     }
     unique_ptr<const Data> Diff::copy() const
     {
@@ -194,24 +199,24 @@ namespace computational_graph
     }
     shared_ptr<const Matrix> Matrix::create(vector<double> init_v,int n,int m)
     {
-        return make_shared<const Matrix>(init_v,n,m);
+        return make_shared<const Matrix>(std::move(init_v),n,m);
     }
     unique_ptr<const Data> Matrix::copy() const
     {
         return make_unique<const Matrix>(*this);
     }
     
-    Graddata::Grad(map<int,const_pDiff> init_grad):grad(init_grad){}
+    Graddata::Graddata(map<int,const_pDiff> init_grad, vector<int> init_shape):grad(init_grad), fshape(init_shape){}
     unique_ptr<const Data> Graddata::copy() const
     {
-        return make_unique<const Grad>(*this);
+        return make_unique<const Graddata>(*this);
     }
     const_pDiff Graddata::get_grad(int x_id) const
     {
         auto it=grad.find(x_id);
         if(it!=grad.end()) return it->second;else return nullptr;
     }
-    const vector<int>& Graddata::get_fshape()
+    const vector<int>& Graddata::get_fshape() const
     {
         return fshape;
     }
@@ -223,10 +228,10 @@ namespace computational_graph
     string Graddata::to_string() const
     {
         string res="{";
-        for(map<int,const_pDiff>::iterator i=grad.begin();i!=grad.end();++i)
+        for(map<int,const_pDiff>::const_iterator i=grad.begin();i!=grad.end();++i)
         {
             if(i!=grad.begin()) res+=",\n";
-            res+=to_string(i->first)+": "+i->second->to_string();
+            res+=std::to_string(i->first)+": "+i->second->to_string();
         }
         res+="\n}";
         return res;
@@ -238,5 +243,9 @@ namespace computational_graph
 	double Graddata::scalar() const
 	{
 		throw std::runtime_error("cannot convert a Graddata instance to scalar");
+	}
+	shared_ptr<const Graddata> Graddata::create(map<int,const_pDiff> init_grad, vector<int> init_shape)
+	{
+		return make_shared<const Graddata>(std::move(init_grad),std::move(init_shape));
 	}
 }

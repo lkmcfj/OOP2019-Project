@@ -14,6 +14,8 @@ namespace computational_graph
     using std::map;
     using std::to_string;
     using std::unique_ptr;
+    using std::shared_ptr;
+    using std::dynamic_pointer_cast;
     
     bool check_triple(const_pNode n1,const_pNode n2,const_pNode n3)
     {
@@ -27,7 +29,7 @@ namespace computational_graph
             Message::error("previous node has not been assigned with a valid ID when creating new node, returning null node.");
             return false;
         }
-        if(n1->get_graph()!=n2->get_graph()||n2->get_graph()!=n3->get_graph())
+        if(n1->get_graph().lock()!=n2->get_graph().lock()||n2->get_graph().lock()!=n3->get_graph().lock())
         {
             Message::error("trying to connect nodes in different graph, returning null node.");
             return false;
@@ -46,7 +48,7 @@ namespace computational_graph
             Message::error("previous node has not been assigned with a valid ID when creating new node, returning null node.");
             return false;
         }
-        if(n1->get_graph()!=n2->get_graph())
+        if(n1->get_graph().lock()!=n2->get_graph().lock())
         {
             Message::error("trying to connect nodes in different graph, returning null node.");
             return false;
@@ -153,15 +155,20 @@ namespace computational_graph
     {
         return std::vector<const_pDiff>();
     }
-    
-    map<string,const BinaryTensorOp&> Arith::str2op{{"+",BinaryTensorOp::plus},{"-",BinaryTensorOp::minus},{"*",BinaryTensorOp::multi},{"/",BinaryTensorOp::div}};
+    using std::make_pair;
+    map<string,BinaryTensorOp> Arith::str2op{
+                                             {"+",BinaryTensorOp::plus},
+                                             {"-",BinaryTensorOp::minus},
+											 {"*",BinaryTensorOp::multi},
+                                             {"/",BinaryTensorOp::div}
+                                            };
     Arith::Arith(wGraph _g,int left_id,int right_id,string op_str):
         Node(_g,vector<int>{left_id,right_id})
     {
         auto it=str2op.find(op_str);
         if(it!=str2op.end()) op=it->second;
         else {
-            Message::error("binary operator is not +, -, *, /, set to + by default");
+            Message::error("arithmetic operator is not +, -, *, /, set to + by default");
             op=str2op["+"];
         }
     }
@@ -169,7 +176,7 @@ namespace computational_graph
     {
         Message::debug("Arith::create() called");
         if(!check_binary(left,right)) return nullptr;
-        pGraph g=left->get_graph();
+        pGraph g(left->get_graph());
         return g->join(unique_ptr<Arith>(new Arith(g,left->get_id(),right->get_id(),op_str)));
     }
     int Arith::get_type() const
@@ -196,7 +203,18 @@ namespace computational_graph
         return vector<const_pDiff>{ans.first,ans.second};
     }
 
-    map<string,const SingleTensorOp&> Single_op::str2op{{"sin",SingleTensorOp::sin},{"log",SingleTensorOp::log},{"exp",SingleTensorOp::exp},{"tanh",SingleTensorOp::tanh},{"sigmoid",SingleTensorOp::sigmoid},{"SIN",SingleTensorOp::sin},{"LOG",SingleTensorOp::log},{"EXP",SingleTensorOp::exp},{"TANH",SingleTensorOp::tanh},{"SIGMOID",SingleTensorOp::sigmoid}};
+    map<string,SingleTensorOp> Single_op::str2op{
+                                                    {"sin",SingleTensorOp::sin},
+                                                    {"log",SingleTensorOp::log},
+                                                    {"exp",SingleTensorOp::exp},
+                                                    {"tanh",SingleTensorOp::tanh},
+                                                    {"sigmoid",SingleTensorOp::sigmoid},
+                                                    {"SIN",SingleTensorOp::sin},
+                                                    {"LOG",SingleTensorOp::log},
+                                                    {"EXP",SingleTensorOp::exp},
+                                                    {"TANH",SingleTensorOp::tanh},
+                                                    {"SIGMOID",SingleTensorOp::sigmoid}
+                                                };
     Single_op::Single_op(wGraph _g,int x_id,string op_str):
         Node(_g,vector<int>{x_id})
     {
@@ -211,7 +229,7 @@ namespace computational_graph
     {
         Message::debug("Single_op::create() called");
         if(!check_single(x)) return nullptr;
-        pGraph g=x->get_graph();
+        pGraph g(x->get_graph());
         return g->join(unique_ptr<Single_op>(new Single_op(g,x->get_id(),op_str)));
     }
     int Single_op::get_type() const
@@ -249,7 +267,7 @@ namespace computational_graph
     {
         Message::debug("Print::create() (const_pNode ver) called");
         if(!check_single(x)) return nullptr;
-        return create(x->get_graph(),x->get_id(),x_symbol);
+        return create(x->get_graph().lock(),x->get_id(),x_symbol);
     }
     int Print::get_type() const
     {
@@ -293,7 +311,7 @@ namespace computational_graph
     {
         Message::debug("Cmp::create() called");
         if(!check_binary(left,right)) return nullptr;
-        pGraph g=left->get_graph();
+        pGraph g(left->get_graph());
         return g->join(unique_ptr<Cmp>(new Cmp(g,left->get_id(),right->get_id(),op_str)));
     }
     int Cmp::get_type() const
@@ -332,7 +350,7 @@ namespace computational_graph
     {
         Message::debug("Cond::create() (const_pNode ver) called");
         if(!check_triple(cond_node,true_node,false_node)) return nullptr;
-        return create(cond_node->get_graph(),cond_node->get_id(),true_node->get_id(),false_node->get_id());
+        return create(cond_node->get_graph().lock(),cond_node->get_id(),true_node->get_id(),false_node->get_id());
     }
     int Cond::get_type() const
     {
@@ -360,8 +378,8 @@ namespace computational_graph
             shape[i] = f[i] -> get_shape();
         }
         if (father_value[0]->boolean())
-            return vector<const_pDiff>{ Tensor::zeros(shape[0]), Diff::identity(shape[1]), Tensor::zeros(shape[2])};
-        return vector<const_pDiff>{ Tensor::zeros(shape[0]), Tensor::zeros(shape[1]), Diff::identity(shape[2])};
+            return vector<const_pDiff>{Diff::zeros(shape[1],shape[0]), Diff::identity(shape[1]), Diff::zeros(shape[1],shape[2])};
+        return vector<const_pDiff>{Diff::zeros(shape[2],shape[0]), Diff::zeros(shape[2],shape[1]), Diff::identity(shape[2])};
     }
 
     Assert::Assert(wGraph _g, int x_id): Node(_g, vector<int>{x_id}){}
@@ -374,7 +392,7 @@ namespace computational_graph
     {
         Message::debug("Assert::create() (const_pNode ver) called");
         if(!check_single(x)) return nullptr;
-        return create(x->get_graph(), x->get_id());
+        return create(x->get_graph().lock(), x->get_id());
     }
     int Assert::get_type() const
     {
@@ -417,7 +435,7 @@ namespace computational_graph
     {
         Message::debug("Bind::create() (const_pNode ver) called");
         if(!check_binary(left, right)) return nullptr;
-        return create(left->get_graph(), left->get_id(), right->get_id());
+        return create(left->get_graph().lock(), left->get_id(), right->get_id());
     }
     int Bind::get_type() const
     {
@@ -441,7 +459,7 @@ namespace computational_graph
         }
         const_pTensor f = to_Tensor(father_value[0]);
         auto shape = f -> get_shape();
-        return vector<const_pDiff>{Diff::identity(shape), Diff::zeros(shape, to_Tensor(father_value[1])->get_shape()} ;
+        return vector<const_pDiff>{Diff::identity(shape), Diff::zeros(shape, to_Tensor(father_value[1])->get_shape())} ;
     }
 
     Grad::Grad(wGraph _g, int x_id): Node(_g, vector<int>{x_id}) {}
@@ -454,7 +472,7 @@ namespace computational_graph
     {
         Message::debug("Grad::create() (const_pNode ver) called");
         if(!check_single(x)) return nullptr;
-        return create(x->get_graph(), x->get_id());       
+        return create(x->get_graph().lock(), x->get_id());       
     }   
     int Grad::get_type() const
     {
@@ -469,30 +487,30 @@ namespace computational_graph
         }
         const_pTensor f=to_Tensor(father_value[0]);
         map<int,const_pDiff> res;
-        res[father[0]]=Diff:identity(f->get_shape());
+        res[father[0]]=Diff::identity(f->get_shape());
         vector<int> &q=sess->vislist;
         for(int i=q.size()-1;i>=0;--i)
         {
             auto it=res.find(q[i]);
-            const_pNode cur=sess->g.nodes[q[i]];
+            const_pNode cur=sess->g->nodes[q[i]];
             if(it!=res.end())
             {
                 vector<const_pData> prev;
                 for(int id:cur->get_father()) prev.push_back(sess->temp_value[id]);
-                vector<const_pDiff> pred=sess->g.nodes[q[i]]->run_diff(sess,prev);
+                vector<const_pDiff> pred=sess->g->nodes[q[i]]->run_diff(sess,prev);
                 for(int j=0;j<cur->get_father().size();++j)
                 {
-                    int id=cur->getfather()[j];
+                    int id=cur->get_father()[j];
                     if(res.find(id)!=res.end()) res[id]=res[id]+it->second*pred[j];
                     else res[id]=it->second*pred[j];
                 }
             }
         }
-        return Graddata::create(res,shape);
+        return Graddata::create(std::move(res),f->get_shape());
     }
-    std::vector<const_pData> Grad::run_diff(Session *sess, std::vector<const_pData> father_value) const
+    std::vector<const_pDiff> Grad::run_diff(Session *sess, std::vector<const_pData> father_value) const
     {
-        throw std::runtime_error("Not Support");
+        throw std::runtime_error("Not Supported");
     }
 
     At::At(wGraph _g, int grad_id, int x_id): Node(_g, vector<int>{grad_id, x_id}) {}
@@ -505,7 +523,7 @@ namespace computational_graph
     {
         Message::debug("Grad::create() (const_pNode ver) called");
         if(!check_binary(grad, x)) return nullptr;
-        return create(grad->get_graph(), grad->get_id());              
+        return create(grad->get_graph().lock(), grad->get_id(), x->get_id());              
     }      
     int At::get_type() const
     {
@@ -515,7 +533,7 @@ namespace computational_graph
     {
         if(father_value.size() != 2)
         {
-            Message::error("evaluating node #"+to_string(get_id())+", expecting 2 input value,get "+to_string(father_value.size())+". returning nullptr.")
+            Message::error("evaluating node #"+to_string(get_id())+", expecting 2 input value,get "+to_string(father_value.size())+". returning nullptr.");
             return nullptr;
         }
         shared_ptr<const Graddata> f0=dynamic_pointer_cast<const Graddata>(father_value[0]);
@@ -543,7 +561,7 @@ namespace computational_graph
     {
         Message::debug("Assign::create() (const_pNode ver) called");
         if(!check_binary(left, right)) return nullptr;
-        return create(left->get_graph(),left->get_id(),right->get_id());
+        return create(left->get_graph().lock(),left->get_id(),right->get_id());
     }
     int Assign::get_type() const
     {

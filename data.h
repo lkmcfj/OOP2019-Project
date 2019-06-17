@@ -30,7 +30,7 @@ namespace computational_graph
         int index2id(std::vector<int> index) const;
         Tensor(std::vector<double> init_v, std::vector<int> init_shape);
         Tensor(std::vector<int> init_shape);
-        const std::vector<double> get_val()& const;
+        const std::vector<double>& get_val() const;
         double get_val(std::vector<int> index) const;
         void set_val(std::vector<int> index,double v);
         virtual std::string to_string() const;
@@ -81,7 +81,7 @@ namespace computational_graph
     public:
         Matrix(std::vector<double> init_v,int d1,int d2);
         static std::shared_ptr<const Matrix> create(std::vector<double> init_v,int n,int m);
-        virtual std:unique_ptr<const Data> copy() const;
+        virtual std::unique_ptr<const Data> copy() const;
     };
 
     class Graddata : public Data
@@ -90,13 +90,15 @@ namespace computational_graph
         std::map<int, const_pDiff> grad;
         std::vector<int> fshape;
     public:
-        Grad(std::map<int, const_pDiff> init_grad, std::vector<int> init_shape);
+        Graddata(std::map<int, const_pDiff> init_grad, std::vector<int> init_shape);
         virtual std::unique_ptr<const Data> copy() const;
         const_pDiff get_grad(int x_id) const;
         const std::vector<int>& get_fshape() const;
         virtual bool boolean() const;
         virtual bool is_scalar() const;
         virtual double scalar() const;
+        virtual std::string to_string() const;
+        static std::shared_ptr<const Graddata> create(std::map<int, const_pDiff> init_grad, std::vector<int> init_shape);
 
     };
 }
