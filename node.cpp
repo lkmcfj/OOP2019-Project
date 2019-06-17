@@ -157,10 +157,10 @@ namespace computational_graph
     }
     using std::make_pair;
     map<string,BinaryTensorOp> Arith::str2op{
-                                             {"+",BinaryTensorOp::plus},
-                                             {"-",BinaryTensorOp::minus},
-											 {"*",BinaryTensorOp::multi},
-                                             {"/",BinaryTensorOp::div}
+                                             {"+",BinaryTensorOp::tensor_plus},
+                                             {"-",BinaryTensorOp::tensor_minus},
+											 {"*",BinaryTensorOp::tensor_multi},
+                                             {"/",BinaryTensorOp::tensor_div}
                                             };
     Arith::Arith(wGraph _g,int left_id,int right_id,string op_str):
         Node(_g,vector<int>{left_id,right_id})
