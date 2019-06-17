@@ -40,7 +40,7 @@ namespace computational_graph
 		std::function<double(double)> op,diffop;
 	public:
 		SingleTensorOp() =default;
-		SingleTensorOp(std::function<double(double)> op,std::function<double(double)> diffop);
+		SingleTensorOp(std::function<double(double)> _op,std::function<double(double)> _diffop);
 		const_pData operator()(const_pData x) const;
 		const_pDiff diff(const_pData x) const;
 		static const SingleTensorOp sin, log, exp, tanh, sigmoid;
@@ -51,10 +51,10 @@ namespace computational_graph
         std::function<pairdiff(const_pData,const_pData)> diffop;
     public:
 		BinaryTensorOp() =default;
-        BinaryTensorOp(std::function<const_pData(const_pData,const_pData)> op, std::function<pairdiff(const_pData,const_pData)> diffop);
+        BinaryTensorOp(std::function<const_pData(const_pData,const_pData)> _op, std::function<pairdiff(const_pData,const_pData)> _diffop);
         const_pData operator()(const_pData x,const_pData y) const;
         pairdiff diff(const_pData x,const_pData y) const;
-        static const BinaryTensorOp plus,minus,multi,div;
+        static const BinaryTensorOp tensor_plus,tensor_minus,tensor_multi,tensor_div;
     };
 
     //上述运算如果类型检查出现问题（如传入Data基类对象，传入nullptr），抛出std::runtime_error

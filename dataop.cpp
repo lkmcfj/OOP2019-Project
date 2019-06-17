@@ -274,8 +274,8 @@ namespace computational_graph
 		return Float::create(left->scalar()==right->scalar());
     }
     
-	SingleTensorOp::SingleTensorOp(std::function<double(double)> op,std::function<double(double)> diffop):
-			op(op), diffop(diffop){}
+	SingleTensorOp::SingleTensorOp(std::function<double(double)> _op,std::function<double(double)> _diffop):
+			op(_op), diffop(_diffop){}
 	const_pData SingleTensorOp::operator()(const_pData x) const
 	{
 		const_pTensor t=to_Tensor(x);
@@ -299,7 +299,8 @@ namespace computational_graph
 						 SingleTensorOp::tanh(double_tanh,double_diff_tanh),
 						 SingleTensorOp::sigmoid(double_sigmoid,double_diff_sigmoid);
 
-    BinaryTensorOp::BinaryTensorOp(function<const_pData(const_pData, const_pData)> op, function<pairdiff(const_pData,const_pData)> diffop):op(op),diffop(diffop){}
+    BinaryTensorOp::BinaryTensorOp(function<const_pData(const_pData, const_pData)> _op, function<pairdiff(const_pData,const_pData)> _diffop):
+		op(_op),diffop(_diffop){}
     const_pData BinaryTensorOp::operator()(const_pData x,const_pData y) const
     {
         return op(x,y);
@@ -308,10 +309,10 @@ namespace computational_graph
     {
         return diffop(x,y);
     }
-    const BinaryTensorOp BinaryTensorOp::plus(plus,diff_plus),
-                         BinaryTensorOp::minus(minus,diff_minus),
-                         BinaryTensorOp::multi(multi,diff_multi),
-                         BinaryTensorOp::div(div,diff_div);
+    const BinaryTensorOp BinaryTensorOp::tensor_plus(plus,diff_plus),
+                         BinaryTensorOp::tensor_minus(minus,diff_minus),
+                         BinaryTensorOp::tensor_multi(multi,diff_multi),
+                         BinaryTensorOp::tensor_div(div,diff_div);
     //上述运算如果类型检查出现问题（如传入Data基类对象，传入nullptr），抛出std::runtime_error
     //如果超出运算定义域（如log自变量<=0，除以0），则调用Message::message输出要求的错误信息并抛出std::range_error  
 }
