@@ -108,7 +108,9 @@ void example3()
 
 void example4()
 {
-    cout<<"Ex4: Newton's method for polynomial\nf(x)=5x^9+2x^8+5x^6+2x^5-4x^4+9x^3+x^2+5x+3\n";
+    cout<<
+    "Ex4: Newton's method for polynomial\n"
+    "f(x)=5x^9+2x^8+5x^6+2x^5-4x^4+9x^3+x^2+5x+3\n";
     constexpr int n=9;
     double a[n+1]={3,5,1,9,-4,2,5,0,2,5};
     pGraph g=Graph::create();
