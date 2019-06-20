@@ -2,7 +2,10 @@ cc = g++
 deps = data.h dataop.h floatfunc.h graph.h message.h node.h parser.h computational_graph.h
 obj = data.o dataop.o floatfunc.o graph.o message.o node.o parser.o
 
-test : example_test.cpp $(obj) $(deps)
+test2 : example_test_tensor.cpp $(obj) $(deps)
+	$(cc) example_test_tensor.cpp $(obj) -o test2 -std=c++14
+
+test1 : example_test.cpp $(obj) $(deps)
 	$(cc) example_test.cpp $(obj) -o test -std=c++14
 
 debug : example_test.cpp data.cpp dataop.cpp floatfunc.cpp graph.cpp message.cpp node.cpp parser.cpp $(deps)
