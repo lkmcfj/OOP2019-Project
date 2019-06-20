@@ -58,12 +58,12 @@ namespace computational_graph
     void inc(vector<int> &index,const vector<int> &shape)
     {
         int i=shape.size()-1;
-        while(index[i]==shape[i]-1)
+        while(i>=0&&index[i]==shape[i]-1)
         {
             index[i]=0;
             --i;
         }
-        ++index[i];
+        if(i>=0)++index[i];
     }
     const_pData tensor_bc_calc(const_pData left,const_pData right,function<double(double,double)> op)
     {
