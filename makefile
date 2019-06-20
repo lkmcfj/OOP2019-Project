@@ -8,8 +8,8 @@ test2 : example_test_tensor.cpp $(obj) $(deps)
 test1 : example_test.cpp $(obj) $(deps)
 	$(cc) example_test.cpp $(obj) -o test -std=c++14
 
-debug : example_test.cpp data.cpp dataop.cpp floatfunc.cpp graph.cpp message.cpp node.cpp parser.cpp $(deps)
-	$(cc) example_test.cpp data.cpp dataop.cpp floatfunc.cpp graph.cpp message.cpp node.cpp parser.cpp -o test -std=c++14 -g
+debug : example_test_tensor.cpp data.cpp dataop.cpp floatfunc.cpp graph.cpp message.cpp node.cpp parser.cpp $(deps)
+	$(cc) example_test_tensor.cpp data.cpp dataop.cpp floatfunc.cpp graph.cpp message.cpp node.cpp parser.cpp -o test -std=c++14 -g
 
 data.o : data.cpp $(deps)
 	$(cc) data.cpp -o data.o -c -std=c++14
