@@ -138,7 +138,7 @@ namespace computational_graph
 		return p[0];
 	}
 
-    Float::Float(double init_v):Tensor(vector<double>{init_v},vector<int>{1}){}
+    Float::Float(double init_v):Tensor(vector<double>{init_v},vector<int>()){}
     shared_ptr<const Float> Float::create(double init_v)
     {
         return make_shared<const Float>(init_v);
@@ -146,10 +146,6 @@ namespace computational_graph
     double Float::get_val() const
     {
         return p[0];
-    }
-    string Float::to_string() const
-    {
-        return double_string(p[0]);
     }
     unique_ptr<const Data> Float::copy() const
     {

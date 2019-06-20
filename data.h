@@ -53,7 +53,6 @@ namespace computational_graph
         Float(double init_v);
         static std::shared_ptr<const Float> create(double init_v);
         double get_val() const;
-        virtual std::string to_string() const;
         virtual std::unique_ptr<const Data> copy() const;
     };
     typedef std::shared_ptr<const Float> const_pFloat;
