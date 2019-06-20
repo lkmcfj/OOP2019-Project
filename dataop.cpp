@@ -154,7 +154,7 @@ namespace computational_graph
                 double cur=a[i*len2+j];
                 end_p1=res+i*len3+len3;
                 for(p1=res+i*len3,p2=b+j*len3;p1!=end_p1;++p1,++p2)
-                    (*p1)=cur*(*p2);
+                    (*p1)=(*p1)+cur*(*p2);
                 //for(k=0;k<len3;++k)
                 //    res[i*len3+k]+=cur*b[j*len3+k];
             }
