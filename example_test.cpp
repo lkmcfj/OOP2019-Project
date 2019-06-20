@@ -106,6 +106,23 @@ void example3()
     test_eval(s,x,{});
 }
 
+void example4()
+{
+    cout<<"Ex4: Newton's method for polynomial\nf(x)=5x^9+2x^8+5x^6+2x^5-4x^4+9x^3+x^2+5x+3\n";
+    constexpr int n=9;
+    double a[n+1]={3,5,1,9,-4,2,5,0,2,5};
+    pGraph g=Graph::create();
+    Session s(g);
+    auto x=Variable::create(g,pf(1));
+    auto f=Constant::create(g,pf(a[n]));
+    for(int i=n-1;i>=0;--i) 
+        f=f*x+Constant::create(g,pf(a[i]));
+    auto grad=Grad::create(f),fpx=At::create(grad,x);
+    auto optimizer=Assign::create(x,x-f/fpx);
+    const int epoches=50;
+    for(int i=0;i<epoches;++i) s.eval(optimizer,{});
+    test_eval(s,x,{});
+}
 int main()
 {
     Message::set_log_level(1);
@@ -115,4 +132,5 @@ int main()
     example1();
     example2();
     example3();
+    example4();
 }
