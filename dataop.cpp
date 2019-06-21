@@ -292,7 +292,7 @@ namespace computational_graph
     
 	SingleTensorOp::SingleTensorOp(std::function<double(double)> _op,std::function<double(double)> _diffop):
 			op(_op), diffop(_diffop){}
-	const_pData SingleTensorOp::operator()(const_pData x) const
+	const_pData SingleTensorOp::calc(const_pData x) const
 	{
 		if(const_pFloat f=dynamic_pointer_cast<const Float>(x))
 		{
