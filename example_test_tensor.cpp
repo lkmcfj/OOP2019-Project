@@ -23,7 +23,7 @@ void test_eval(Session &s,const_pNode x,map<const_pNode,const_pData> p)
 
 /*
 //input_tensor, if needed.
-void init_dim()
+void input_dim()
 {
 	size = 1;
 	cout << "Entor Dim of tensor: ";  
@@ -76,7 +76,7 @@ void example4()
 							 {2,2,2},
 							 {2,2},
 					};
-    cout<<"\nEx1: testing +-*/ (with broadcast) of Tensor\n";
+    cout<<"\nEx4: testing diff of Tensor\n";
     pGraph g=Graph::create();
     Session s(g);
     auto x=Placeholder::create(g),
@@ -89,7 +89,6 @@ void example4()
     //cout<<*res[0];
     /*
     test_eval(s,x,{{x,tf(v[1], sh[1])} });
-
     test_eval(s,a,{{x,tf(v[2], sh[2])}, {y,tf(v[3], sh[3])}});
     */
     test_eval(s,b1,{{x,tf(v[4], sh[4])}, {y,tf(v[5], sh[5])}});
@@ -108,6 +107,7 @@ void example3()
 			     new_s2 = {2,4,2}; //fail to reshape
 	auto x = tf(init_v, init_s);
 	x->reshape(new_s1);
+	cout << *x << endl;
 	x->reshape(new_s2);
 }
 
@@ -160,7 +160,6 @@ void example2()
     
     test_eval(s,d,{{x,tf(v[7], s[7])}, {y,tf(v[8], s[8])}});
 }
-
 //testing : arithmetic operators of tensor
 void example1()
 {
@@ -185,7 +184,6 @@ void example1()
 							 {},
 							 {},
 							 {}
-
 					};
     cout<<"\nEx1: testing arithmetic operators (with broadcast) of Tensor\n"
     Graph g;
@@ -199,13 +197,9 @@ void example1()
          res=z/c;
     
     test_eval(s,x,{{x,tf(v[1], s[1])} });
-
     test_eval(s,a,{{x,tf(v[2], s[2])}, {y,tf(v[3], s[3])}});
-
     test_eval(s,b,{{x,tf(v[4], s[4])}, {y,tf(v[5], s[5])}});
-
     test_eval(s,c,{{y,tf(v[6], s[6])}, {y,tf(v[7], s[7])}});
-
     test_eval(s,res,{{tf(v[8], s[8])}, {y,tf(v[9], s[9])}});
 }
 */
