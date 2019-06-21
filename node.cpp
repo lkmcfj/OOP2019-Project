@@ -203,17 +203,17 @@ namespace computational_graph
         return vector<const_pDiff>{ans.first,ans.second};
     }
 
-    map<string,SingleTensorOp> Single_op::str2op{
-                                                    {"sin",SingleTensorOp::sin},
-                                                    {"log",SingleTensorOp::log},
-                                                    {"exp",SingleTensorOp::exp},
-                                                    {"tanh",SingleTensorOp::tanh},
-                                                    {"sigmoid",SingleTensorOp::sigmoid},
-                                                    {"SIN",SingleTensorOp::sin},
-                                                    {"LOG",SingleTensorOp::log},
-                                                    {"EXP",SingleTensorOp::exp},
-                                                    {"TANH",SingleTensorOp::tanh},
-                                                    {"SIGMOID",SingleTensorOp::sigmoid}
+    map<string,const SingleTensorOp*> Single_op::str2op{
+                                                    {"sin",&SingleTensorOp::sin},
+                                                    {"log",&SingleTensorOp::log},
+                                                    {"exp",&SingleTensorOp::exp},
+                                                    {"tanh",&SingleTensorOp::tanh},
+                                                    {"sigmoid",&SingleTensorOp::sigmoid},
+                                                    {"SIN",&SingleTensorOp::sin},
+                                                    {"LOG",&SingleTensorOp::log},
+                                                    {"EXP",&SingleTensorOp::exp},
+                                                    {"TANH",&SingleTensorOp::tanh},
+                                                    {"SIGMOID",&SingleTensorOp::sigmoid}
                                                 };
     Single_op::Single_op(wGraph _g,int x_id,string op_str):
         Node(_g,vector<int>{x_id})
@@ -243,7 +243,7 @@ namespace computational_graph
             Message::error("evaluating node #"+to_string(get_id())+", expecting 1 input value,get "+to_string(father_value.size())+". returning nullptr.");
             return nullptr;
         }
-        return op(father_value[0]);
+        return op->calc(father_value[0]);
     }
     std::vector<const_pDiff> Single_op::run_diff(Session *sess, std::vector<const_pData> father_value) const
     {
@@ -252,7 +252,7 @@ namespace computational_graph
             Message::error("evaluating diff of node #"+to_string(get_id())+", expecting 1 input value,get "+to_string(father_value.size())+". returning empty vector.");
             return std::vector<const_pDiff>();
         }
-        return vector<const_pDiff>{op.diff(father_value[0])};
+        return vector<const_pDiff>{op->diff(father_value[0])};
     }
 
     Print::Print(wGraph _g,int x_id,string x_symbol):

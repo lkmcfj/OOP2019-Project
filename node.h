@@ -102,9 +102,9 @@ namespace computational_graph
 
     class Single_op : public Node
     {
-        static std::map<std::string,SingleTensorOp> str2op;
+        static std::map<std::string,const SingleTensorOp*> str2op;
     protected:
-        SingleTensorOp op;
+        const SingleTensorOp *op;
         Single_op(wGraph _g,int x_id,std::string op_str);
     public:
         virtual int get_type() const;
