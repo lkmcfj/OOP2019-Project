@@ -51,8 +51,12 @@ namespace computational_graph
         std::function<pairdiff(const_pData,const_pData)> diffop;
     public:
 		BinaryTensorOp() =default;
+		BinaryTensorOp(const BinaryTensorOp &y) =delete;
+		BinaryTensorOp& operator=(const BinaryTensorOp &y) =delete;
+		BinaryTensorOp(BinaryTensorOp &&y) =delete;
+		BinaryTensorOp& operator=(BinaryTensorOp &&y) =delete;
         BinaryTensorOp(std::function<const_pData(const_pData,const_pData)> _op, std::function<pairdiff(const_pData,const_pData)> _diffop);
-        const_pData operator()(const_pData x,const_pData y) const;
+        const_pData calc(const_pData x,const_pData y) const;
         pairdiff diff(const_pData x,const_pData y) const;
         static const BinaryTensorOp tensor_plus,tensor_minus,tensor_multi,tensor_div;
     };
