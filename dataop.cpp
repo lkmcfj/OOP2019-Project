@@ -321,7 +321,7 @@ namespace computational_graph
 
     BinaryTensorOp::BinaryTensorOp(function<const_pData(const_pData, const_pData)> _op, function<pairdiff(const_pData,const_pData)> _diffop):
 		op(_op),diffop(_diffop){}
-    const_pData BinaryTensorOp::operator()(const_pData x,const_pData y) const
+    const_pData BinaryTensorOp::calc(const_pData x,const_pData y) const
     {
         return op(x,y);
     }

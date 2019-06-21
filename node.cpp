@@ -156,11 +156,11 @@ namespace computational_graph
         return std::vector<const_pDiff>();
     }
     using std::make_pair;
-    map<string,BinaryTensorOp> Arith::str2op{
-                                             {"+",BinaryTensorOp::tensor_plus},
-                                             {"-",BinaryTensorOp::tensor_minus},
-											 {"*",BinaryTensorOp::tensor_multi},
-                                             {"/",BinaryTensorOp::tensor_div}
+    map<string,const BinaryTensorOp*> Arith::str2op{
+                                             {"+",&BinaryTensorOp::tensor_plus},
+                                             {"-",&BinaryTensorOp::tensor_minus},
+											 {"*",&BinaryTensorOp::tensor_multi},
+                                             {"/",&BinaryTensorOp::tensor_div}
                                             };
     Arith::Arith(wGraph _g,int left_id,int right_id,string op_str):
         Node(_g,vector<int>{left_id,right_id})
@@ -190,7 +190,7 @@ namespace computational_graph
             Message::error("evaluating node #"+to_string(get_id())+", expecting 2 input value,get "+to_string(father_value.size())+". returning nullptr.");
             return nullptr;
         }
-        return op(father_value[0],father_value[1]);
+        return op->calc(father_value[0],father_value[1]);
     }
     std::vector<const_pDiff> Arith::run_diff(Session *sess, std::vector<const_pData> father_value) const
     {
@@ -199,7 +199,7 @@ namespace computational_graph
             Message::error("evaluating diff of node #"+to_string(get_id())+", expecting 2 input value,get "+to_string(father_value.size())+". returning empty vector.");
             return std::vector<const_pDiff>();
         }
-        auto ans=op.diff(father_value[0],father_value[1]);
+        auto ans=op->diff(father_value[0],father_value[1]);
         return vector<const_pDiff>{ans.first,ans.second};
     }
 
