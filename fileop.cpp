@@ -2,6 +2,8 @@
 #include <fstream>
 #include <string>
 #include <cstring>
+#include <stdexcept>
+#include <iostream>
 namespace computational_graph
 {
     using std::size_t;
@@ -24,13 +26,20 @@ namespace computational_graph
     FileReader::FileReader(string input_name):in(input_name,ifstream::binary)
     {
         hash_t h=read<hash_t>();
+        auto databeg=in.tellg();
         ByteStreamHash t;
-        while(!in.eof()) t<<in.get();
+        while(true)
+        {
+			int cur=in.get();
+			if(in.eof()) break;
+			t<<cur;
+		}
         if(t.hash()!=h)
         {
             throw std::runtime_error("Input file is corrupt, terminating.");
         }
-        in.seekg(sizeof(hash_t),ifstream::beg);
+        in.clear();
+        in.seekg(databeg);
     }
     template<class T>
     T FileReader::read()
@@ -65,4 +74,11 @@ namespace computational_graph
         hash_t h=hash.hash();
         out.write(reinterpret_cast<const char*>(&h),sizeof(hash_t));
     }
+    template int FileReader::read<int>();
+    template double FileReader::read<double>();
+    template char FileReader::read<char>();
+    
+    template void FileWriter::write<int>(int x);
+    template void FileWriter::write<double>(double x);
+    template void FileWriter::write<char>(char x);
 }
