@@ -89,9 +89,9 @@ namespace computational_graph
         
     class Arith : public Node
     {
-        static std::map<std::string,BinaryTensorOp> str2op;
+        static std::map<std::string,const BinaryTensorOp*> str2op;
     protected:
-        BinaryTensorOp op;
+        const BinaryTensorOp *op;
         Arith(wGraph _g,int left_id,int right_id,std::string op_str);
     public:
         virtual int get_type() const;
