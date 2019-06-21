@@ -40,6 +40,10 @@ namespace computational_graph
 		std::function<double(double)> op,diffop;
 	public:
 		SingleTensorOp() =default;
+		SingleTensorOp(const SingleTensorOp &y) =delete;
+		SingleTensorOp& operator=(const SingleTensorOp &y) =delete;
+		SingleTensorOp(SingleTensorOp &&y) =delete;
+		SingleTensorOp& operator=(SingleTensorOp &&y) =delete;
 		SingleTensorOp(std::function<double(double)> _op,std::function<double(double)> _diffop);
 		const_pData operator()(const_pData x) const;
 		const_pDiff diff(const_pData x) const;
