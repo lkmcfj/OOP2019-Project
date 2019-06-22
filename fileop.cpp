@@ -115,6 +115,12 @@ namespace computational_graph
     template hash_t FileReader::read<hash_t>();
     template flag_t FileReader::read<flag_t>();
     
+    template void FileReader::read<int>(int&);
+    template void FileReader::read<double>(double&);
+    template void FileReader::read<char>(char&);
+    template void FileReader::read<hash_t>(hash_t&);
+    template void FileReader::read<flag_t>(flag_t&);
+    
     template void FileWriter::write<int>(int);
     template void FileWriter::write<double>(double);
     template void FileWriter::write<char>(char);
