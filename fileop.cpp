@@ -4,12 +4,20 @@
 #include <cstring>
 #include <stdexcept>
 #include <iostream>
+#include <sstream>
 namespace computational_graph
 {
     using std::size_t;
+    using std::string;
+    string to_hex(flag_t x)
+    {
+        std::ostringstream res;
+        res<<std::hex<<x;
+        return res.str();
+    }
+
     const hash_t ByteStreamHash::base=137, ByteStreamHash::mod=23333333333333333LL;
     ByteStreamHash::ByteStreamHash():curhash(0){}
-
     ByteStreamHash& ByteStreamHash::operator<<(char ch)
     {
         curhash=(curhash*base+ch)%mod;
@@ -21,7 +29,6 @@ namespace computational_graph
         return curhash;
     }
 
-    using std::string;
     using std::ifstream;
     FileReader::FileReader(string input_name):in(input_name,ifstream::binary)
     {
@@ -43,21 +50,16 @@ namespace computational_graph
     }
     FileReader::FileReader(FileReader &&y):in(std::move(y.in)) {}
     template<class T>
-    void FileReader::read(T &ret)
+    T FileReader::read()
     {
+        T ret;
         in.read(reinterpret_cast<char*>(&ret),sizeof(T));
         if(in.gcount()<sizeof(T))
         {
             throw std::runtime_error("Unexpected eof when reading.");
         }
+        return std::move(ret);
     }
-    template<class T>
-    T FileReader::read()
-    {
-		T ret;
-		read<T>(ret);
-		return std::move(ret);
-	}
 
     using std::ofstream;
     FileWriter::FileWriter(string output_name):out(output_name,ofstream::binary)
@@ -86,12 +88,6 @@ namespace computational_graph
     template char FileReader::read<char>();
     template hash_t FileReader::read<hash_t>();
     template flag_t FileReader::read<flag_t>();
-    
-    template void FileReader::read<int>(int&);
-    template void FileReader::read<double>(double&);
-    template void FileReader::read<char>(char&);
-    template void FileReader::read<hash_t>(hash_t&);
-    template void FileReader::read<flag_t>(flag_t&);
     
     template void FileWriter::write<int>(int);
     template void FileWriter::write<double>(double);

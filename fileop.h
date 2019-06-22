@@ -7,6 +7,7 @@ namespace computational_graph
 {
     typedef long long hash_t;
     typedef std::uint16_t flag_t;
+    std::string to_hex(flag_t x);
     class ByteStreamHash
     {
     private:
