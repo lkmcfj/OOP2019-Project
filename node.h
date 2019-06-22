@@ -15,8 +15,6 @@ namespace computational_graph
     typedef std::weak_ptr<Graph> wGraph;
     typedef std::shared_ptr<Graph> pGraph;
 
-    const_pNode load_node(FileReader &in);
-
     class Node
     {
     private:
