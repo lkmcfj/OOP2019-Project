@@ -33,6 +33,8 @@ namespace computational_graph
     const_pData leq_float(const_pData left,const_pData right);
     const_pData geq_float(const_pData left,const_pData right);
     const_pData equal_float(const_pData left,const_pData right);
+    typedef std::function<const_pData(const_pData,const_pData)> CmpOp;
+    extern const CmpOp lessop,greaterop,leqop,geqop,equalop;
     //上述比较运算返回float
     
     class SingleTensorOp
