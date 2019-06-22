@@ -51,14 +51,19 @@ namespace computational_graph
     }
     FileReader::FileReader(FileReader &&y):in(std::move(y.in)) {}
     template<class T>
-    T FileReader::read()
+    void FileReader::read(T &ret)
     {
-        T ret;
         in.read(reinterpret_cast<char*>(&ret),sizeof(T));
         if(in.gcount()<sizeof(T))
         {
             throw std::runtime_error("Unexpected eof when reading.");
         }
+    }
+    template<class T>
+    T FileReader::read()
+    {
+        T ret;
+        read<T>(ret);
         return std::move(ret);
     }
 
