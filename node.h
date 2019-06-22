@@ -59,7 +59,7 @@ namespace computational_graph
         const_pData default_value;
         Variable(wGraph _g,const_pData default_v);
     public:
-        static constexpr flag_t _flag;
+        static const flag_t _flag;
         static const_pNode create(pGraph g,const_pData default_v);
         const_pData get_default_value() const;
         virtual int get_type() const;
@@ -73,7 +73,7 @@ namespace computational_graph
     protected:
         Placeholder(wGraph _g);
     public:
-        static constexpr flag_t _flag;
+        static const flag_t _flag;
         static const_pNode create(pGraph g);
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;//error
@@ -88,7 +88,7 @@ namespace computational_graph
         const_pData value;
         Constant(wGraph _g,const_pData v);
     public:
-        static constexpr flag_t _flag;
+        static const flag_t _flag;
         static const_pNode create(pGraph g,const_pData v);
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
@@ -104,7 +104,7 @@ namespace computational_graph
         const BinaryTensorOp *op;
         Arith(wGraph _g,int left_id,int right_id,std::string op_str);
     public:
-        static constexpr flag_t _flag;
+        static const flag_t _flag;
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
         static const_pNode create(const_pNode left,const_pNode right,std::string op_str);
@@ -119,7 +119,7 @@ namespace computational_graph
         const SingleTensorOp *op;
         Single_op(wGraph _g,int x_id,std::string op_str);
     public:
-        static constexpr flag_t _flag;
+        static const flag_t _flag;
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
         static const_pNode create(const_pNode x,std::string op_str);
@@ -134,7 +134,7 @@ namespace computational_graph
         std::string father_symbol;
         Print(wGraph _g,int x_id,std::string x_symbol);
     public:
-        static constexpr flag_t _flag;
+        static const flag_t _flag;
         static const_pNode create(pGraph g,int x_id,std::string x_symbol);
         static const_pNode create(const_pNode x,std::string x_symbol);
         virtual int get_type() const;
@@ -150,7 +150,7 @@ namespace computational_graph
         const CmpOp *op;
         Cmp(wGraph _g,int left_id,int right_id,std::string op_str);
     public:
-        static constexpr flag_t _flag;
+        static const flag_t _flag;
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
         static const_pNode create(const_pNode left,const_pNode right,std::string op_str);
@@ -163,7 +163,7 @@ namespace computational_graph
     protected:
         Cond(wGraph _g,int cond_id,int true_id,int false_id);
     public:
-        static constexpr flag_t _flag;
+        static const flag_t _flag;
         static const_pNode create(pGraph g,int cond_id,int true_id,int false_id);
         static const_pNode create(const_pNode cond_node,const_pNode true_node,const_pNode false_node);
         virtual int get_type() const;
@@ -177,7 +177,7 @@ namespace computational_graph
     protected:
         Assert(wGraph _g, int x_id);
     public:
-        static constexpr flag_t _flag;
+        static const flag_t _flag;
         static const_pNode create(pGraph g, int x_id);
         static const_pNode create(const_pNode x);       
         virtual int get_type() const;
@@ -191,7 +191,7 @@ namespace computational_graph
     protected:
         Bind(wGraph _g, int left_id, int right_id);
     public:
-        static constexpr flag_t _flag; 
+        static const flag_t _flag; 
         static const_pNode create(pGraph g, int left_id, int right_id);
         static const_pNode create(const_pNode left, const_pNode right);     
         virtual int get_type() const;
@@ -205,7 +205,7 @@ namespace computational_graph
     protected:
         Grad(wGraph _g, int x_id);
     public:
-        static constexpr flag_t _flag;
+        static const flag_t _flag;
         static const_pNode create(pGraph g, int x_id);
         static const_pNode create(const_pNode x);       
         virtual int get_type() const;
@@ -219,7 +219,7 @@ namespace computational_graph
     protected:
         At(wGraph _g, int grad_id, int x_id);
     public:
-        static constexpr flag_t _flag;
+        static const flag_t _flag;
         static const_pNode create(pGraph g, int grad_id, int x_id);
         static const_pNode create(const_pNode grad, const_pNode x);      
         virtual int get_type() const;
@@ -233,7 +233,7 @@ namespace computational_graph
     protected:
         Assign(wGraph _g, int left_id, int right_id);
     public:
-        static constexpr flag_t _flag;
+        static const flag_t _flag;
         static const_pNode create(pGraph g, int left_id, int right_id);
         static const_pNode create(const_pNode left, const_pNode right);
         virtual int get_type() const;
