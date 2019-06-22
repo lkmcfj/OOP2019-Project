@@ -80,9 +80,9 @@ namespace computational_graph
     template hash_t FileReader::read<hash_t>();
     template flag_t FileReader::read<flag_t>();
     
-    template void FileWriter::write<int>(int x);
-    template void FileWriter::write<double>(double x);
-    template void FileWriter::write<char>(char x);
-    template void FileWriter::write<hash_t>(hash_t x);
-    template void FileWriter::write<flag_t>(flag_t x);
+    template void FileWriter::write<int>(int);
+    template void FileWriter::write<double>(double);
+    template void FileWriter::write<char>(char);
+    template void FileWriter::write<hash_t>(hash_t);
+    template void FileWriter::write<flag_t>(flag_t);
 }
