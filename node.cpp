@@ -18,7 +18,7 @@ namespace computational_graph
     using std::shared_ptr;
     using std::dynamic_pointer_cast;
     
-    const flag_t Variable::_flag=    0x0301,
+    constexpr flag_t Variable::_flag=    0x0301,
                  Placeholder::_flag= 0x0302,
                  Constant::_flag=    0x0303,
                  Arith::_flag=       0x0304,
@@ -76,6 +76,52 @@ namespace computational_graph
         out.write(_flag);
         out.write(father[0]);
         save_string(out,father_symbol);
+    }
+    void Cmp::save(FileWriter &out) const
+    {
+        out.write(_flag);
+        out.write(father[0]);
+        out.write(father[1]);
+        for(auto &i:str2op) if(i.second==op)
+        {
+            save_string(out,i.first);
+            break;
+        }
+    }
+    void Cond::save(FileWriter &out) const
+    {
+        out.write(_flag);
+        out.write(father[0]);
+        out.write(father[1]);
+        out.write(father[2]);
+    }
+    void Assert::save(FileWriter &out) const
+    {
+        out.write(_flag);
+        out.write(father[0]);
+    }
+    void Bind::save(FileWriter &out) const
+    {
+        out.write(_flag);
+        out.write(father[0]);
+        out.write(father[1]);
+    }
+    void Grad::save(FileWriter &out) const
+    {
+        out.write(_flag);
+        out.write(father[0]);
+    }
+    void At::save(FileWriter &out) const
+    {
+        out.write(_flag);
+        out.write(father[0]);
+        out.write(father[1]);
+    }
+    void Assign::save(FileWriter &out) const
+    {
+        out.write(_flag);
+        out.write(father[0]);
+        out.write(father[1]);
     }
 
     bool check_triple(const_pNode n1,const_pNode n2,const_pNode n3)
@@ -357,7 +403,7 @@ namespace computational_graph
 
     }
 
-    map<string,cmp_op> Cmp::str2op{{"<",less_float},{">",greater_float},{"<=",leq_float},{">=",geq_float},{"==",equal_float}};
+    map<string,const CmpOp*> Cmp::str2op{{"<",&lessop},{">",&greaterop},{"<=",&leqop},{">=",&geqop},{"==",&equalop}};
     Cmp::Cmp(wGraph _g,int left_id,int right_id,string op_str):
         Node(_g,vector<int>{left_id,right_id})
     {
@@ -386,7 +432,7 @@ namespace computational_graph
             Message::error("evaluating node #"+to_string(get_id())+", expecting 2 input value,get "+to_string(father_value.size())+". returning nullptr.");
             return nullptr;
         }
-        return op(father_value[0],father_value[1]);
+        return (*op)(father_value[0],father_value[1]);
     }
     std::vector<const_pDiff> Cmp::run_diff(Session *sess, std::vector<const_pData> father_value) const
     {
