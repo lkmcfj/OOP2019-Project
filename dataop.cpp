@@ -389,11 +389,12 @@ namespace computational_graph
 
         vector<int> shape=t->get_shape();
         const vector<double> &p=t->get_val();
-        if(dim>=shape.size()||dim<-shape.size())
+        int ss=shape.size();
+        if(dim>=ss||dim<-ss)
         {
             throw std::invalid_argument("Fail to reduce: dimension doesn't exist");
         }
-        if(dim<0) dim=shape.size()+dim;
+        if(dim<0) dim=ss+dim;
 
         int low=1;
         for(int i=shape.size()-1;i>dim;--i) low*=shape[i];
@@ -421,11 +422,12 @@ namespace computational_graph
 
         vector<int> shape=t->get_shape();
         const vector<double> &p=t->get_val();
-        if(dim>=shape.size()||dim<-shape.size())
+        int ss=shape.size();
+        if(dim>=ss||dim<-ss)
         {
             throw std::invalid_argument("Fail to reduce: dimension doesn't exist");
         }
-        if(dim<0) dim=shape.size()+dim;
+        if(dim<0) dim=ss+dim;
 
         int low=1;
         for(int i=shape.size()-1;i>dim;--i) low*=shape[i];
@@ -455,6 +457,6 @@ namespace computational_graph
         vector<int> newshape(shape);
         newshape.erase(newshape.begin()+dim);
         newshape.insert(newshape.end(),shape.begin(),shape.end());
-        return Diff::create(res,newshape,shape.size()-1);
+        return Diff::create(res,newshape,ss-1);
     }
 }
