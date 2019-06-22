@@ -2,6 +2,7 @@
 #include "graph.h"
 #include "message.h"
 #include "data.h"
+#include "fileop.h"
 #include <vector>
 #include <memory>
 #include <string>
@@ -17,6 +18,66 @@ namespace computational_graph
     using std::shared_ptr;
     using std::dynamic_pointer_cast;
     
+    const flag_t Variable::_flag=    0x0301,
+                 Placeholder::_flag= 0x0302,
+                 Constant::_flag=    0x0303,
+                 Arith::_flag=       0x0304,
+                 Single_op::_flag=   0x0305,
+                 Print::_flag=       0x0306,
+                 Cmp::_flag=         0x0307,
+                 Cond::_flag=        0x0308,
+                 Assert::_flag=      0x0309,
+                 Bind::_flag=        0x030a,
+                 Grad::_flag=        0x030b,
+                 At::_flag=          0x030c,
+                 Assign::_flag=      0x030d;
+    void save_string(FileWriter &out,const string &s)
+    {
+        for(char c:s) out.write(c);
+        out.write<char>(0);
+    }
+    void Variable::save(FileWriter &out) const
+    {
+        out.write(_flag);
+        default_value->save(out);
+    }
+    void Placeholder::save(FileWriter &out) const
+    {
+        out.write(_flag);
+    }
+    void Constant::save(FileWriter &out) const
+    {
+        out.write(_flag);
+        value->save(out);
+    }
+    void Arith::save(FileWriter &out) const
+    {
+        out.write(_flag);
+        out.write(father[0]);
+        out.write(father[1]);
+        for(auto &i:str2op) if(i.second==op)
+        {
+            save_string(out,i.first);
+            break;
+        }
+    }
+    void Single_op::save(FileWriter &out) const
+    {
+        out.write(_flag);
+        out.write(father[0]);
+        for(auto &i:str2op) if(i.second==op)
+        {
+            save_string(out,i.first);
+            break;
+        }
+    }
+    void Print::save(FileWriter &out) const
+    {
+        out.write(_flag);
+        out.write(father[0]);
+        save_string(out,father_symbol);
+    }
+
     bool check_triple(const_pNode n1,const_pNode n2,const_pNode n3)
     {
         if((!n1)||(!n2)||(!n3))
