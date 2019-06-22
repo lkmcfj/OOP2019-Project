@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string>
 #include <cstdint>
+#include <vector>
 namespace computational_graph
 {
     typedef long long hash_t;
@@ -46,5 +47,10 @@ namespace computational_graph
         void write(T x);
         ~FileWriter();
     };
+    
+    void save_string(FileWriter &out,const std::string &s);
+    std::string load_string(FileReader &in);
+    template<class T>
+    void load_vector(FileReader &in,std::vector<T> &data,int size);
 }
 #endif

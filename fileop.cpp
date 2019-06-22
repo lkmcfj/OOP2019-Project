@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <sstream>
+#include <vector>
 namespace computational_graph
 {
     using std::size_t;
@@ -83,6 +84,31 @@ namespace computational_graph
         hash_t h=hash.hash();
         out.write(reinterpret_cast<const char*>(&h),sizeof(hash_t));
     }
+
+    void save_string(FileWriter &out,const string &s)
+    {
+        for(char c:s) out.write(c);
+        out.write<char>(0);
+    }
+    string load_string(FileReader &in)
+    {
+        string res;
+        char c=in.read<char>();
+        while(c!=0)
+        {
+            res+=c;
+            c=in.read<char>();
+        }
+        return std::move(res);
+    }
+    using std::vector;
+    template<class T>
+    void load_vector(FileReader &in,vector<T> &data,int size)
+    {
+        data.reserve(size);
+        for(int i=0;i<size;++i) data.push_back(in.read<T>());
+    }
+
     template int FileReader::read<int>();
     template double FileReader::read<double>();
     template char FileReader::read<char>();
@@ -94,4 +120,7 @@ namespace computational_graph
     template void FileWriter::write<char>(char);
     template void FileWriter::write<hash_t>(hash_t);
     template void FileWriter::write<flag_t>(flag_t);
+    
+    template void load_vector<int>(FileReader&,vector<int>&,int);
+    template void load_vector<double>(FileReader&,vector<double>&,int);
 }
