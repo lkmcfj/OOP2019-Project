@@ -14,6 +14,144 @@ namespace computational_graph
     using std::unique_ptr;
 	using std::make_unique;
 	using std::shared_ptr;
+
+    const flag_t Tensor::_flag=   0x0401,
+                 Float::_flag=    0x0402,
+                 Diff::_flag=     0x0403,
+                 Matrix::_flag=   0x0404,
+                 Graddata::_flag= 0x0405;
+
+    const_pData load_data(FileReader &in)
+    {
+        flag_t head;
+        in.read(head);
+        switch(head)
+        {
+            case Tensor::_flag:
+                return Tensor::load(in);
+            case Float::_flag:
+                return Float::load(in);
+            case Diff::_flag:
+                return Diff::load(in);
+            case Matrix::_flag:
+                return Matrix::load(in);
+            case Graddata::_flag:
+                return Graddata::load(in);
+            default: throw std::runtime_error("Fail to load data: unknown type head: "+to_hex(head));
+        }
+    }
+
+    void Tensor::save(FileWriter &out) const
+    {
+        out.write(_flag);
+        out.write<int>(size);
+        for(double i:p) out.write(i);
+        out.write<int>(dim);
+        for(int i:shape) out.write(i);
+    }
+    const_pTensor Tensor::load(FileReader &in)
+    {
+        int size;
+        in.read(size);
+        vector<double> p;
+        load_vector(in,p,size);
+
+        int dim;
+        in.read(dim);
+        vector<int> shape;
+        load_vector(in,shape,dim);
+
+        return Tensor::create(std::move(p),std::move(shape));
+    }
+
+    void Float::save(FileWriter &out) const
+    {
+        out.write(_flag);
+        out.write<double>(p[0]);
+    }
+    const_pFloat Float::load(FileReader &in)
+    {
+        double value;
+        in.read(value);
+        return Float::create(value);
+    }
+
+    void Diff::save(FileWriter &out) const
+    {
+        out.write(_flag);
+        out.write<int>(size);
+        for(double i:p) out.write(i);
+        out.write<int>(dim1);
+        out.write<int>(dim2);
+        for(int i:shape) out.write(i);
+    }
+    const_pDiff Diff::load(FileReader &in)
+    {
+        int size;
+        in.read(size);
+        vector<double> p; 
+        load_vector(in,p,size);
+
+        int dim1,dim2;
+        in.read(dim1);
+        in.read(dim2);
+        vector<int> shape; 
+        load_vector(in,shape,dim1+dim2);
+
+        return Diff::create(std::move(p),std::move(shape),dim1);
+    }
+
+    void Matrix::save(FileWriter &out) const
+    {
+        out.write(_flag);
+        out.write<int>(n);
+        out.write<int>(m);
+        for(double i:p) out.write(i);
+    }
+    shared_ptr<const Matrix> Matrix::load(FileReader &in)
+    {
+        int n,m;
+        in.read(n);
+        in.read(m);
+        vector<double> p;
+        load_vector(in,p,n*m);
+        return Matrix::create(std::move(p),n,m);
+    }
+
+    void Graddata::save(FileWriter &out) const
+    {
+        out.write(_flag);
+        out.write<int>(fshape.size());
+        for(int i:fshape) out.write(i);
+        out.write<int>(grad.size());
+        for(auto &i:grad)
+        {
+            out.write<int>(i.first);
+            i.second->save(out);
+        }
+    }
+    shared_ptr<const Graddata> Graddata::load(FileReader &in)
+    {
+        int dim;
+        in.read(dim);
+        vector<int> fshape;
+        load_vector(in,fshape,dim);
+
+        int count;
+        in.read(count);
+        map<int,const_pDiff> grad;
+        for(int i=0;i<count;++i)
+        {
+            int id;
+            in.read(id);
+            flag_t head=in.read<flag_t>();
+            if(head!=Diff::_flag) throw std::runtime_error("Unexpected type head: "+to_hex(Diff::_flag)+" expected, "+to_hex(head)+" found.");
+            const_pDiff curdiff=Diff::load(in);
+            grad[id]=curdiff;
+        }
+        return Graddata::create(std::move(grad), std::move(fshape));
+    }
+
     int Tensor::index2id(vector<int> index) const
     {
 		int ret=0,t=1;

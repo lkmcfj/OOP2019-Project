@@ -4,12 +4,21 @@
 #include <cstring>
 #include <stdexcept>
 #include <iostream>
+#include <sstream>
+#include <vector>
 namespace computational_graph
 {
     using std::size_t;
+    using std::string;
+    string to_hex(flag_t x)
+    {
+        std::ostringstream res;
+        res<<std::hex<<x;
+        return res.str();
+    }
+
     const hash_t ByteStreamHash::base=137, ByteStreamHash::mod=23333333333333333LL;
     ByteStreamHash::ByteStreamHash():curhash(0){}
-
     ByteStreamHash& ByteStreamHash::operator<<(char ch)
     {
         curhash=(curhash*base+ch)%mod;
@@ -21,7 +30,6 @@ namespace computational_graph
         return curhash;
     }
 
-    using std::string;
     using std::ifstream;
     FileReader::FileReader(string input_name):in(input_name,ifstream::binary)
     {
@@ -41,6 +49,7 @@ namespace computational_graph
         in.clear();
         in.seekg(databeg);
     }
+    FileReader::FileReader(FileReader &&y):in(std::move(y.in)) {}
     template<class T>
     T FileReader::read()
     {
@@ -60,6 +69,7 @@ namespace computational_graph
         memset(&a,0x3f,sizeof(a));
         out.write(reinterpret_cast<const char*>(&a),sizeof(hash_t));
     }
+    FileWriter::FileWriter(FileWriter &&y): out(std::move(y.out)),hash(std::move(y.hash)) {}
     template<class T>
     void FileWriter::write(T x)
     {
@@ -74,15 +84,43 @@ namespace computational_graph
         hash_t h=hash.hash();
         out.write(reinterpret_cast<const char*>(&h),sizeof(hash_t));
     }
+
+    void save_string(FileWriter &out,const string &s)
+    {
+        for(char c:s) out.write(c);
+        out.write<char>(0);
+    }
+    string load_string(FileReader &in)
+    {
+        string res;
+        char c=in.read<char>();
+        while(c!=0)
+        {
+            res+=c;
+            c=in.read<char>();
+        }
+        return std::move(res);
+    }
+    using std::vector;
+    template<class T>
+    void load_vector(FileReader &in,vector<T> &data,int size)
+    {
+        data.reserve(size);
+        for(int i=0;i<size;++i) data.push_back(in.read<T>());
+    }
+
     template int FileReader::read<int>();
     template double FileReader::read<double>();
     template char FileReader::read<char>();
     template hash_t FileReader::read<hash_t>();
     template flag_t FileReader::read<flag_t>();
     
-    template void FileWriter::write<int>(int x);
-    template void FileWriter::write<double>(double x);
-    template void FileWriter::write<char>(char x);
-    template void FileWriter::write<hash_t>(hash_t x);
-    template void FileWriter::write<flag_t>(flag_t x);
+    template void FileWriter::write<int>(int);
+    template void FileWriter::write<double>(double);
+    template void FileWriter::write<char>(char);
+    template void FileWriter::write<hash_t>(hash_t);
+    template void FileWriter::write<flag_t>(flag_t);
+    
+    template void load_vector<int>(FileReader&,vector<int>&,int);
+    template void load_vector<double>(FileReader&,vector<double>&,int);
 }

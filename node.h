@@ -2,6 +2,7 @@
 #define _NODE_H_
 #include "data.h"
 #include "dataop.h"
+#include "fileop.h"
 #include <memory>
 #include <vector>
 #include <functional>
@@ -46,6 +47,7 @@ namespace computational_graph
         //type=13 Assign
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value)const =0;//error
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value)const =0;
+        virtual void save(FileWriter &out)const =0;
         friend class Graph;
         virtual ~Node() = default;
     };
@@ -57,22 +59,27 @@ namespace computational_graph
         const_pData default_value;
         Variable(wGraph _g,const_pData default_v);
     public:
+        static const flag_t _flag;
         static const_pNode create(pGraph g,const_pData default_v);
         const_pData get_default_value() const;
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;//warning
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
-    };
+        virtual void save(FileWriter &out) const;
+   };
 
     class Placeholder : public Node
     {
     protected:
         Placeholder(wGraph _g);
     public:
+        static const flag_t _flag;
         static const_pNode create(pGraph g);
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;//error
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
+        virtual void save(FileWriter &out) const;
+
     };
 
     class Constant : public Node
@@ -81,10 +88,13 @@ namespace computational_graph
         const_pData value;
         Constant(wGraph _g,const_pData v);
     public:
+        static const flag_t _flag;
         static const_pNode create(pGraph g,const_pData v);
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
+        virtual void save(FileWriter &out) const;
+
     };
         
     class Arith : public Node
@@ -94,10 +104,12 @@ namespace computational_graph
         const BinaryTensorOp *op;
         Arith(wGraph _g,int left_id,int right_id,std::string op_str);
     public:
+        static const flag_t _flag;
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
         static const_pNode create(const_pNode left,const_pNode right,std::string op_str);
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
+        virtual void save(FileWriter &out) const;
     };
 
     class Single_op : public Node
@@ -107,10 +119,13 @@ namespace computational_graph
         const SingleTensorOp *op;
         Single_op(wGraph _g,int x_id,std::string op_str);
     public:
+        static const flag_t _flag;
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
         static const_pNode create(const_pNode x,std::string op_str);
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
+        virtual void save(FileWriter &out) const;
+
     };
 
     class Print : public Node
@@ -119,25 +134,28 @@ namespace computational_graph
         std::string father_symbol;
         Print(wGraph _g,int x_id,std::string x_symbol);
     public:
+        static const flag_t _flag;
         static const_pNode create(pGraph g,int x_id,std::string x_symbol);
         static const_pNode create(const_pNode x,std::string x_symbol);
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
+        virtual void save(FileWriter &out) const;
     };
 
-    typedef std::function<const_pData(const_pData,const_pData)> cmp_op;
     class Cmp : public Node
     {
-        static std::map<std::string,cmp_op> str2op;
+        static std::map<std::string,const CmpOp*> str2op;
     protected:
-        cmp_op op;
+        const CmpOp *op;
         Cmp(wGraph _g,int left_id,int right_id,std::string op_str);
     public:
+        static const flag_t _flag;
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
         static const_pNode create(const_pNode left,const_pNode right,std::string op_str);
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
+        virtual void save(FileWriter &out) const;
     };
 
     class Cond : public Node
@@ -145,11 +163,13 @@ namespace computational_graph
     protected:
         Cond(wGraph _g,int cond_id,int true_id,int false_id);
     public:
+        static const flag_t _flag;
         static const_pNode create(pGraph g,int cond_id,int true_id,int false_id);
         static const_pNode create(const_pNode cond_node,const_pNode true_node,const_pNode false_node);
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
+        virtual void save(FileWriter &out) const;
     };
 
     class Assert : public Node
@@ -157,23 +177,27 @@ namespace computational_graph
     protected:
         Assert(wGraph _g, int x_id);
     public:
+        static const flag_t _flag;
         static const_pNode create(pGraph g, int x_id);
         static const_pNode create(const_pNode x);       
         virtual int get_type() const;
         virtual const_pData run(Session *sess, std::vector<const_pData> father_value) const;
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
+        virtual void save(FileWriter &out) const;
     };
 
     class Bind : public Node
     {
     protected:
         Bind(wGraph _g, int left_id, int right_id);
-    public: 
+    public:
+        static const flag_t _flag; 
         static const_pNode create(pGraph g, int left_id, int right_id);
         static const_pNode create(const_pNode left, const_pNode right);     
         virtual int get_type() const;
         virtual const_pData run(Session *sess, std::vector<const_pData> father_value) const;        
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
+        virtual void save(FileWriter &out) const;
     };
 
     class Grad : public Node
@@ -181,11 +205,13 @@ namespace computational_graph
     protected:
         Grad(wGraph _g, int x_id);
     public:
+        static const flag_t _flag;
         static const_pNode create(pGraph g, int x_id);
         static const_pNode create(const_pNode x);       
         virtual int get_type() const;
         virtual const_pData run(Session *sess, std::vector<const_pData> father_value) const;        
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
+        virtual void save(FileWriter &out) const;
     };
 
     class At : public Node
@@ -193,11 +219,13 @@ namespace computational_graph
     protected:
         At(wGraph _g, int grad_id, int x_id);
     public:
+        static const flag_t _flag;
         static const_pNode create(pGraph g, int grad_id, int x_id);
         static const_pNode create(const_pNode grad, const_pNode x);      
         virtual int get_type() const;
         virtual const_pData run(Session *sess, std::vector<const_pData> father_value) const;            
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
+        virtual void save(FileWriter &out) const;
     };
 
     class Assign : public Node
@@ -205,11 +233,13 @@ namespace computational_graph
     protected:
         Assign(wGraph _g, int left_id, int right_id);
     public:
+        static const flag_t _flag;
         static const_pNode create(pGraph g, int left_id, int right_id);
         static const_pNode create(const_pNode left, const_pNode right);
         virtual int get_type() const;
         virtual const_pData run(Session *sess, std::vector<const_pData> father_value) const;
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
+        virtual void save(FileWriter &out) const;
     };
 
     const_pNode operator +(const_pNode left,const_pNode right);

@@ -1,15 +1,15 @@
 cc = g++
-deps = data.h dataop.h floatfunc.h graph.h message.h node.h parser.h computational_graph.h
-obj = data.o dataop.o floatfunc.o graph.o message.o node.o parser.o
+deps = data.h dataop.h floatfunc.h graph.h message.h node.h parser.h fileop.h computational_graph.h
+obj = data.o dataop.o floatfunc.o graph.o message.o node.o parser.o fileop.o
 
 test2 : example_test_tensor.cpp $(obj) $(deps)
-	$(cc) example_test_tensor.cpp $(obj) -o test2 -std=c++14
+	$(cc) example_test_tensor.cpp $(obj) -o test -std=c++14
 
 test1 : example_test.cpp $(obj) $(deps)
 	$(cc) example_test.cpp $(obj) -o test -std=c++14
 
 debug : example_test_tensor.cpp data.cpp dataop.cpp floatfunc.cpp graph.cpp message.cpp node.cpp parser.cpp $(deps)
-	$(cc) example_test_tensor.cpp data.cpp dataop.cpp floatfunc.cpp graph.cpp message.cpp node.cpp parser.cpp -o test -std=c++14 -g
+	$(cc) example_test_tensor.cpp data.cpp dataop.cpp floatfunc.cpp graph.cpp message.cpp node.cpp parser.cpp fileop.cpp -o test -std=c++14 -g
 
 data.o : data.cpp $(deps)
 	$(cc) data.cpp -o data.o -c -std=c++14
@@ -31,6 +31,9 @@ node.o : node.cpp $(deps)
 
 parser.o : parser.cpp $(deps)
 	$(cc) parser.cpp -o parser.o -c -std=c++14
+	
+fileop.o : fileop.cpp $(deps)
+	$(cc) fileop.cpp -o fileop.o -c -std=c++14
 
 clean :
 	rm -rf $(obj) test

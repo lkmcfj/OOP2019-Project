@@ -289,6 +289,11 @@ namespace computational_graph
     {
 		return Float::create(left->scalar()==right->scalar());
     }
+    const CmpOp lessop(less_float),
+				greaterop(greater_float),
+				leqop(leq_float),
+				geqop(geq_float),
+				equalop(equal_float);
     
 	SingleTensorOp::SingleTensorOp(std::function<double(double)> _op,std::function<double(double)> _diffop):
 			op(_op), diffop(_diffop){}
