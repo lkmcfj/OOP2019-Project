@@ -31,11 +31,6 @@ namespace computational_graph
 				 Grad::_flag=        0x030b,
 				 At::_flag=          0x030c,
 				 Assign::_flag=      0x030d;
-    void save_string(FileWriter &out,const string &s)
-    {
-        for(char c:s) out.write(c);
-        out.write<char>(0);
-    }
     void Variable::save(FileWriter &out) const
     {
         out.write(_flag);
