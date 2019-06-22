@@ -17,25 +17,50 @@ namespace computational_graph
     using std::dynamic_pointer_cast;
 
     const flag_t Graph::_flag=0x0201, Session::_flag=0x0101;
+
     void Graph::save(FileWriter &out)
     {
         out.write(_flag);
         out.write<int>(nodes.size());
         for(auto i:nodes) i->save(out);
     }
+    pGraph Graph::load(FileReader &in)
+    {
+        flag_t head=in.read<flag_t>();
+        if(head!=_flag) throw std::runtime_error("Unexpected graph head: "+to_hex(_flag)+" expected, "+to_hex(head)+" found.");
+        pGraph g=create();
+        int size;
+        in.read(size);
+        for(int i=0;i<size;++i) load_node(in,g);
+        return g;
+    }
+
     void Session::save(FileWriter &out)
     {
         out.write(_flag);
+        g->save(out);
         out.write<int>(variable_value.size());
         for(auto &i:variable_value)
         {
             out.write(i.first);
             i.second->save(out);
         }
-        g->save(out);
+    }
+    Session Session::load(FileReader &in)
+    {
+        flag_t head=in.read<flag_t>();
+        if(head!=_flag) throw std::runtime_error("Unexpected session head: "+to_hex(_flag)+" expected, "+to_hex(head)+" found.");
+        pGraph g=Graph::load(in);
+        Session res(g);
+        int size=in.read<int>();
+        for(int i=0;i<size;++i)
+        {
+            int id=in.read<int>();
+            res.set_variable(id,load_data(in));
+        }
+        return std::move(res);
     }
 
-    Graph::Graph(){}
     pGraph Graph::create()
     {
 		return std::shared_ptr<Graph>(new Graph());
