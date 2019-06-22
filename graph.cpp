@@ -9,11 +9,31 @@
 #include <exception>
 #include <utility>
 #include <queue>
+#include "fileop.h"
 namespace computational_graph
 {
     using std::string;
     using std::to_string;
     using std::dynamic_pointer_cast;
+
+    const flag_t Graph::_flag=0x0201, Session::_flag=0x0101;
+    void Graph::save(FileWriter &out)
+    {
+        out.write(_flag);
+        out.write<int>(nodes.size());
+        for(auto i:nodes) i->save(out);
+    }
+    void Session::save(FileWriter &out)
+    {
+        out.write(_flag);
+        out.write<int>(variable_value.size());
+        for(auto &i:variable_value)
+        {
+            out.write(i.first);
+            i.second->save(out);
+        }
+        g->save(out);
+    }
 
     Graph::Graph(){}
     pGraph Graph::create()
@@ -31,6 +51,7 @@ namespace computational_graph
     {
         return nodes[id];
     }
+
     Session::Session(pGraph _g):g(_g){}
     pGraph Session::get_graph()
     {

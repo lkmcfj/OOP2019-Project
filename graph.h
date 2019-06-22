@@ -6,17 +6,20 @@
 #include <string>
 #include <map>
 #include <set>
+#include "fileop.h"
 namespace computational_graph
 {
 
     class Graph
     {
     private:
+        static const flag_t _flag;
         std::vector<const_pNode> nodes;
         Graph();
     public:
         const_pNode join(std::unique_ptr<Node> curnode);
         const_pNode getnode(int id);
+        void save(FileWriter &out);
         friend class Session;
         friend class Grad;
         static std::shared_ptr<Graph> create();
@@ -26,6 +29,7 @@ namespace computational_graph
     class Session
     {
     private:
+        static const flag_t _flag;
         std::map<int,const_pData> variable_value,temp_value;
         std::set<int> vis;
         std::vector<int> vislist;
@@ -33,6 +37,7 @@ namespace computational_graph
         pGraph g;
     public:
         Session(pGraph _g);
+        void save(FileWriter &out);
         pGraph get_graph();
         const_pData eval(int id,std::map<int,const_pData> placeholder_value);
         const_pData eval(const_pNode p,std::map<const_pNode,const_pData> placeholder_value);
