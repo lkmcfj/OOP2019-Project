@@ -19,18 +19,18 @@ namespace computational_graph
     using std::dynamic_pointer_cast;
     
     constexpr flag_t Variable::_flag=    0x0301,
-                 Placeholder::_flag= 0x0302,
-                 Constant::_flag=    0x0303,
-                 Arith::_flag=       0x0304,
-                 Single_op::_flag=   0x0305,
-                 Print::_flag=       0x0306,
-                 Cmp::_flag=         0x0307,
-                 Cond::_flag=        0x0308,
-                 Assert::_flag=      0x0309,
-                 Bind::_flag=        0x030a,
-                 Grad::_flag=        0x030b,
-                 At::_flag=          0x030c,
-                 Assign::_flag=      0x030d;
+					 Placeholder::_flag= 0x0302,
+					 Constant::_flag=    0x0303,
+					 Arith::_flag=       0x0304,
+					 Single_op::_flag=   0x0305,
+					 Print::_flag=       0x0306,
+					 Cmp::_flag=         0x0307,
+					 Cond::_flag=        0x0308,
+					 Assert::_flag=      0x0309,
+					 Bind::_flag=        0x030a,
+					 Grad::_flag=        0x030b,
+					 At::_flag=          0x030c,
+					 Assign::_flag=      0x030d;
     void save_string(FileWriter &out,const string &s)
     {
         for(char c:s) out.write(c);
