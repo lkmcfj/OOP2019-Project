@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <utility>
 #include <cmath>
+#include <stdexcept>
 
 namespace computational_graph
 {
