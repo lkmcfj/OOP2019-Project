@@ -41,6 +41,7 @@ namespace computational_graph
         in.clear();
         in.seekg(databeg);
     }
+    FileReader::FileReader(FileReader &&y):in(std::move(y.in)) {}
     template<class T>
     T FileReader::read()
     {
@@ -60,6 +61,7 @@ namespace computational_graph
         memset(&a,0x3f,sizeof(a));
         out.write(reinterpret_cast<const char*>(&a),sizeof(hash_t));
     }
+    FileWriter::FileWriter(FileWriter &&y): out(std::move(y.out)),hash(std::move(y.hash)) {}
     template<class T>
     void FileWriter::write(T x)
     {

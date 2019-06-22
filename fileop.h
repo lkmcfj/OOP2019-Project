@@ -23,6 +23,9 @@ namespace computational_graph
         std::ifstream in;
     public:
         FileReader(std::string input_name);
+        FileReader(const FileReader &y) =delete;
+        FileReader(FileReader &&y);
+        FileReader& operator=(const FileReader &y) =delete;
         template<class T>
         T read();
     };
@@ -33,6 +36,9 @@ namespace computational_graph
         ByteStreamHash hash;
     public:
         FileWriter(std::string output_name);
+        FileWriter(const FileWriter &y) =delete;
+        FileWriter(FileWriter &&y);
+        FileWriter& operator=(const FileWriter &y) =delete;
         template<class T>
         void write(T x);
         ~FileWriter();
