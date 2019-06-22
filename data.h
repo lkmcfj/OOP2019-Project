@@ -1,5 +1,6 @@
 #ifndef _DATA_H_
 #define _DATA_H_
+#include "fileop.h"
 #include <memory>
 #include <string>
 #include <iostream>
@@ -17,6 +18,7 @@ namespace computational_graph
         virtual ~Data() = default;
         virtual bool is_scalar() const =0;
         virtual double scalar() const =0;
+        virtual void save(FileWriter &out) const =0;
     };
     typedef std::shared_ptr<const Data> const_pData; //a smart-pointer pointing to type data.
 
@@ -27,6 +29,7 @@ namespace computational_graph
         std::vector<int> shape;
         int dim,size;
     public:
+        static const flag_t _flag;
         int index2id(std::vector<int> index) const;
         Tensor(std::vector<double> init_v, std::vector<int> init_shape);
         Tensor(std::vector<int> init_shape);
@@ -44,16 +47,21 @@ namespace computational_graph
         static std::shared_ptr<const Tensor> create(std::vector<double> init_v,std::vector<int> init_shape); 
         static std::shared_ptr<const Tensor> zeros(std::vector<int> shape);
         virtual ~Tensor() =default;
+        virtual void save(FileWriter &out) const;
+
     };
     typedef std::shared_ptr<const Tensor> const_pTensor;
 
     class Float : public Tensor
     {
     public:
+        static const flag_t _flag;
         Float(double init_v);
         static std::shared_ptr<const Float> create(double init_v);
         double get_val() const;
         virtual std::unique_ptr<const Data> copy() const;
+        virtual void save(FileWriter &out) const;
+
     };
     typedef std::shared_ptr<const Float> const_pFloat;
 
@@ -62,6 +70,7 @@ namespace computational_graph
     protected:
         int dim1,dim2;
     public:
+        static const flag_t _flag;
         Diff(std::vector<int> init_shape, int dimf);
         Diff(std::vector<double> init_v, std::vector<int> init_shape, int dimf);
         static std::shared_ptr<const Diff> identity(std::vector<int> shape);
@@ -70,6 +79,7 @@ namespace computational_graph
         virtual std::unique_ptr<const Data> copy() const;
         int get_dim1() const;
         int get_dim2() const;
+        virtual void save(FileWriter &out) const;
     };
     typedef std::shared_ptr<const Diff> const_pDiff;
     
@@ -78,9 +88,11 @@ namespace computational_graph
     private:
         int n,m;
     public:
+        static const flag_t _flag;
         Matrix(std::vector<double> init_v,int d1,int d2);
         static std::shared_ptr<const Matrix> create(std::vector<double> init_v,int n,int m);
         virtual std::unique_ptr<const Data> copy() const;
+        virtual void save(FileWriter &out) const;
     };
 
     class Graddata : public Data
@@ -89,6 +101,7 @@ namespace computational_graph
         std::map<int, const_pDiff> grad;
         std::vector<int> fshape;
     public:
+        static const flag_t _flag;
         Graddata(std::map<int, const_pDiff> init_grad, std::vector<int> init_shape);
         virtual std::unique_ptr<const Data> copy() const;
         const_pDiff get_grad(int x_id) const;
@@ -98,7 +111,7 @@ namespace computational_graph
         virtual double scalar() const;
         virtual std::string to_string() const;
         static std::shared_ptr<const Graddata> create(std::map<int, const_pDiff> init_grad, std::vector<int> init_shape);
-
+        virtual void save(FileWriter &out) const;
     };
 }
 
