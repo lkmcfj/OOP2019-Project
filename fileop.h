@@ -5,6 +5,7 @@
 namespace computational_graph
 {
     typedef long long hash_t;
+    typedef std::uint16_t flag_t;
     class ByteStreamHash
     {
     private:
