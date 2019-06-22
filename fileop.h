@@ -2,6 +2,7 @@
 #define _FILEOP_H_
 #include <fstream>
 #include <string>
+#include <cstdint>
 namespace computational_graph
 {
     typedef long long hash_t;
