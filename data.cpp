@@ -14,6 +14,55 @@ namespace computational_graph
     using std::unique_ptr;
 	using std::make_unique;
 	using std::shared_ptr;
+
+    const flag_t Tensor::_flag=   0x0401,
+                 Float::_flag=    0x0402,
+                 Diff::_flag=     0x0403,
+                 Matrix::_flag=   0x0404,
+                 Graddata::_flag= 0x0405;
+
+    void Tensor::save(FileWriter &out) const
+    {
+        out.write(_flag);
+        out.write<int>(size);
+        for(double i:p) out.write(i);
+        out.write<int>(dim);
+        for(int i:shape) out.write(i);
+    }
+    void Float::save(FileWriter &out) const
+    {
+        out.write(_flag);
+        out.write<double>(p[0]);
+    }
+    void Diff::save(FileWriter &out) const
+    {
+        out.write(_flag);
+        out.write<int>(size);
+        for(double i:p) out.write(i);
+        out.write<int>(dim1);
+        out.write<int>(dim2);
+        for(int i:shape) out.write(i);
+    }
+    void Matrix::save(FileWriter &out) const
+    {
+        out.write(_flag);
+        out.write<int>(n);
+        out.write<int>(m);
+        for(double i:p) out.write(i);
+    }
+    void Graddata::save(FileWriter &out) const
+    {
+        out.write(_flag);
+        out.write<int>(fshape.size());
+        for(int i:fshape) out.write(i);
+        out.write<int>(grad.size());
+        for(auto &i:grad)
+        {
+            out.write<int>(i.first);
+            i.second->save(out);
+        }
+    }
+
     int Tensor::index2id(vector<int> index) const
     {
 		int ret=0,t=1;
