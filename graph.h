@@ -22,7 +22,6 @@ namespace computational_graph
 
         const_pNode join(std::unique_ptr<Node> curnode);
         const_pNode getnode(int id);
-        void save(FileWriter &out);
         friend class Session;
         friend class Grad;
         static std::shared_ptr<Graph> create();
@@ -43,7 +42,6 @@ namespace computational_graph
         static Session load(FileReader &in);
 
         Session(pGraph _g);
-        void save(FileWriter &out);
         pGraph get_graph();
         const_pData eval(int id,std::map<int,const_pData> placeholder_value);
         const_pData eval(const_pNode p,std::map<const_pNode,const_pData> placeholder_value);
