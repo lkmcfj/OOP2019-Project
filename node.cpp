@@ -467,7 +467,7 @@ namespace computational_graph
             op=str2op["sin"];
         }
     }
-    cosnt_pNode Single_op::create(pGraph g,int x_id,string op_str)
+    const_pNode Single_op::create(pGraph g,int x_id,string op_str)
     {
         Message::debug("Single_op::create() called(ID ver)");
         return g->join(unique_ptr<Single_op>(new Single_op(g,x_id,op_str)));
