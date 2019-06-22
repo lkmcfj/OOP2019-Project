@@ -15,6 +15,12 @@ namespace computational_graph
 	using std::make_unique;
 	using std::shared_ptr;
 
+    const flag_t Tensor::_flag=   0x0401,
+                 Float::_flag=    0x0402,
+                 Diff::_flag=     0x0403,
+                 Matrix::_flag=   0x0404,
+                 Graddata::_flag= 0x0405;
+
     const_pData load_data(FileReader &in)
     {
         flag_t head;
@@ -34,12 +40,6 @@ namespace computational_graph
             default: throw std::runtime_error("Fail to load data: unknown type head: "+to_hex(head));
         }
     }
-
-    const flag_t Tensor::_flag=   0x0401,
-                 Float::_flag=    0x0402,
-                 Diff::_flag=     0x0403,
-                 Matrix::_flag=   0x0404,
-                 Graddata::_flag= 0x0405;
 
     void Tensor::save(FileWriter &out) const
     {
