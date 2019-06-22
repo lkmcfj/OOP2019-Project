@@ -338,6 +338,123 @@ namespace computational_graph
                          BinaryTensorOp::tensor_minus(minus,diff_minus),
                          BinaryTensorOp::tensor_multi(multi,diff_multi),
                          BinaryTensorOp::tensor_div(div,diff_div);
-    //上述运算如果类型检查出现问题（如传入Data基类对象，传入nullptr），抛出std::runtime_error
-    //如果超出运算定义域（如log自变量<=0，除以0），则调用Message::message输出要求的错误信息并抛出std::range_error  
+
+    SumStream::SumStream():sum(0),count(0) {}
+    void SumStream::clear()
+    {
+        sum=0;
+        count=0;
+    }
+    StatStream& SumStream::operator<<(double x)
+    {
+        sum+=x;
+        ++count;
+        return *this;
+    }
+    double SumStream::value()
+    {
+        return sum;
+    }
+    vector<double> SumStream::diff()
+    {
+        return vector<double>(count,1.0);
+    }
+    SumStream SumStream::sums;
+
+    AvgStream::AvgStream():sum(0),count(0) {}
+    void AvgStream::clear()
+    {
+        sum=0;
+        count=0;
+    }
+    StatStream& AvgStream::operator<<(double x)
+    {
+        sum+=x;
+        ++count;
+        return *this;
+    }
+    double AvgStream::value()
+    {
+        if(count==0) return 0;else return sum/count;
+    }
+    vector<double> AvgStream::diff()
+    {
+        return vector<double>(count,1.0/count);
+    }
+    AvgStream AvgStream::avgs;
+
+    const_pData reduceop(const_pData x,int dim,StatStream &stat)
+    {
+        const_pTensor t=to_Tensor(x);
+
+        vector<int> shape=t->get_shape();
+        const vector<double> &p=t->get_val();
+        if(dim>=shape.size()||dim<-shape.size())
+        {
+            throw std::invalid_argument("Fail to reduce: dimension doesn't exist");
+        }
+        if(dim<0) dim=shape.size()+dim;
+
+        int low=1;
+        for(int i=shape.size()-1;i>dim;--i) low*=shape[i];
+        int mid=shape[dim],high=1;
+        for(int i=dim-1;i>=0;--i) high*=shape[i];
+        int newsize=low*high;
+        vector<double> res(newsize,0);
+        for(int i=0;i<newsize;++i)
+        {
+            stat.clear();
+            int k=i%low+(i/low)*mid*low;
+            for(int j=0;j<mid;++j)
+            {
+                stat<<p[k];
+                k+=low;
+            }
+            res[i]=stat.value();
+        }
+        shape.erase(shape.begin()+dim);
+        return Tensor::create(std::move(res),std::move(shape));
+    }
+    const_pDiff diff_reduceop(const_pData x,int dim,StatStream &stat)
+    {
+        const_pTensor t=to_Tensor(x);
+
+        vector<int> shape=t->get_shape();
+        const vector<double> &p=t->get_val();
+        if(dim>=shape.size()||dim<-shape.size())
+        {
+            throw std::invalid_argument("Fail to reduce: dimension doesn't exist");
+        }
+        if(dim<0) dim=shape.size()+dim;
+
+        int low=1;
+        for(int i=shape.size()-1;i>dim;--i) low*=shape[i];
+        int mid=shape[dim],high=1;
+        for(int i=dim-1;i>=0;--i) high*=shape[i];
+        int size=high*mid*low,newsize=high*low;
+
+        vector<double> res(newsize*size,0);
+        for(int i=0;i<newsize;++i)
+        {
+            stat.clear();
+            int k=i%low+(i/low)*mid*low;
+            for(int j=0;j<mid;++j)
+            {
+                stat<<p[k];
+                k+=low;
+            }
+            vector<double> d=stat.diff();
+            k=i%low+(i/low)*mid*low;
+            for(int j=0;j<mid;++j)
+            {
+                res[i*size+k]=d[j];
+                k+=low;
+            }
+        }
+
+        vector<int> newshape(shape);
+        newshape.erase(newshape.begin()+dim);
+        newshape.insert(newshape.end(),shape.begin(),shape.end());
+        return Diff::create(res,newshape,shape.size()-1);
+    }
 }

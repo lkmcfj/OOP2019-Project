@@ -4,6 +4,7 @@
 #include "floatfunc.h"
 #include <cmath>
 #include <functional>
+#include <vector>
 namespace computational_graph
 {
     typedef std::pair<const_pDiff,const_pDiff> pairdiff;
@@ -67,7 +68,45 @@ namespace computational_graph
         static const BinaryTensorOp tensor_plus,tensor_minus,tensor_multi,tensor_div;
     };
 
-    //上述运算如果类型检查出现问题（如传入Data基类对象，传入nullptr），抛出std::runtime_error
-    //如果超出运算定义域（如log自变量<=0，除以0），则调用Message::message输出要求的错误信息并抛出std::range_error
+    using std::vector;
+    class StatStream
+    {
+    public:
+        virtual void clear() =0;
+        virtual StatStream& operator<<(double x) =0;
+        virtual double value() =0;
+        virtual vector<double> diff() =0;
+    };
+    class SumStream: public StatStream
+    {
+    private:
+        double sum;
+        int count;
+    public:
+        SumStream();
+        ~SumStream() =default;
+        virtual void clear();
+        virtual StatStream& operator<<(double x);
+        virtual double value();
+        virtual vector<double> diff();
+        static SumStream sums;
+    };
+    class AvgStream: public StatStream
+    {
+    private:
+        double sum;
+        int count;
+    public:
+        AvgStream();
+        ~AvgStream() =default;
+        virtual void clear();
+        virtual StatStream& operator<<(double x);
+        virtual double value();
+        virtual vector<double> diff();
+        static AvgStream avgs;
+    };
+
+    const_pData reduceop(const_pData x,int dim,StatStream &stat);
+    const_pDiff diff_reduceop(const_pData x,int dim,StatStream &stat);
 }
 #endif
