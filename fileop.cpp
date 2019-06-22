@@ -43,16 +43,21 @@ namespace computational_graph
     }
     FileReader::FileReader(FileReader &&y):in(std::move(y.in)) {}
     template<class T>
-    T FileReader::read()
+    void FileReader::read(T &ret)
     {
-        T ret;
         in.read(reinterpret_cast<char*>(&ret),sizeof(T));
         if(in.gcount()<sizeof(T))
         {
             throw std::runtime_error("Unexpected eof when reading.");
         }
-        return std::move(ret);
     }
+    template<class T>
+    T FileReader::read()
+    {
+		T ret;
+		read<T>(ret);
+		return std::move(ret);
+	}
 
     using std::ofstream;
     FileWriter::FileWriter(string output_name):out(output_name,ofstream::binary)
@@ -81,6 +86,12 @@ namespace computational_graph
     template char FileReader::read<char>();
     template hash_t FileReader::read<hash_t>();
     template flag_t FileReader::read<flag_t>();
+    
+    template void FileReader::read<int>(int&);
+    template void FileReader::read<double>(double&);
+    template void FileReader::read<char>(char&);
+    template void FileReader::read<hash_t>(hash_t&);
+    template void FileReader::read<flag_t>(flag_t&);
     
     template void FileWriter::write<int>(int);
     template void FileWriter::write<double>(double);

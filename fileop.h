@@ -28,6 +28,8 @@ namespace computational_graph
         FileReader& operator=(const FileReader &y) =delete;
         template<class T>
         T read();
+        template<class T>
+        void read(T &x);
     };
     class FileWriter
     {
