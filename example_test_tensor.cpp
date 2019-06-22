@@ -85,16 +85,16 @@ void example4()
          b1=Grad::create(a),
          b2=At::create(b1,x),
          c=b2*a;
-    //auto res=a->run_diff(&s,vector<const_pData>{tf(v[4],sh[4]),tf(v[5],sh[5])});
-    //cout<<*res[0];
-    /*
-    test_eval(s,x,{{x,tf(v[1], sh[1])} });
-    test_eval(s,a,{{x,tf(v[2], sh[2])}, {y,tf(v[3], sh[3])}});
-    */
     test_eval(s,b1,{{x,tf(v[4], sh[4])}, {y,tf(v[5], sh[5])}});
-    /*
     test_eval(s,c,{{x,tf(v[6], sh[6])}, {y,tf(v[7], sh[7])}});
-    */
+    {
+        FileWriter out("test.txt");
+        s.save(out);
+    }
+    FileReader in("test.txt");
+    Session s2(Session::load(in));
+    cout<<*s2.eval(b1->get_id(),{{x->get_id(),tf(v[4], sh[4])}, {y->get_id(),tf(v[5], sh[5])}})<<endl;
+    cout<<*s2.eval(c->get_id(),{{x->get_id(),tf(v[6], sh[6])}, {y->get_id(),tf(v[7], sh[7])}})<<endl;
 }
 
 //testing: resize
