@@ -31,7 +31,8 @@ namespace computational_graph
 				 Bind::_flag=        0x030a,
 				 Grad::_flag=        0x030b,
 				 At::_flag=          0x030c,
-				 Assign::_flag=      0x030d;
+				 Assign::_flag=      0x030d,
+                 Reduce::_flag=      0x030e;
 
     const_pNode load_node(FileReader &in,pGraph g)
     {
@@ -64,6 +65,8 @@ namespace computational_graph
                 return At::load(in,g);
             case Assign::_flag:
                 return Assign::load(in,g);
+            case Reduce::_flag:
+                return Reduce::load(in,g);
             default: throw std::runtime_error("Unknown node head: "+to_hex(head));
         }
     }
@@ -253,7 +256,27 @@ namespace computational_graph
         in.read(x2);
         return create(g,x1,x2);
     }
-
+    
+    void Reduce::save(FileWriter &out) const
+    {
+        out.write(_flag);
+        out.write(father[0]);
+        for(auto &i:str2op) if(i.second==stat)
+        {
+            save_string(out,i.first);
+            break;
+        }
+        out.write(dim);
+    }
+    const_pNode Reduce::load(FileReader &in,pGraph g)
+    {
+        int x;
+        in.read(x);
+        string op_str=load_string(in);
+        int dim;
+        in.read(dim);
+        return create(g,x,op_str,dim);
+    }
 
     bool check_triple(const_pNode n1,const_pNode n2,const_pNode n3)
     {
@@ -835,6 +858,53 @@ namespace computational_graph
         }
         const_pTensor f0 = to_Tensor(father_value[0]), f1 = to_Tensor(father_value[1]);
         return vector<const_pDiff>{Diff::zeros(f1->get_shape(),f0->get_shape()),Diff::identity(f1->get_shape())};
+    }
+
+    map<string,StatStream*> Reduce::str2op{{"sum",&SumStream::sums},{"avg",&AvgStream::avgs}};
+    Reduce::Reduce(wGraph _g, int x_id, string op_str, int _dim):dim(_dim),Node(_g,vector<int>{x_id})
+    {
+        auto it=str2op.find(op_str);
+        if(it!=str2op.end())
+        {
+            stat=it->second;
+        } else
+        {
+            Message::error("In Reduce::Reduce, unexpected operator string: "+op_str+", setting to reduce_sum");
+            stat=str2op["sum"];
+        }
+    }
+    const_pNode Reduce::create(pGraph g,int x_id,string op_str,int dim)
+    {
+        Message::debug("Reduce::create(ID ver) called");
+        return g->join(unique_ptr<Reduce>(new Reduce(g,x_id,op_str,dim)));
+    }
+    const_pNode Reduce::create(const_pNode x,string op_str,int dim)
+    {
+        Message::debug("Reduce::create(const_pNode ver) called");
+        if(!check_single(x)) return nullptr;
+        return create(x->get_graph().lock(),x->get_id(),op_str,dim);
+    }
+    int Reduce::get_type() const
+    {
+        return 14;
+    }
+    const_pData Reduce::run(Session *sess,vector<const_pData> father_value) const
+    {
+        if(father_value.size()!=1)
+        {
+            Message::error("evaluating node #"+to_string(get_id())+", expecting 1 input value, get "+to_string(father_value.size())+". returning nullptr.");
+            return nullptr;
+        }
+        return reduceop(father_value[0],dim,*stat);
+    }
+    vector<const_pDiff> Reduce::run_diff(Session *sess,vector<const_pData> father_value) const
+    {
+        if(father_value.size()!=1)
+        {
+            Message::error("evaluating node #"+to_string(get_id())+", expecting 1 input value, get "+to_string(father_value.size())+". returning nullptr.");
+            return {};
+        }
+        return vector<const_pDiff>{diff_reduceop(father_value[0],dim,*stat)};
     }
 
     const_pNode operator +(const_pNode left,const_pNode right)

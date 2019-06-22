@@ -46,6 +46,7 @@ namespace computational_graph
         //type=11 Grad
         //type=12 At
         //type=13 Assign
+        //type=14 Reduce
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value)const =0;//error
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value)const =0;
         friend class Graph;
@@ -265,6 +266,25 @@ namespace computational_graph
 
         static const_pNode create(pGraph g, int left_id, int right_id);
         static const_pNode create(const_pNode left, const_pNode right);
+        virtual int get_type() const;
+        virtual const_pData run(Session *sess, std::vector<const_pData> father_value) const;
+        virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
+    };
+
+    class Reduce : public Node
+    {
+        static std::map<std::string, StatStream*> str2op;
+    protected:
+        int dim;
+        StatStream *stat;
+        Reduce(wGraph _g, int x_id, std::string op_str, int _dim);
+    public:
+        static const flag_t _flag;
+        virtual void save(FileWriter &out) const;
+        static const_pNode load(FileReader &in,pGraph g);
+
+        static const_pNode create(pGraph g, int x_id, std::string op_str, int dim);
+        static const_pNode create(const_pNode x, std::string op_str="sum", int dim=-1);
         virtual int get_type() const;
         virtual const_pData run(Session *sess, std::vector<const_pData> father_value) const;
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
