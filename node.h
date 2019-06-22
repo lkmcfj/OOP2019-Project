@@ -15,7 +15,8 @@ namespace computational_graph
     typedef std::weak_ptr<Graph> wGraph;
     typedef std::shared_ptr<Graph> pGraph;
 
-    //the member function "run" of Node and its derived class may throw exception std::range_error, std::runtime_error when calculating
+    const_pNode load_node(FileReader &in);
+
     class Node
     {
     private:
@@ -66,6 +67,7 @@ namespace computational_graph
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;//warning
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
         virtual void save(FileWriter &out) const;
+        static const_pNode load(FileReader &in,pGraph g);
    };
 
     class Placeholder : public Node
@@ -79,7 +81,7 @@ namespace computational_graph
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;//error
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
         virtual void save(FileWriter &out) const;
-
+        static const_pNode load(FileReader &in,pGraph g);
     };
 
     class Constant : public Node
@@ -94,7 +96,7 @@ namespace computational_graph
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
         virtual void save(FileWriter &out) const;
-
+        static const_pNode load(FileReader &in,pGraph g);
     };
         
     class Arith : public Node
@@ -107,9 +109,11 @@ namespace computational_graph
         static const flag_t _flag;
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
+        static const_pNode create(pGraph g,int left_id,int right_id,std::string op_str);
         static const_pNode create(const_pNode left,const_pNode right,std::string op_str);
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
         virtual void save(FileWriter &out) const;
+        static const_pNode load(FileReader &in,pGraph g);
     };
 
     class Single_op : public Node
@@ -122,10 +126,11 @@ namespace computational_graph
         static const flag_t _flag;
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
+        static const_pNode create(pGraph g,int x_id,std::string op_str);
         static const_pNode create(const_pNode x,std::string op_str);
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
         virtual void save(FileWriter &out) const;
-
+        static const_pNode load(FileReader &in,pGraph g);
     };
 
     class Print : public Node
@@ -141,6 +146,7 @@ namespace computational_graph
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
         virtual void save(FileWriter &out) const;
+        static const_pNode load(FileReader &in,pGraph g);
     };
 
     class Cmp : public Node
@@ -153,9 +159,11 @@ namespace computational_graph
         static const flag_t _flag;
         virtual int get_type() const;
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
+        static const_pNode create(pGraph g,int left_id,int right_id,std::string op_str);
         static const_pNode create(const_pNode left,const_pNode right,std::string op_str);
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
         virtual void save(FileWriter &out) const;
+        static const_pNode load(FileReader &in,pGraph g);
     };
 
     class Cond : public Node
@@ -170,6 +178,7 @@ namespace computational_graph
         virtual const_pData run(Session *sess,std::vector<const_pData> father_value) const;
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
         virtual void save(FileWriter &out) const;
+        static const_pNode load(FileReader &in,pGraph g);
     };
 
     class Assert : public Node
@@ -184,6 +193,7 @@ namespace computational_graph
         virtual const_pData run(Session *sess, std::vector<const_pData> father_value) const;
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
         virtual void save(FileWriter &out) const;
+        static const_pNode load(FileReader &in,pGraph g);
     };
 
     class Bind : public Node
@@ -198,6 +208,7 @@ namespace computational_graph
         virtual const_pData run(Session *sess, std::vector<const_pData> father_value) const;        
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
         virtual void save(FileWriter &out) const;
+        static const_pNode load(FileReader &in,pGraph g);
     };
 
     class Grad : public Node
@@ -212,6 +223,7 @@ namespace computational_graph
         virtual const_pData run(Session *sess, std::vector<const_pData> father_value) const;        
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
         virtual void save(FileWriter &out) const;
+        static const_pNode load(FileReader &in,pGraph g);
     };
 
     class At : public Node
@@ -226,6 +238,7 @@ namespace computational_graph
         virtual const_pData run(Session *sess, std::vector<const_pData> father_value) const;            
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
         virtual void save(FileWriter &out) const;
+        static const_pNode load(FileReader &in,pGraph g);
     };
 
     class Assign : public Node
@@ -240,6 +253,7 @@ namespace computational_graph
         virtual const_pData run(Session *sess, std::vector<const_pData> father_value) const;
         virtual std::vector<const_pDiff> run_diff(Session *sess, std::vector<const_pData> father_value) const;
         virtual void save(FileWriter &out) const;
+        static const_pNode load(FileReader &in,pGraph g);
     };
 
     const_pNode operator +(const_pNode left,const_pNode right);

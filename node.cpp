@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <stdexcept>
 
 namespace computational_graph
 {
@@ -31,20 +32,73 @@ namespace computational_graph
 				 Grad::_flag=        0x030b,
 				 At::_flag=          0x030c,
 				 Assign::_flag=      0x030d;
+
+    const_pNode load_node(FileReader &in,pGraph g)
+    {
+        flag_t head=in.read<flag_t>();
+        switch(head)
+        {
+            case Variable::_flag:
+                return Variable::load(in,g);
+            case Placeholder::_flag:
+                return Placeholder::load(in,g);
+            case Constant::_flag:
+                return Constant::load(in,g);
+            case Arith::_flag:
+                return Arith::load(in,g);
+            case Single_op::_flag:
+                return Single_op::load(in,g);
+            case Print::_flag:
+                return Print::load(in,g);
+            case Cmp::_flag:
+                return Cmp::load(in,g);
+            case Cond::_flag:
+                return Cond::load(in,g);
+            case Assert::_flag:
+                return Assert::load(in,g);
+            case Bind::_flag:
+                return Bind::load(in,g);
+            case Grad::_flag:
+                return Grad::load(in,g);
+            case At::_flag:
+                return At::load(in,g);
+            case Assign::_flag:
+                return Assign::load(in,g);
+            default: throw std::runtime_error("Unknown node head: "+to_hex(head));
+        }
+    }
+
     void Variable::save(FileWriter &out) const
     {
         out.write(_flag);
         default_value->save(out);
     }
+    const_pNode Variable::load(FileReader &in, pGraph g)
+    {
+        const_pData default_v=load_data(in);
+        return create(g,default_v);
+    }
+
     void Placeholder::save(FileWriter &out) const
     {
         out.write(_flag);
     }
+    const_pNode Placeholder::load(FileReader &in, pGraph g)
+    {
+        return create(g);
+    }
+
     void Constant::save(FileWriter &out) const
     {
         out.write(_flag);
         value->save(out);
     }
+    const_pNode Constant::load(FileReader &in,pGraph g)
+    {
+        const_pData v=load_data(in);
+        return create(g,v);
+    }
+
     void Arith::save(FileWriter &out) const
     {
         out.write(_flag);
@@ -56,6 +110,15 @@ namespace computational_graph
             break;
         }
     }
+    const_pNode Arith::load(FileReader &in,pGraph g)
+    {
+        int left,right;
+        in.read(left);
+        in.read(right);
+        string op_str=load_string(in);
+        return create(g,left,right,op_str);
+    }
+
     void Single_op::save(FileWriter &out) const
     {
         out.write(_flag);
@@ -66,12 +129,28 @@ namespace computational_graph
             break;
         }
     }
+    const_pNode Single_op::load(FileReader &in,pGraph g)
+    {
+        int x;
+        in.read(x);
+        string op_str=load_string(in);
+        return create(g,x,op_str);
+    }
+
     void Print::save(FileWriter &out) const
     {
         out.write(_flag);
         out.write(father[0]);
         save_string(out,father_symbol);
     }
+    const_pNode Print::load(FileReader &in,pGraph g)
+    {
+        int x;
+        in.read(x);
+        string x_symbol=load_string(in);
+        return create(g,x,x_symbol);
+    }
+
     void Cmp::save(FileWriter &out) const
     {
         out.write(_flag);
@@ -83,6 +162,15 @@ namespace computational_graph
             break;
         }
     }
+    const_pNode Cmp::load(FileReader &in,pGraph g)
+    {
+        int lid,rid;
+        in.read(lid);
+        in.read(rid);
+        string op_str=load_string(in);
+        return create(g,lid,rid,op_str);
+    }
+
     void Cond::save(FileWriter &out) const
     {
         out.write(_flag);
@@ -90,34 +178,82 @@ namespace computational_graph
         out.write(father[1]);
         out.write(father[2]);
     }
+    const_pNode Cond::load(FileReader &in,pGraph g)
+    {
+        int cond_id,lid,rid;
+        in.read(cond_id);
+        in.read(lid);
+        in.read(rid);
+        return create(g,cond_id,lid,rid);
+    }
+
     void Assert::save(FileWriter &out) const
     {
         out.write(_flag);
         out.write(father[0]);
     }
+    const_pNode Assert::load(FileReader &in,pGraph g)
+    {
+        int x;
+        in.read(x);
+        return create(g,x);
+    }
+
     void Bind::save(FileWriter &out) const
     {
         out.write(_flag);
         out.write(father[0]);
         out.write(father[1]);
     }
+    const_pNode Bind::load(FileReader &in,pGraph g)
+    {
+        int x1,x2;
+        in.read(x1);
+        in.read(x2);
+        return create(g,x1,x2);
+    }
+
     void Grad::save(FileWriter &out) const
     {
         out.write(_flag);
         out.write(father[0]);
     }
+    const_pNode Grad::load(FileReader &in,pGraph g)
+    {
+        int x;
+        in.read(x);
+        return create(g,x);
+    }
+
+
     void At::save(FileWriter &out) const
     {
         out.write(_flag);
         out.write(father[0]);
         out.write(father[1]);
     }
+    const_pNode At::load(FileReader &in,pGraph g)
+    {
+        int x1,x2;
+        in.read(x1);
+        in.read(x2);
+        return create(g,x1,x2);
+    }
+
     void Assign::save(FileWriter &out) const
     {
         out.write(_flag);
         out.write(father[0]);
         out.write(father[1]);
     }
+    const_pNode Assign::load(FileReader &in,pGraph g)
+    {
+        int x1,x2;
+        in.read(x1);
+        in.read(x2);
+        return create(g,x1,x2);
+    }
+
 
     bool check_triple(const_pNode n1,const_pNode n2,const_pNode n3)
     {
@@ -274,12 +410,16 @@ namespace computational_graph
             op=str2op["+"];
         }
     }
+    const_pNode Arith::create(pGraph g,int left_id,int right_id,string op_str)
+    {
+        Message::debug("Arith::create() called(ID ver)");
+        return g->join(unique_ptr<Arith>(new Arith(g,left_id,right_id,op_str)));
+    }
     const_pNode Arith::create(const_pNode left,const_pNode right,string op_str)
     {
-        Message::debug("Arith::create() called");
+        Message::debug("Arith::create() called(const_pNode ver)");
         if(!check_binary(left,right)) return nullptr;
-        pGraph g(left->get_graph());
-        return g->join(unique_ptr<Arith>(new Arith(g,left->get_id(),right->get_id(),op_str)));
+        return create(left->get_graph().lock(),left->get_id(),right->get_id(),op_str);
     }
     int Arith::get_type() const
     {
@@ -327,12 +467,16 @@ namespace computational_graph
             op=str2op["sin"];
         }
     }
+    cosnt_pNode Single_op::create(pGraph g,int x_id,string op_str)
+    {
+        Message::debug("Single_op::create() called(ID ver)");
+        return g->join(unique_ptr<Single_op>(new Single_op(g,x_id,op_str)));
+    }
     const_pNode Single_op::create(const_pNode x,string op_str)
     {
         Message::debug("Single_op::create() called");
         if(!check_single(x)) return nullptr;
-        pGraph g(x->get_graph());
-        return g->join(unique_ptr<Single_op>(new Single_op(g,x->get_id(),op_str)));
+        return create(x->get_graph().lock(),x->get_id(),op_str);
     }
     int Single_op::get_type() const
     {
@@ -409,12 +553,16 @@ namespace computational_graph
             op=str2op["<"];
         }
     }
+    const_pNode Cmp::create(pGraph g,int left_id,int right_id,string op_str)
+    {
+        Message::debug("Cmp::create() called(ID ver)");
+        return g->join(unique_ptr<Cmp>(new Cmp(g,left_id,right_id,op_str)));
+    }
     const_pNode Cmp::create(const_pNode left,const_pNode right,string op_str)
     {
-        Message::debug("Cmp::create() called");
+        Message::debug("Cmp::create() called(const_pNode ver)");
         if(!check_binary(left,right)) return nullptr;
-        pGraph g(left->get_graph());
-        return g->join(unique_ptr<Cmp>(new Cmp(g,left->get_id(),right->get_id(),op_str)));
+        return create(left->get_graph().lock(),left->get_id(),right->get_id(),op_str);
     }
     int Cmp::get_type() const
     {
