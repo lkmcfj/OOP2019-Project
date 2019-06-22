@@ -54,6 +54,8 @@ namespace computational_graph
     };
     typedef std::shared_ptr<const Node> const_pNode;
 
+    const_pNode load_node(FileReader &in,pGraph g);
+
     class Variable : public Node
     {
     protected:
