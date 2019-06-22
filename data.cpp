@@ -54,12 +54,12 @@ namespace computational_graph
         int size;
         in.read(size);
         vector<double> p;
-        load_vector(p,size);
+        load_vector(in,p,size);
 
         int dim;
         in.read(dim);
         vector<int> shape;
-        load_vector(shape,dim);
+        load_vector(in,shape,dim);
 
         return Tensor::create(std::move(p),std::move(shape));
     }
@@ -90,13 +90,13 @@ namespace computational_graph
         int size;
         in.read(size);
         vector<double> p; 
-        load_vector(p,size);
+        load_vector(in,p,size);
 
         int dim1,dim2;
         in.read(dim1);
         in.read(dim2);
         vector<int> shape; 
-        load_vector(shape,dim1+dim2);
+        load_vector(in,shape,dim1+dim2);
 
         return Diff::create(std::move(p),std::move(shape),dim1);
     }
@@ -114,7 +114,7 @@ namespace computational_graph
         in.read(n);
         in.read(m);
         vector<double> p;
-        load_vector(p,n*m);
+        load_vector(in,p,n*m);
         return Matrix::create(std::move(p),n,m);
     }
 
@@ -135,7 +135,7 @@ namespace computational_graph
         int dim;
         in.read(dim);
         vector<int> fshape;
-        load_vector(fshape,dim);
+        load_vector(in,fshape,dim);
 
         int count;
         in.read(count);
