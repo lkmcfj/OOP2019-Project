@@ -36,9 +36,11 @@ $$\vec\omega^{i+1} =  \vec{\omega}^i  -\eta \nabla L(\vec{\omega}^i)$$ , 其中 
 
 
 
-我们的输出结果即为优化后的 $\vec\omega$ , 每轮迭代就输出一次。初值设定 : $\hat\omega_0 = (1,1,...,1)$, $\eta = 0.1, t = 100$
+我们利用计算图将$A$以及 $\vec{y}$ 设为```Constant```, 将$\vec\omega$ 设为```Variable```, 利用```Assign```进行```Variable```的迭代修改与输出。输出结果即为优化后的 $\vec\omega$ , 每轮迭代就输出一次。初值设定 : $\hat\omega_0 = (1,1,...,1)$, $\eta = 0.1, t = 100$
 
-利用随机生成的侧资 ```example_gd.in``` 计算至 ```example_gd.out``` 中 :
+
+
+利用随机生成的侧资 ```example_gd.in``` 计算至 ```example_gd.out``` 中 : 梯度下降得到的 $\vec\omega$ 为 :
 
 
 

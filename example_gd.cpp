@@ -35,16 +35,16 @@ int main(){
 			x_val.push_back(x);
 		}
 		cin >> y;
-		y_val.push_backe(y);
+		y_val.push_back(y);
 		x_val.push_back(1);
 	}
 	//optimize question can be transformed into minimize ||Ax-b||
-	auto A = Constant::create(g, Tensor::create(x_val, 	vector<int>{m, n+1};));
+	auto A = Constant::create(g, Tensor::create(x_val, 	vector<int>{m, n+1}));
 	auto x = Variable::create(g, Tensor::create(vector<double>(n+1, 1.0); vector<int>{n+1, 1}));
 	auto b = Constant::create(g, Tensor::create(y_val, vector<int>{m, 1}));
 	auto eta = Constant::create(g, Float::create(ETA));
 
-	//Loss function : L = ||Ax-b||^2, 
+	//Loss function : L = ||Ax-b||^2 , 
 	auto D = A*x-b;
 	auto loss = Reduce::create(D*D, "avg");
 	auto grad = Grad::create(loss);
@@ -54,5 +54,4 @@ int main(){
 		cout << endl << "Optimization by gradient descend of time " << i << " : " << endl ;
 		test_eval(s, opti, {});
 	}
-
 }
