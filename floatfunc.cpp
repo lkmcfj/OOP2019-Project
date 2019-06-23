@@ -23,7 +23,7 @@ namespace computational_graph
 	std::string double_string(double v){
    		std::ostringstream out;
     	out.precision(FloatSetting::get_precision());
-    	out  << v;
+    	out << std::fixed << v;
     	return out.str();
 	}
 
