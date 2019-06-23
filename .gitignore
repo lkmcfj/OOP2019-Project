@@ -36,6 +36,7 @@
 *.out
 *.input
 *.output
+*.cg
 
 # Vim File
 *.swp
