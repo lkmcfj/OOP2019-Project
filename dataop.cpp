@@ -390,6 +390,7 @@ namespace computational_graph
         vector<int> shape=t->get_shape();
         const vector<double> &p=t->get_val();
         int ss=shape.size();
+        if(ss=0) return x;
         if(dim>=ss||dim<-ss)
         {
             throw std::invalid_argument("Fail to reduce: dimension doesn't exist");
@@ -423,6 +424,7 @@ namespace computational_graph
         vector<int> shape=t->get_shape();
         const vector<double> &p=t->get_val();
         int ss=shape.size();
+        if(ss=0) return Diff::identity(shape);
         if(dim>=ss||dim<-ss)
         {
             throw std::invalid_argument("Fail to reduce: dimension doesn't exist");
@@ -479,4 +481,49 @@ namespace computational_graph
             return y;
         }
     }
+
+    bool checkconcat(const vector<int> &sx,const vector<int> &sy,int dim)
+    {
+        if(sx.size()!=sy.size()) return false;
+        for(int i=0;i<sx.size();++i) if(sx[i]!=sy[i]&&i!=dim) return false;
+        return true;
+    }
+    const_pData concat(const_pData x,const_pData y,int dim)
+    {
+        const_pTensor tx=to_Tensor(x), ty=to_Tensor(y);
+
+        const vector<double> &vx=tx->get_val(), &vy=ty->get_val();
+        vector<int> shapex(tx->get_shape()), shapey(ty->get_shape());
+
+        int ss=shapex.size();
+        if(dim>=ss||dim<-ss) throw std::invalid_argument("Fail in concat(): dimension doesn't exist.");
+        if(dim<0) dim=ss-dim;
+        if(!checkconcat(shapex,shapey,dim)) throw std::invalid_argument("Fail in concat(): shape doesn't fit.");
+
+
+        int high=1,low=1,midx,midy;
+        midx=shapex[dim];
+        midy=shapey[dim];
+        for(int i=dim+1;i<ss;++i) low*=shapex[i];
+        for(int i=0;i<dim;++i) high*=shapex[i];
+        vector<int> newshape(shapex);
+        newshape[dim]=shapex[dim]+shapey[dim];
+        int mid=newshape[dim];
+        int sizex=high*low*midx,sizey=high*low*midy,newsize=high*low*mid;
+
+        vector<double> res;
+        res.reserve(newsize);
+        for(int i=0;i<newsize;++i)
+        {
+            int middigit=(i/low)%mid, highdigit=i/(low*mid), lowdigit=i%low;
+            res.push_back(middigit<midx?vx[highdigit*low*midx + lowdigit + middigit*low]:vy[highdigit*low*midy + lowdigit + (middigit-midx)*low]);
+        }
+        
+        const_pDiff dx=dynamic_pointer_cast<const Diff>(tx), dy=dynamic_pointer_cast<const Diff>(ty);
+        if(dx&&dy && dx->get_dim1()==dy->get_dim1())
+        {
+            return Diff::create(res,newshape,dx->get_dim1());
+        } else return Tensor::create(res,newshape);
+    }
+
 }
