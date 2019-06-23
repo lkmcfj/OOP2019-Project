@@ -2,8 +2,7 @@ cc = g++
 deps = data.h dataop.h floatfunc.h graph.h message.h node.h parser.h fileop.h computational_graph.h
 obj = data.o dataop.o floatfunc.o graph.o message.o node.o parser.o fileop.o
 
-leastsqr : leastsqr.cpp $(obj) $(deps)
-	$(cc) leastsqr.cpp $(obj) -o test -std=c++14 -O2
+all : main1 main2 main3
 
 main1 : oj_main.cpp $(obj) $(deps)
 	$(cc) oj_main.cpp $(obj) -o main1 -std=c++14
@@ -52,3 +51,6 @@ test1 : test1.cpp $(obj) $(deps)
 
 test_yj : test_yj.cpp $(obj) $(deps)
 	$(cc) test_yj.cpp $(obj) -o test -std=c++14 -O2
+
+leastsqr : leastsqr.cpp $(obj) $(deps)
+	$(cc) leastsqr.cpp $(obj) -o test -std=c++14 -O2
