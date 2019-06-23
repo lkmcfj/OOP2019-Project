@@ -43,19 +43,8 @@ clean :
 test_sess : example/test_sess.cpp $(obj) $(deps)
 	$(cc) example/test_sess.cpp $(obj) -o example/test -std=c++14 -O2
 
+test_tensor : example/test_tensor.cpp $(obj) $(deps)
+	$(cc) example/test_tensor.cpp $(obj) -o example/test -std=c++14 -O2
 
-
-test2 : test2.cpp $(obj) $(deps)
-	$(cc) test2.cpp $(obj) -o test -std=c++14
-
-test1 : test1.cpp $(obj) $(deps)
-	$(cc) test1.cpp $(obj) -o test -std=c++14
-
-#debug : example_test_tensor.cpp data.cpp dataop.cpp floatfunc.cpp graph.cpp message.cpp node.cpp parser.cpp $(deps)
-#	 $(cc) example_test_tensor.cpp data.cpp dataop.cpp floatfunc.cpp graph.cpp message.cpp node.cpp parser.cpp fileop.cpp -o test -std=c++14 -g
-
-test_yj : test_yj.cpp $(obj) $(deps)
-	$(cc) test_yj.cpp $(obj) -o test -std=c++14 -O2
-
-leastsqr : leastsqr.cpp $(obj) $(deps)
-	$(cc) leastsqr.cpp $(obj) -o test -std=c++14 -O2
+leastsqr : example/test_leastsqr.cpp $(obj) $(deps)
+	$(cc) example/test_leastsqr.cpp $(obj) -o example/test -std=c++14 -O2
