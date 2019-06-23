@@ -299,10 +299,12 @@ namespace computational_graph
     const_pNode exp_node(const_pNode x);
     const_pNode tanh_node(const_pNode x);
     const_pNode sigmoid_node(const_pNode x);
+    /*
     const_pNode operator <(const_pNode left,const_pNode right);
     const_pNode operator >(const_pNode left,const_pNode right);
     const_pNode operator <=(const_pNode left,const_pNode right);
     const_pNode operator >=(const_pNode left,const_pNode right);
     const_pNode operator ==(const_pNode left,const_pNode right);
+    */
 }
 #endif

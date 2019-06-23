@@ -943,6 +943,7 @@ namespace computational_graph
     {
         return Single_op::create(x,"sigmoid");
     }
+    /*
     const_pNode operator <(const_pNode left,const_pNode right)
     {
         return Cmp::create(left,right,"<");
@@ -963,5 +964,5 @@ namespace computational_graph
     {
         return Cmp::create(left,right,"==");
     }
-
+    /*
 }
