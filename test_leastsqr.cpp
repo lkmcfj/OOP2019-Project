@@ -7,51 +7,62 @@
 using namespace computational_graph;
 using namespace std;
 
-
-//Using gradient descend to optimize f(x) = /sum_i=1^n k_i*x_i + b
-int m,n; //n : dim of function. m: numbers of input points
-int times = 100 ;
-double ETA = 0.04; //learning rate
+//Using gradient descend to optimize f(x) = /sum_{i=1}^n k_i*x_i + b
 void test_eval(Session &s,const_pNode x,map<const_pNode,const_pData> p)
 {
     try
     {
         cout<<*s.eval(x,p)<<endl;
     } catch(std::runtime_error e)
-    {} catch(std::invalid_argument e)
-    {}
+    {
+        Message::error(e.what());
+    } catch(std::invalid_argument e)
+    {
+        Message::error(e.what());
+    }
 }
 
-int main(){
+int main()
+{
+    int epoches;
+    cout<<"epoches=";
+    cin>>epoches;
+    double ETA; //learning rate
+    cout<<"eta=";
+    cin>>ETA;
     pGraph g=Graph::create();
     Session s(g);
-	cin >> m >> n;
-	vector<double> x_val;
-	vector<double> y_val;
-	for (int i = 0; i < m; i++){
-		double x, y;
-		for (int j = 0; j < n; j++){
-			cin >> x;
-			x_val.push_back(x);
-		}
-		cin >> y;
-		y_val.push_back(y);
-		x_val.push_back(1);
-	}
-	//optimize question can be transformed into minimize ||Ax-b||
-	auto A = Constant::create(g, Tensor::create(x_val, 	vector<int>{m, n+1}));
-	auto x = Variable::create(g, Tensor::create(vector<double>(n+1, 1.0); vector<int>{n+1, 1}));
-	auto b = Constant::create(g, Tensor::create(y_val, vector<int>{m, 1}));
-	auto eta = Constant::create(g, Float::create(ETA));
+    int m,n;
+    cin >> m >> n;
+    vector<double> x_val;
+    vector<double> y_val;
+    for (int i = 0; i < m; i++){
+        double x, y;
+        for (int j = 0; j < n; j++){
+            cin >> x;
+            x_val.push_back(x);
+        }
+        cin >> y;
+        y_val.push_back(y);
+        x_val.push_back(1);
+    }
+    //optimization problem can be transformed into minimize ||Ak-y||
+    const_pData Aval=Diff::create(x_val, vector<int>{m, n+1}, 1),
+                yval=Diff::create(y_val, vector<int>{m}, 1);
+    const_pNode A = Constant::create(g, Aval),
+                k = Variable::create(g, Diff::zeros(vector<int>{n+1},vector<int>()) ),
+                y = Constant::create(g, yval);
+    const_pNode eta = Constant::create(g, Float::create(ETA));
 
-	//Loss function : L = ||Ax-b||^2 , 
-	auto D = A*x-b;
-	auto loss = Reduce::create(D*D, "avg");
-	auto grad = Grad::create(loss);
-	auto delta = At::create(grad, x);
-	auto opti  = Assign::create(x, x-eta*delta); 
-	for (int i = 1; i <= times; i++){
-		cout << endl << "Optimization by gradient descend of time " << i << " : " << endl ;
-		test_eval(s, opti, {});
-	}
+    //Loss function : L = ||Ax-b||^2 , 
+    const_pNode D = A*k-y,
+                loss = Reduce::create(D*D, "sum"),
+                grad = Grad::create(loss),
+                delta = At::create(grad, k),
+                opti  = Assign::create(k, k-eta*delta); 
+    for (int i = 0; i < epoches; i++){
+        cout<<'#'<<i+1<<':';
+        test_eval(s, opti, {});
+    }
+    test_eval(s, D, {});
 }
