@@ -47,16 +47,16 @@ int main()
         x_val.push_back(1);
     }
     //optimization problem can be transformed into minimize ||Ak-y||
-    const_pData Aval=Diff::create(x_val, vector<int>{m, n+1}, 1),
-                yval=Diff::create(y_val, vector<int>{m}, 1);
+    const_pData Aval=Matrix::create(x_val, m, n+1),
+                yval=Matrix::create(y_val, m, 1);
     const_pNode A = Constant::create(g, Aval),
-                k = Variable::create(g, Diff::zeros(vector<int>{n+1},vector<int>()) ),
+                k = Variable::create(g, Matrix::create(vector<double>(n+1,0),n+1,1) ),
                 y = Constant::create(g, yval);
     const_pNode eta = Constant::create(g, Float::create(ETA));
 
     //Loss function : L = ||Ax-b||^2 , 
     const_pNode D = A*k-y,
-                loss = Reduce::create(D*D, "sum"),
+                loss = Reduce::create(Reduce::create(D*D, "sum"), "sum"),
                 grad = Grad::create(loss),
                 delta = At::create(grad, k),
                 opti  = Assign::create(k, k-eta*delta); 
