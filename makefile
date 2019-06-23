@@ -6,7 +6,7 @@ test_yj : test_yj.cpp $(obj) $(deps)
 	$(cc) test_yj.cpp $(obj) -o test -std=c++14 -O2
 
 leastsqr : test_leastsqr.cpp $(obj) $(deps)
-	$(cc) test_leastsqr.cpp $(obj) -o test3 -std=c++14 -O2
+	$(cc) test_leastsqr.cpp $(obj) -o test -std=c++14 -O2
 
 test2 : test2.cpp $(obj) $(deps)
 	$(cc) test2.cpp $(obj) -o test -std=c++14
