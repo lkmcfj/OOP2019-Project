@@ -1,4 +1,4 @@
-#include "computational_graph.h"
+#include "../computational_graph.h"
 #include <iostream>
 #include <memory>
 #include <vector>
