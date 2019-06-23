@@ -573,7 +573,7 @@ namespace computational_graph
 
         int ss=shapex.size();
         if(dim>=ss||dim<-ss) throw std::invalid_argument("Fail in concat(): dimension doesn't exist.");
-        if(dim<0) dim=ss-dim;
+        if(dim<0) dim=ss+dim;
         if(!checkconcat(shapex,shapey,dim)) throw std::invalid_argument("Fail in concat(): shape doesn't fit.");
 
 
