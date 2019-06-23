@@ -35,5 +35,5 @@ int main()
             ++correct;
         } else cout<<"Wrong\n";
     }
-    cout<<correct<<'/'<<n;
+    cout<<correct<<'/'<<n<<'\n';
 }
