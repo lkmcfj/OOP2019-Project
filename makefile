@@ -2,20 +2,16 @@ cc = g++
 deps = data.h dataop.h floatfunc.h graph.h message.h node.h parser.h fileop.h computational_graph.h
 obj = data.o dataop.o floatfunc.o graph.o message.o node.o parser.o fileop.o
 
-test_yj : test_yj.cpp $(obj) $(deps)
-	$(cc) test_yj.cpp $(obj) -o test -std=c++14 -O2
+all : main1 main2 main3
 
-leastsqr : test_leastsqr.cpp $(obj) $(deps)
-	$(cc) test_leastsqr.cpp $(obj) -o test3 -std=c++14 -O2
+main1 : oj_main.cpp $(obj) $(deps)
+	$(cc) oj_main.cpp $(obj) -o main1 -std=c++14
 
-test2 : test2.cpp $(obj) $(deps)
-	$(cc) test2.cpp $(obj) -o test -std=c++14
+main2 : oj_main.cpp $(obj) $(deps)
+	$(cc) oj_main.cpp $(obj) -o main2 -std=c++14
 
-test1 : test1.cpp $(obj) $(deps)
-	$(cc) test1.cpp $(obj) -o test -std=c++14
-
-debug : example_test_tensor.cpp data.cpp dataop.cpp floatfunc.cpp graph.cpp message.cpp node.cpp parser.cpp $(deps)
-	$(cc) example_test_tensor.cpp data.cpp dataop.cpp floatfunc.cpp graph.cpp message.cpp node.cpp parser.cpp fileop.cpp -o test -std=c++14 -g
+main3 : main3.cpp $(obj) $(deps)
+	$(cc) main3.cpp $(obj) -o main3 -std=c++14
 
 data.o : data.cpp $(deps)
 	$(cc) data.cpp -o data.o -c -std=c++14
@@ -42,4 +38,19 @@ fileop.o : fileop.cpp $(deps)
 	$(cc) fileop.cpp -o fileop.o -c -std=c++14
 
 clean :
-	rm -rf $(obj) test
+	rm -rf $(obj) test main1 main2 main3
+	
+test2 : test2.cpp $(obj) $(deps)
+	$(cc) test2.cpp $(obj) -o test -std=c++14
+
+test1 : test1.cpp $(obj) $(deps)
+	$(cc) test1.cpp $(obj) -o test -std=c++14
+
+#debug : example_test_tensor.cpp data.cpp dataop.cpp floatfunc.cpp graph.cpp message.cpp node.cpp parser.cpp $(deps)
+#	 $(cc) example_test_tensor.cpp data.cpp dataop.cpp floatfunc.cpp graph.cpp message.cpp node.cpp parser.cpp fileop.cpp -o test -std=c++14 -g
+
+test_yj : test_yj.cpp $(obj) $(deps)
+	$(cc) test_yj.cpp $(obj) -o test -std=c++14 -O2
+
+leastsqr : leastsqr.cpp $(obj) $(deps)
+	$(cc) leastsqr.cpp $(obj) -o test -std=c++14 -O2

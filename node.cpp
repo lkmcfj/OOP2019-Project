@@ -846,8 +846,9 @@ namespace computational_graph
         {
             Message::error("evaluating node #"+to_string(get_id())+", expecting 2 input value,get "+to_string(father_value.size())+". returning nullptr.");
         }
-        sess->add_assign_task(father[0], father_value[1]);
-        return father_value[1];
+        const_pData fit=fitshape(father_value[0],father_value[1]);
+        sess->add_assign_task(father[0], fit);
+        return fit;
     }  
     std::vector<const_pDiff> Assign::run_diff(Session *sess, std::vector<const_pData> father_value) const
     {
@@ -964,5 +965,5 @@ namespace computational_graph
     {
         return Cmp::create(left,right,"==");
     }
-    /*
+    */
 }
