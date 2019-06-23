@@ -5,14 +5,14 @@ obj = data.o dataop.o floatfunc.o graph.o message.o node.o parser.o fileop.o
 test_yj : test_yj.cpp $(obj) $(deps)
 	$(cc) test_yj.cpp $(obj) -o test -std=c++14 -O2
 
-test3 : example_gd.cpp $(obj) $(deps)
-	$(cc) example_gd.cpp $(obj) -o test3 -std=c++14 -O2
+leastsqr : test_leastsqr.cpp $(obj) $(deps)
+	$(cc) test_leastsqr.cpp $(obj) -o test3 -std=c++14 -O2
 
-test2 : example_test_tensor.cpp $(obj) $(deps)
-	$(cc) example_test_tensor.cpp $(obj) -o test -std=c++14
+test2 : test2.cpp $(obj) $(deps)
+	$(cc) test2.cpp $(obj) -o test -std=c++14
 
-test1 : example_test.cpp $(obj) $(deps)
-	$(cc) example_test.cpp $(obj) -o test -std=c++14
+test1 : test1.cpp $(obj) $(deps)
+	$(cc) test1.cpp $(obj) -o test -std=c++14
 
 debug : example_test_tensor.cpp data.cpp dataop.cpp floatfunc.cpp graph.cpp message.cpp node.cpp parser.cpp $(deps)
 	$(cc) example_test_tensor.cpp data.cpp dataop.cpp floatfunc.cpp graph.cpp message.cpp node.cpp parser.cpp fileop.cpp -o test -std=c++14 -g
