@@ -81,6 +81,33 @@ namespace computational_graph
 		}
 		return Tensor::create(res, new_shape);
 	}
+    const_pDiff diff_bc_calc(const_pDiff left,const_pDiff right,function<double(double,double)> op)
+    {
+        vector<int> left_shape = left->get_shape(),right_shape = right->get_shape();
+        vector<int> lshape1(left_shape.begin(),left_shape.begin()+left->get_dim1()),
+                    lshape2(left_shape.begin()+left->get_dim1(),left_shape.end()),
+                    rshape1(right_shape.begin(),right_shape.begin()+right->get_dim1()),
+                    rshape2(right_shape.begin()+right->get_dim1(),right_shape.end());
+        vector<int> nshape1=broadcast_shape(lshape1,rshape1), nshape2=broadcast_shape(lshape2,rshape2);
+        int size1=1,size2=1;
+        for(int i:nshape1) size1*=i;
+        for(int i:nshape2) size2*=i;
+        vector<int> index1(nshape1.size(),0), index2(nshape2.size(),0);
+        vector<double> res(size1*size2,0);
+        for(int i=0;i<size1;++i)
+        {
+            index2=vector<int>(nshape2.size(),0);
+            for(int j=0;j<size2;++j)
+            {
+                auto indexl=rev_broadcast(index1,lshape1)+rev_broadcast(index2,lshape2);
+                auto indexr=rev_broadcast(index1,rshape1)+rev_broadcast(index2,rshape2);
+                res[i*size2+j]=op(left->get_val(indexl), right->get_val(indexr));
+                if(j+1<size2) inc(index2,nshape2);
+            }
+            if(i+1<size1) inc(index1,nshape1);
+        }
+        return Diff::create(res,nshape1+nshape2,nshape1.size());
+    }
     pairdiff tensor_bc_diff(const_pData left,const_pData right,function<std::pair<double,double>(double,double)> op_diff)
     {
         const_pTensor left_t = to_Tensor(left), right_t = to_Tensor(right);
@@ -100,38 +127,76 @@ namespace computational_graph
         }
         return std::make_pair(const_pDiff(left_res),const_pDiff(right_res));
     }
+    pairdiff diff_bc_diff(const_pDiff left,const_pDiff right,function<std::pair<double,double>(double,double)> op_diff)
+    {
+        vector<int> left_shape = left->get_shape(),right_shape = right->get_shape();
+        vector<int> lshape1(left_shape.begin(),left_shape.begin()+left->get_dim1()),
+                    lshape2(left_shape.begin()+left->get_dim1(),left_shape.end()),
+                    rshape1(right_shape.begin(),right_shape.begin()+right->get_dim1()),
+                    rshape2(right_shape.begin()+right->get_dim1(),right_shape.end());
+        vector<int> nshape1=broadcast_shape(lshape1,rshape1), nshape2=broadcast_shape(lshape2,rshape2);
+        int size1=1,size2=1;
+        for(int i:nshape1) size1*=i;
+        for(int i:nshape2) size2*=i;
+        vector<int> index1(nshape1.size(),0), index2(nshape2.size(),0);
+        Diff *left_res=new Diff(nshape1+nshape2+left_shape,nshape1.size()+nshape2.size()), *right_res=new Diff(nshape1+nshape2+right_shape,nshape1.size()+nshape2.size());
+        for(int i=0;i<size1;++i)
+        {
+            index2=vector<int>(nshape2.size(),0);
+            for(int j=0;j<size2;++j)
+            {
+                auto indexl=rev_broadcast(index1,lshape1)+rev_broadcast(index2,lshape2);
+                auto indexr=rev_broadcast(index1,rshape1)+rev_broadcast(index2,rshape2);
+                auto cur=op_diff(left->get_val(indexl), right->get_val(indexr));
+                left_res->set_val(index1+index2+indexl,cur.first);
+                right_res->set_val(index1+index2+indexr,cur.second);
+                if(j+1<size2) inc(index2,nshape2);
+            }
+            if(i+1<size1) inc(index1,nshape1);
+        }
+        return std::make_pair(const_pDiff(left_res), const_pDiff(right_res));
+    }
+
 
 	
     const_pData plus(const_pData left,const_pData right)
     {
+        /*
 		const_pFloat left_f=dynamic_pointer_cast<const Float>(left),
                      right_f=dynamic_pointer_cast<const Float>(right);
         if(left_f && right_f) return float_calc(left_f,right_f,double_plus);
+        */
         const_pDiff left_d=dynamic_pointer_cast<const Diff>(left), right_d=dynamic_pointer_cast<const Diff>(right);
-        if(left_d&&right_d && left_d->get_shape()==right_d->get_shape() && left_d->get_dim1()==right_d->get_dim1())
+        if(left_d&&right_d)
         {
-            return left_d+right_d;
-        }
-        return tensor_bc_calc(left,right,double_plus);
+            return diff_bc_calc(left_d,right_d,double_plus);
+        } else return tensor_bc_calc(left,right,double_plus);
 	}
 	const_pData minus(const_pData left,const_pData right)
     {
+        /*
 		const_pFloat left_f=dynamic_pointer_cast<const Float>(left),
                      right_f=dynamic_pointer_cast<const Float>(right);
         if(left_f && right_f) return float_calc(left_f,right_f,double_minus);
+        */
 		const_pDiff left_d=dynamic_pointer_cast<const Diff>(left), right_d=dynamic_pointer_cast<const Diff>(right);
-        if(left_d&&right_d && left_d->get_shape()==right_d->get_shape() && left_d->get_dim1()==right_d->get_dim1())
+        if(left_d&&right_d)
         {
-            return left_d-right_d;
-        }
-        return tensor_bc_calc(left,right,double_minus);
+            return diff_bc_calc(left_d,right_d,double_minus);
+        } else return tensor_bc_calc(left,right,double_minus);
 	}
 	const_pData div(const_pData left,const_pData right)
     {
+        /*
 		const_pFloat left_f=dynamic_pointer_cast<const Float>(left),
                      right_f=dynamic_pointer_cast<const Float>(right);
         if(left_f && right_f) return float_calc(left_f,right_f,double_div);
-        return tensor_bc_calc(left,right,double_div);
+        */
+        const_pDiff left_d=dynamic_pointer_cast<const Diff>(left), right_d=dynamic_pointer_cast<const Diff>(right);
+        if(left_d&&right_d)
+        {
+            return diff_bc_calc(left_d,right_d,double_div);
+        } else return tensor_bc_calc(left,right,double_div);
 	}
 
     bool check_multi(const_pDiff l,const_pDiff r)
@@ -161,11 +226,13 @@ namespace computational_graph
     }
     const_pData multi(const_pData left,const_pData right)
     {
+        /*
 		const_pFloat left_f=dynamic_pointer_cast<const Float>(left),
                      right_f=dynamic_pointer_cast<const Float>(right);
         if(left_f && right_f) return float_calc(left_f,right_f,double_multi);
+        */
         const_pDiff left_d=dynamic_pointer_cast<const Diff>(left),right_d=dynamic_pointer_cast<const Diff>(right);
-        if(left_d&&right_d&&check_multi(left_d,right_d))
+        if(left_d&&right_d)
         {
             return left_d*right_d;
         }
@@ -178,21 +245,11 @@ namespace computational_graph
 
 	const_pDiff operator+(const_pDiff left,const_pDiff right)
 	{
-		if(left->get_shape()==right->get_shape() && left->get_dim1()==right->get_dim1())
-        {
-            vector<double> v1(left->get_val()),v2(right->get_val());
-            for(int i=0;i<v1.size();++i) v1[i]+=v2[i];
-            return Diff::create(v1,left->get_shape(), left->get_dim1());
-        } else throw std::runtime_error("shape doesn't fit when calculating operator+ of Diff");
+        return diff_bc_calc(left,right,double_plus);
 	}
 	const_pDiff operator-(const_pDiff left,const_pDiff right)
 	{
-		if(left->get_shape()==right->get_shape() && left->get_dim1()==right->get_dim1())
-        {
-            vector<double> v1(left->get_val()),v2(right->get_val());
-            for(int i=0;i<v1.size();++i) v1[i]-=v2[i];
-            return Diff::create(v1,left->get_shape(), left->get_dim1());
-        } else throw std::runtime_error("shape doesn't fit when calculating operator- of Diff");
+        return diff_bc_calc(left,right,double_plus);
 	}
 	const_pDiff operator*(const_pDiff left,const_pDiff right)
 	{
@@ -218,53 +275,69 @@ namespace computational_graph
             delete[] b;
             delete[] res;
             return Diff::create(res_vec,shapei+shapek,dimi);
-		} else throw std::runtime_error("shape doesn't fit when calculating operator* of Diff");
+		} else return diff_bc_calc(left,right,double_multi);
 	}
 
     pairdiff diff_plus(const_pData left,const_pData right)
     {
-        return tensor_bc_diff(left,right,double_diff_plus);
+        const_pDiff left_d=dynamic_pointer_cast<const Diff>(left), right_d=dynamic_pointer_cast<const Diff>(right);
+        if(left_d&&right_d)
+        {
+            return diff_bc_diff(left_d,right_d,double_diff_plus);
+        } else return tensor_bc_diff(left,right,double_diff_plus);
+    
     }
     pairdiff diff_minus(const_pData left,const_pData right)
     {
-        return tensor_bc_diff(left,right,double_diff_minus);
+        const_pDiff left_d=dynamic_pointer_cast<const Diff>(left), right_d=dynamic_pointer_cast<const Diff>(right);
+        if(left_d&&right_d)
+        {
+            return diff_bc_diff(left_d,right_d,double_diff_minus);
+        } else return tensor_bc_diff(left,right,double_diff_minus);
     }
     pairdiff diff_div(const_pData left,const_pData right)
     {
-        return tensor_bc_diff(left,right,double_diff_div);
+        const_pDiff left_d=dynamic_pointer_cast<const Diff>(left), right_d=dynamic_pointer_cast<const Diff>(right);
+        if(left_d&&right_d)
+        {
+            return diff_bc_diff(left_d,right_d,double_diff_div);
+        } else return tensor_bc_diff(left,right,double_diff_div);
     }
     pairdiff diff_multi(const_pData left,const_pData right)
     {
         const_pDiff left_d = dynamic_pointer_cast<const Diff>(left), right_d = dynamic_pointer_cast<const Diff>(right);
-        if(left_d&&right_d&& check_multi(left_d,right_d))
+        if(left_d&&right_d)
         {
-            vector<int> lshape=left_d->get_shape(), rshape=right_d->get_shape();
-            int dim1=left_d->get_dim1(),dim2=left_d->get_dim2(),dim3=right_d->get_dim2();
-            vector<int> shape1(lshape.begin(),lshape.begin()+dim1),
-                        shape2(rshape.begin(),rshape.begin()+dim2),
-                        shape3(rshape.begin()+dim2,rshape.end());
-            int size1=1,size2=1,size3=1;
-            for(int i:shape1) size1*=i;
-            for(int i:shape2) size2*=i;
-            for(int i:shape3) size3*=i;
-            Diff *lres=new Diff(shape1+shape3+shape1+shape2,dim1+dim3), *rres=new Diff(shape1+shape3+shape2+shape3,dim1+dim3);
-            vector<int> index1, index2, index3;
-            int i,j,k;
-            for(i=0,index1=vector<int>(dim1,0);i<size1;++i)
+            if(check_multi(left_d,right_d))
             {
-                for(j=0,index2=vector<int>(dim2,0);j<size2;++j)
+                vector<int> lshape=left_d->get_shape(), rshape=right_d->get_shape();
+                int dim1=left_d->get_dim1(),dim2=left_d->get_dim2(),dim3=right_d->get_dim2();
+                vector<int> shape1(lshape.begin(),lshape.begin()+dim1),
+                            shape2(rshape.begin(),rshape.begin()+dim2),
+                            shape3(rshape.begin()+dim2,rshape.end());
+                int size1=1,size2=1,size3=1;
+                for(int i:shape1) size1*=i;
+                for(int i:shape2) size2*=i;
+                for(int i:shape3) size3*=i;
+                Diff *lres=new Diff(shape1+shape3+shape1+shape2,dim1+dim3), *rres=new Diff(shape1+shape3+shape2+shape3,dim1+dim3);
+                vector<int> index1, index2, index3;
+                int i,j,k;
+                for(i=0,index1=vector<int>(dim1,0);i<size1;++i)
                 {
-                    for(k=0,index3=vector<int>(dim3,0);k<size3;++k)
+                    for(j=0,index2=vector<int>(dim2,0);j<size2;++j)
                     {
-                        lres->set_val(index1+index3+index1+index2,right_d->get_val(index2+index3));
-                        rres->set_val(index1+index3+index2+index3,left_d->get_val(index1+index2));
-                        inc(index3,shape3);
+                        for(k=0,index3=vector<int>(dim3,0);k<size3;++k)
+                        {
+                            lres->set_val(index1+index3+index1+index2,right_d->get_val(index2+index3));
+                            rres->set_val(index1+index3+index2+index3,left_d->get_val(index1+index2));
+                            inc(index3,shape3);
+                        }
+                        inc(index2,shape2);
                     }
-                    inc(index2,shape2);
+                    inc(index1,shape1);
                 }
-                inc(index1,shape1);
-            }
-            return make_pair(const_pDiff(lres),const_pDiff(rres));
+                return make_pair(const_pDiff(lres),const_pDiff(rres));
+            } else return diff_bc_diff(left_d,right_d,double_diff_multi);
         }
         return tensor_bc_diff(left,right,double_diff_multi);
     }
@@ -306,7 +379,10 @@ namespace computational_graph
 		const_pTensor t=to_Tensor(x);
 		vector<double> ans=t->get_val();
 		for(double &i: ans) i=op(i);
-		return Tensor::create(ans,t->get_shape());
+        if(const_pDiff d=dynamic_pointer_cast<const Diff>(t))
+        {
+            return Diff::create(ans,d->get_shape(),d->get_dim1());
+        } else return Tensor::create(ans,t->get_shape());
 	}
 	const_pDiff SingleTensorOp::diff(const_pData x) const
 	{
