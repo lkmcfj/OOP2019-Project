@@ -329,7 +329,7 @@ namespace computational_graph
     }
     
     Matrix::Matrix(vector<double> init_v, int d1,int d2):
-        Diff(init_v,vector<int>{n,m},1),n(d1),m(d2)
+        Diff(init_v,vector<int>{d1,d2},1),n(d1),m(d2)
     {
         if(d1*d2!=init_v.size())
         {
