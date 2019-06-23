@@ -75,6 +75,22 @@ namespace computational_graph
 		{
 			ret=Cond::create(symbol[new_node[3]],symbol[new_node[4]],symbol[new_node[5]]);
 		}//Cond
+		if(new_node[2]=="ASSERT")
+		{
+			ret=Assert::create(symbol[new_node[3]]);
+		}//Assert
+		if(new_node[2]=="BIND")
+		{
+			ret=Bind::create(symbol[new_node[3]],symbol[new_node[4]]);
+		}//Bind
+		if(new_node[2]=="GRAD")
+		{
+			ret=Grad::create(symbol[new_node[3]]);
+		}//Grad
+		if(new_node[3]=="AT")
+		{
+			ret=At::create(symbol[new_node[2]],symbol[new_node[4]]);
+		}//At
 		symbol[new_node[0]]=ret;
         return ret;
 	}
