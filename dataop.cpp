@@ -459,4 +459,24 @@ namespace computational_graph
         newshape.insert(newshape.end(),shape.begin(),shape.end());
         return Diff::create(res,newshape,ss-1);
     }
+
+    const_pData fitshape(const_pData x,const_pData y)
+    {
+        const_pTensor tx=dynamic_pointer_cast<const Tensor>(x),
+                      ty=dynamic_pointer_cast<const Tensor>(y);
+        if(tx)
+        {
+            if(!ty) throw std::runtime_error("Fail to assign non-tensor data to tensor:reshape failed");
+            const_pDiff dx=dynamic_pointer_cast<const Diff>(tx);
+            if(dx)
+            {
+                const vector<double> &vy=ty->get_val();
+                return Diff::create(vy,dx->get_shape(),dx->get_dim1());
+            } else return ty->reshape(tx->get_shape());
+        } else
+        {
+            if(ty) throw std::runtime_error("Fail to assign tensor data to non-tensor:reshape failed");
+            return y;
+        }
+    }
 }

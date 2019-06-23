@@ -108,5 +108,7 @@ namespace computational_graph
 
     const_pData reduceop(const_pData x,int dim,StatStream &stat);
     const_pDiff diff_reduceop(const_pData x,int dim,StatStream &stat);
+
+    const_pData fitshape(const_pData x,const_pData y);
 }
 #endif
