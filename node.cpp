@@ -964,5 +964,5 @@ namespace computational_graph
     {
         return Cmp::create(left,right,"==");
     }
-    /*
+    */
 }
