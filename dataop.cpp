@@ -466,7 +466,7 @@ namespace computational_graph
         vector<int> shape=t->get_shape();
         const vector<double> &p=t->get_val();
         int ss=shape.size();
-        if(ss=0) return x;
+        if(ss==0) return x;
         if(dim>=ss||dim<-ss)
         {
             throw std::invalid_argument("Fail to reduce: dimension doesn't exist");
@@ -500,7 +500,7 @@ namespace computational_graph
         vector<int> shape=t->get_shape();
         const vector<double> &p=t->get_val();
         int ss=shape.size();
-        if(ss=0) return Diff::identity(shape);
+        if(ss==0) return Diff::identity(shape);
         if(dim>=ss||dim<-ss)
         {
             throw std::invalid_argument("Fail to reduce: dimension doesn't exist");
