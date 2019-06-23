@@ -39,7 +39,7 @@ fileop.o : fileop.cpp $(deps)
 	$(cc) fileop.cpp -o fileop.o -c -std=c++14
 
 clean :
-	rm -rf $(obj) test
+	rm -rf $(obj) test main1 main2 main3
 	
 test2 : test2.cpp $(obj) $(deps)
 	$(cc) test2.cpp $(obj) -o test -std=c++14
