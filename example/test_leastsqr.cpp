@@ -48,8 +48,7 @@ int main()
     const_pData Aval=Matrix::create(x_val, m, n+1),
                 yval=Matrix::create(y_val, m, 1);
     const_pNode A = Constant::create(g, Aval),
-				//k = Variable::create(g, Matrix::create(vector<double>(n+1,1) ,n+1,1) ),    			
-                k = Variable::create(g, Matrix::create(vector<double>{1,-2.6,7.5},n+1,1) ),
+                k = Variable::create(g, Matrix::create(vector<double>(n+1,1),n+1,1) ),    			
                 y = Constant::create(g, yval);
     const_pNode eta = Constant::create(g, Float::create(ETA));
 
